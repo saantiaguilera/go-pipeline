@@ -35,41 +35,41 @@ This flow can be achieved as such:
 ```go
 // Complete stage. Its sequential because we can't serve
 // before all the others are done. 
-graph := pipeline_stage.CreateSequentialGroup(
+graph := stage.CreateSequentialGroup(
     // Concurrent stage, given we are 3, we can do the salad / meat separately
-    pipeline_stage.CreateConcurrentGroup(
+    stage.CreateConcurrentGroup(
         // This will be the salad flow. It can be done concurrently with the meat
-        pipeline_stage.CreateSequentialGroup(
+        stage.CreateSequentialGroup(
         	// Eggs and carrots can be operated concurrently too
-            pipeline_stage.CreateConcurrentGroup(
+            stage.CreateConcurrentGroup(
                 // Sequential stage for the eggs flow
-                pipeline_stage.CreateSequentialStage(
+                stage.CreateSequentialStage(
                     // Use a mean of communication. Channels could be one.
                     your_step.CreateBoilEggsStep(eggsChan),
                     your_step.CreateCutEggsStep(eggsChan),
                 ),
                 // Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
-                pipeline_stage.CreateSequentialStage(
+                stage.CreateSequentialStage(
                     // Use a mean of communication. Channels could be one.
                     your_step.CreateWashCarrotsStep(carrotsChan),
                     your_step.CreateCutCarrotsStep(carrotsChan),
                 ),
             ),
             // This is sequential. When carrots and eggs are done, this will run
-            pipeline_stage.CreateSequentialStage(
+            stage.CreateSequentialStage(
                 your_step.MakeSaladStep(carrotsChan, eggsChan, saladChan)
             )
         ),
         // Another sequential stage for the meat (concurrently with salad)
-        pipeline_stage.CreateSequentialStage(
+        stage.CreateSequentialStage(
             your_step.TurnOvenOnStep(),
             // Conditional step, the meat might be too big
-            pipeline_stage.CreateConditionalStep(
+            stage.CreateConditionalStep(
                 func() bool {
             	    return isMeatTooBigForOven()
             	},
                 // True:
-                your_step.CutMeat(meatChan),
+                your_step.CutMeatStep(meatChan),
                 // False:
                 nil,
             ),
@@ -77,11 +77,11 @@ graph := pipeline_stage.CreateSequentialGroup(
         ),
     ),
     // When everything is done. Serve
-    pipeline_stage.CreateSequentialStage(
+    stage.CreateSequentialStage(
         your_step.ServeStep(meatChan, saladChan)
     ),
 )
 
-pipeline := CreatePipeline(CreateYourExecutor())
-pipeline.Run(graph)
+pipe := pipeline.CreatePipeline(CreateYourExecutor())
+pipe.Run(graph)
 ```
