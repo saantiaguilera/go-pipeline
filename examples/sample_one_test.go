@@ -2,9 +2,9 @@ package examples_test
 
 import (
 	"fmt"
-	"github.com/afex/hystrix-go/hystrix"
 	"github.com/saantiaguilera/go-pipeline"
 	"github.com/saantiaguilera/go-pipeline/examples/steps"
+	"github.com/saantiaguilera/go-pipeline/pipeline"
 	"github.com/saantiaguilera/go-pipeline/stage"
 	"github.com/saantiaguilera/go-pipeline/step"
 	"github.com/stretchr/testify/assert"
@@ -82,7 +82,7 @@ func Graph() pipeline.Stage {
 		pipeline_stage.CreateConcurrentStage(
 			pipeline_step.CreateBeforeStepLifecycle(
 				calculateVolumeStep,
-				func() error {
+				func(step pipeline.Step) error {
 					calculateVolumeStep.Width = widthStep.Width
 					calculateVolumeStep.Height = heightStep.Height
 					calculateVolumeStep.Depth = depthStep.Depth
@@ -91,7 +91,7 @@ func Graph() pipeline.Stage {
 			),
 			pipeline_step.CreateBeforeStepLifecycle(
 				calculateSurfaceStep,
-				func() error {
+				func(step pipeline.Step) error {
 					calculateSurfaceStep.Width = widthStep.Width
 					calculateSurfaceStep.Height = heightStep.Height
 					return nil
@@ -102,14 +102,14 @@ func Graph() pipeline.Stage {
 			pipeline_stage.CreateSequentialStage(
 				pipeline_step.CreateBeforeStepLifecycle(
 					calculatePriceToPaintSurfaceStep,
-					func() error {
+					func(step pipeline.Step) error {
 						calculatePriceToPaintSurfaceStep.Surface = calculateSurfaceStep.Surface
 						return nil
 					},
 				),
 				pipeline_step.CreateBeforeStepLifecycle(
 					recordPriceSurfaceStep,
-					func() error {
+					func(step pipeline.Step) error {
 						recordPriceSurfaceStep.Price = calculatePriceToPaintSurfaceStep.Price
 						return nil
 					},
@@ -118,14 +118,14 @@ func Graph() pipeline.Stage {
 			pipeline_stage.CreateSequentialStage(
 				pipeline_step.CreateBeforeStepLifecycle(
 					calculatePriceToPaintVolumeStep,
-					func() error {
+					func(step pipeline.Step) error {
 						calculatePriceToPaintVolumeStep.Volume = calculateVolumeStep.Volume
 						return nil
 					},
 				),
 				pipeline_step.CreateBeforeStepLifecycle(
 					recordPriceVolumeStep,
-					func() error {
+					func(step pipeline.Step) error {
 						recordPriceVolumeStep.Price = calculatePriceToPaintVolumeStep.Price
 						return nil
 					},
@@ -135,7 +135,7 @@ func Graph() pipeline.Stage {
 		pipeline_stage.CreateSequentialStage(
 			pipeline_step.CreateBeforeStepLifecycle(
 				evaluateStep,
-				func() error {
+				func(step pipeline.Step) error {
 					evaluateStep.SurfacePrice = calculatePriceToPaintSurfaceStep.Price
 					evaluateStep.VolumePrice = calculatePriceToPaintVolumeStep.Price
 					return nil
@@ -154,14 +154,14 @@ func Graph() pipeline.Stage {
 				pipeline_stage.CreateConcurrentStage(
 					pipeline_step.CreateBeforeStepLifecycle(
 						paintSurfaceStep,
-						func() error {
+						func(step pipeline.Step) error {
 							paintSurfaceStep.Surface = calculateSurfaceStep.Surface
 							return nil
 						},
 					),
 					pipeline_step.CreateBeforeStepLifecycle(
 						paintVolumeStep,
-						func() error {
+						func(step pipeline.Step) error {
 							paintVolumeStep.Volume = calculateVolumeStep.Volume
 							return nil
 						},
@@ -173,15 +173,16 @@ func Graph() pipeline.Stage {
 	)
 }
 
-// This can be decorated with whatever ofc. Just an example
-type HystrixExecutor struct{}
-func (t *HystrixExecutor) Run(cmd pipeline.Runnable) error {
+// You could have your own executor using hystrix or whatever.
+// Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
+type SampleExecutor struct{}
+func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
 	fmt.Printf("Running task %s\n", cmd.Name())
-	return hystrix.Do(cmd.Name(), cmd.Run, nil)
+	return cmd.Run()
 }
 
-func Test_Something(t *testing.T) {
-	p := pipeline.CreatePipeline(&HystrixExecutor{})
+func Test_Pipeline(t *testing.T) {
+	p := pipeline_core.CreatePipeline(&SampleExecutor{})
 
 	err := p.Run(Graph())
 

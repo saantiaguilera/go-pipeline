@@ -2,7 +2,7 @@ package pipeline_step
 
 import "github.com/saantiaguilera/go-pipeline"
 
-type BeforeStep func() error
+type BeforeStep func(step pipeline.Step) error
 type AfterStep func(step pipeline.Step, err error) error
 
 type lifecycleStep struct {
@@ -13,7 +13,7 @@ type lifecycleStep struct {
 
 func (l *lifecycleStep) Run() error {
 	if l.Before != nil {
-		err := l.Before()
+		err := l.Before(l.Step)
 
 		if err != nil {
 			return err

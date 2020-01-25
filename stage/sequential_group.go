@@ -5,14 +5,9 @@ import "github.com/saantiaguilera/go-pipeline"
 type sequentialGroup []pipeline.Stage
 
 func (s sequentialGroup) Run(executor pipeline.Executor) error {
-	for _, stage := range s {
-		err := stage.Run(executor)
-
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return runSync(len(s), func(index int) error {
+		return s[index].Run(executor)
+	})
 }
 
 func CreateSequentialGroup(stages ...pipeline.Stage) pipeline.Stage {
