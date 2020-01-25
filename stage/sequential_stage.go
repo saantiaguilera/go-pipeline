@@ -10,6 +10,7 @@ func (s sequentialStage) Run(executor pipeline.Executor) error {
 	})
 }
 
+// Create a stage that will run each of the steps sequentially. If one of them fails, the operation will abort immediately
 func CreateSequentialStage(steps ...pipeline.Step) pipeline.Stage {
 	var stage sequentialStage = steps
 	return &stage

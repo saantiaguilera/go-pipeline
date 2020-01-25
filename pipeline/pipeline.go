@@ -38,6 +38,7 @@ func (p *pipe) AddAfterPipelineRun(afterPipeline func(stage pipeline.Stage, err 
 	p.After = append(p.After, afterPipeline)
 }
 
+// Create a pipeline with a given executor
 func CreatePipeline(executor pipeline.Executor) pipeline.Pipeline {
 	return &pipe{
 		Executor: executor,

@@ -10,6 +10,7 @@ func (s sequentialGroup) Run(executor pipeline.Executor) error {
 	})
 }
 
+// Create a stage that will run each of stages sequentially. If one of them fails, the operation will abort immediately
 func CreateSequentialGroup(stages ...pipeline.Stage) pipeline.Stage {
 	var stage sequentialGroup = stages
 	return &stage
