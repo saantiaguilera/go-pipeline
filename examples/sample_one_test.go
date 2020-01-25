@@ -2,11 +2,11 @@ package examples_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/saantiaguilera/go-pipeline/examples/steps"
-	"github.com/saantiaguilera/go-pipeline/pipeline"
-	"github.com/saantiaguilera/go-pipeline/stage"
-	"github.com/saantiaguilera/go-pipeline/step"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg/pipeline"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/step"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -42,7 +42,7 @@ else
   nothing
  */
 
-func Graph() pipeline.Stage {
+func Graph() api.Stage {
 	// We use steps with before hooks to bind data (thus making a flow), but you can adopt any method of communication
 	// between steps such as:
 	// - channels (at creation you bind, a step produces and another consumes)
@@ -73,102 +73,102 @@ func Graph() pipeline.Stage {
 	paintSurfaceStep := &steps.PaintSurfaceStep{}
 	paintVolumeStep := &steps.PaintVolumeStep{}
 
-	return pipeline_stage.CreateSequentialGroup(
-		pipeline_stage.CreateConcurrentStage(
+	return stage.CreateSequentialGroup(
+		stage.CreateConcurrentStage(
 			widthStep,
 			heightStep,
 			depthStep,
 		),
-		pipeline_stage.CreateConcurrentStage(
-			pipeline_step.CreateBeforeStepLifecycle(
+		stage.CreateConcurrentStage(
+			step.CreateBeforeStepLifecycle(
 				calculateVolumeStep,
-				func(step pipeline.Step) error {
+				func(step api.Step) error {
 					calculateVolumeStep.Width = widthStep.Width
 					calculateVolumeStep.Height = heightStep.Height
 					calculateVolumeStep.Depth = depthStep.Depth
 					return nil
 				},
 			),
-			pipeline_step.CreateBeforeStepLifecycle(
+			step.CreateBeforeStepLifecycle(
 				calculateSurfaceStep,
-				func(step pipeline.Step) error {
+				func(step api.Step) error {
 					calculateSurfaceStep.Width = widthStep.Width
 					calculateSurfaceStep.Height = heightStep.Height
 					return nil
 				},
 			),
 		),
-		pipeline_stage.CreateConcurrentGroup(
-			pipeline_stage.CreateSequentialStage(
-				pipeline_step.CreateBeforeStepLifecycle(
+		stage.CreateConcurrentGroup(
+			stage.CreateSequentialStage(
+				step.CreateBeforeStepLifecycle(
 					calculatePriceToPaintSurfaceStep,
-					func(step pipeline.Step) error {
+					func(step api.Step) error {
 						calculatePriceToPaintSurfaceStep.Surface = calculateSurfaceStep.Surface
 						return nil
 					},
 				),
-				pipeline_step.CreateBeforeStepLifecycle(
+				step.CreateBeforeStepLifecycle(
 					recordPriceSurfaceStep,
-					func(step pipeline.Step) error {
+					func(step api.Step) error {
 						recordPriceSurfaceStep.Price = calculatePriceToPaintSurfaceStep.Price
 						return nil
 					},
 				),
 			),
-			pipeline_stage.CreateSequentialStage(
-				pipeline_step.CreateBeforeStepLifecycle(
+			stage.CreateSequentialStage(
+				step.CreateBeforeStepLifecycle(
 					calculatePriceToPaintVolumeStep,
-					func(step pipeline.Step) error {
+					func(step api.Step) error {
 						calculatePriceToPaintVolumeStep.Volume = calculateVolumeStep.Volume
 						return nil
 					},
 				),
-				pipeline_step.CreateBeforeStepLifecycle(
+				step.CreateBeforeStepLifecycle(
 					recordPriceVolumeStep,
-					func(step pipeline.Step) error {
+					func(step api.Step) error {
 						recordPriceVolumeStep.Price = calculatePriceToPaintVolumeStep.Price
 						return nil
 					},
 				),
 			),
 		),
-		pipeline_stage.CreateSequentialStage(
-			pipeline_step.CreateBeforeStepLifecycle(
+		stage.CreateSequentialStage(
+			step.CreateBeforeStepLifecycle(
 				evaluateStep,
-				func(step pipeline.Step) error {
+				func(step api.Step) error {
 					evaluateStep.SurfacePrice = calculatePriceToPaintSurfaceStep.Price
 					evaluateStep.VolumePrice = calculatePriceToPaintVolumeStep.Price
 					return nil
 				},
 			),
 		),
-		pipeline_stage.CreateConditionalGroup(
+		stage.CreateConditionalGroup(
 			func() bool {
 				return evaluateStep.ShouldPaint
 			},
-			pipeline_stage.CreateSequentialGroup(
-				pipeline_stage.CreateConcurrentStage(
+			stage.CreateSequentialGroup(
+				stage.CreateConcurrentStage(
 					acceptSurfacePaintingStep,
 					acceptVolumePaintingStep,
 				),
-				pipeline_stage.CreateConcurrentStage(
-					pipeline_step.CreateBeforeStepLifecycle(
+				stage.CreateConcurrentStage(
+					step.CreateBeforeStepLifecycle(
 						paintSurfaceStep,
-						func(step pipeline.Step) error {
+						func(step api.Step) error {
 							paintSurfaceStep.Surface = calculateSurfaceStep.Surface
 							return nil
 						},
 					),
-					pipeline_step.CreateBeforeStepLifecycle(
+					step.CreateBeforeStepLifecycle(
 						paintVolumeStep,
-						func(step pipeline.Step) error {
+						func(step api.Step) error {
 							paintVolumeStep.Volume = calculateVolumeStep.Volume
 							return nil
 						},
 					),
 				),
 			),
-			pipeline_stage.CreateSequentialStage(),
+			stage.CreateSequentialStage(),
 		),
 	)
 }
@@ -176,13 +176,13 @@ func Graph() pipeline.Stage {
 // You could have your own executor using hystrix or whatever.
 // Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
 type SampleExecutor struct{}
-func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
+func (t *SampleExecutor) Run(cmd api.Runnable) error {
 	fmt.Printf("Running task %s\n", cmd.Name())
 	return cmd.Run()
 }
 
 func Test_Pipeline(t *testing.T) {
-	p := pipeline_core.CreatePipeline(&SampleExecutor{})
+	p := pipeline.CreatePipeline(&SampleExecutor{})
 
 	err := p.Run(Graph())
 

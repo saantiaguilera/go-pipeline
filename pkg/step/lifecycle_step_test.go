@@ -1,9 +1,9 @@
-package pipeline_step_test
+package step_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline"
-	pipeline_step "github.com/saantiaguilera/go-pipeline/step"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	pipeline_step "github.com/saantiaguilera/go-pipeline/pkg/step"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -25,7 +25,7 @@ func (m *mockStep) Run() error {
 
 func TestLifecycleStep_GivenAfterFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	called := false
-	afterFunc := func(step pipeline.Step, err error) error {
+	afterFunc := func(step api.Step, err error) error {
 		called = true
 		return nil
 	}
@@ -42,7 +42,7 @@ func TestLifecycleStep_GivenAfterFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 
 func TestLifecycleStep_GivenAfterFuncErroring_WhenRun_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	afterFunc := func(step pipeline.Step, err error) error {
+	afterFunc := func(step api.Step, err error) error {
 		return expectedErr
 	}
 	step := new(mockStep)
@@ -58,7 +58,7 @@ func TestLifecycleStep_GivenAfterFuncErroring_WhenRun_ThenErrorIsReturned(t *tes
 func TestLifecycleStep_GivenAfterFuncRecoveringError_WhenRun_ThenFuncCanRecover(t *testing.T) {
 	expectedErr := errors.New("some error")
 	var retrievedErr error
-	afterFunc := func(step pipeline.Step, err error) error {
+	afterFunc := func(step api.Step, err error) error {
 		retrievedErr = err
 		return nil
 	}
@@ -75,7 +75,7 @@ func TestLifecycleStep_GivenAfterFuncRecoveringError_WhenRun_ThenFuncCanRecover(
 
 func TestLifecycleStep_GivenBeforeFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	called := false
-	beforeFunc := func(step pipeline.Step) error {
+	beforeFunc := func(step api.Step) error {
 		called = true
 		return nil
 	}
@@ -92,7 +92,7 @@ func TestLifecycleStep_GivenBeforeFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 
 func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	beforeFunc := func(step pipeline.Step) error {
+	beforeFunc := func(step api.Step) error {
 		return expectedErr
 	}
 	step := new(mockStep)
@@ -107,10 +107,10 @@ func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsReturned
 func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenStepAndAfterAreNotRan(t *testing.T) {
 	expectedErr := errors.New("some error")
 	called := false
-	beforeFunc := func(step pipeline.Step) error {
+	beforeFunc := func(step api.Step) error {
 		return expectedErr
 	}
-	afterFunc := func(step pipeline.Step, err error) error {
+	afterFunc := func(step api.Step, err error) error {
 		called = true
 		return nil
 	}
@@ -126,10 +126,10 @@ func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenStepAndAfterAre
 
 func TestLifecycleStep_GivenAStep_WhenRun_ThenStepIsRun(t *testing.T) {
 	expectedErr := errors.New("some error")
-	beforeFunc := func(step pipeline.Step) error {
+	beforeFunc := func(step api.Step) error {
 		return nil
 	}
-	afterFunc := func(step pipeline.Step, err error) error {
+	afterFunc := func(step api.Step, err error) error {
 		return err
 	}
 	step := new(mockStep)
@@ -147,9 +147,9 @@ func TestLifecycleStep_GivenAStep_WhenNamed_ThenStepIsDelegated(t *testing.T) {
 	step := new(mockStep)
 	step.On("Name").Return(expectedName).Once()
 
-	lifecycleStep := pipeline_step.CreateStepLifecycle(step, func(step pipeline.Step) error {
+	lifecycleStep := pipeline_step.CreateStepLifecycle(step, func(step api.Step) error {
 		return nil
-	}, func(step pipeline.Step, err error) error {
+	}, func(step api.Step, err error) error {
 		return err
 	})
 
@@ -159,11 +159,11 @@ func TestLifecycleStep_GivenAStep_WhenNamed_ThenStepIsDelegated(t *testing.T) {
 
 func TestLifecycleStep_GivenComposition_WhenRun_ThenCompositionBehavesAsAnArray(t *testing.T) {
 	var callings []string
-	before := func(step pipeline.Step) error {
+	before := func(step api.Step) error {
 		callings = append(callings, "before")
 		return nil
 	}
-	after := func(step pipeline.Step, err error) error {
+	after := func(step api.Step, err error) error {
 		callings = append(callings, "after")
 		return err
 	}

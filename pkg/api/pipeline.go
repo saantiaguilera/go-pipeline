@@ -1,4 +1,4 @@
-package pipeline
+package api
 
 // Named interface for allowing command and stages naming
 // TODO: At a later stage it would be nice to graph the pipeline itself with this
@@ -16,12 +16,12 @@ type Pipeline interface {
 	// Add a before hook that will be called before a stage is ran by this pipeline.
 	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
 	// process (and not to the flow of the graph stages itself)
-	AddOnBeforePipelineRun(beforePipeline func(stage Stage) error)
+	AddBeforeRunHook(beforePipeline func(stage Stage) error)
 
 	// Add an after hook that will be called after a stage is ran by this pipeline, with the error (in case the stage
 	// wasn't completed) and is able to return a new error (or nil if you can fallback/recover from the provided one).
 	//
 	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
 	// process (and not to the flow of the graph stages itself)
-	AddAfterPipelineRun(afterPipeline func(stage Stage, err error) error)
+	AddAfterRunHook(afterPipeline func(stage Stage, err error) error)
 }

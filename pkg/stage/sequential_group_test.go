@@ -1,9 +1,9 @@
-package pipeline_stage_test
+package stage_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline"
-	"github.com/saantiaguilera/go-pipeline/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"strconv"
@@ -13,13 +13,13 @@ import (
 func TestSequentialGroup_GivenStagesWithoutErrors_WhenRun_ThenAllStagesAreRunSequentially(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var stages []pipeline.Stage
+	var stages []api.Stage
 	for i := 0; i < 100; i++ {
 		stages = append(stages, createStage(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := pipeline_stage.CreateSequentialGroup(stages...)
+	stage := stage.CreateSequentialGroup(stages...)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -33,19 +33,19 @@ func TestSequentialGroup_GivenStagesWithoutErrors_WhenRun_ThenAllStagesAreRunSeq
 func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterError(t *testing.T) {
 	expectedErr := errors.New("error")
 	time := ""
-	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
+	mockStage := new(mockStage)
+	mockStage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
 		time += strconv.Itoa(len(time))
 	}).Return(expectedErr).Once()
 
-	initStage := pipeline_stage.CreateSequentialGroup(
-		stage, stage, stage, stage, stage,
-		stage, stage, stage, stage, stage,
+	initStage := stage.CreateSequentialGroup(
+		mockStage, mockStage, mockStage, mockStage, mockStage,
+		mockStage, mockStage, mockStage, mockStage, mockStage,
 	)
 
 	err := initStage.Run(SimpleExecutor{})
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, "0", time)
-	stage.AssertExpectations(t)
+	mockStage.AssertExpectations(t)
 }

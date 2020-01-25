@@ -1,4 +1,4 @@
-package pipeline_stage
+package stage
 
 import (
 	"sync"

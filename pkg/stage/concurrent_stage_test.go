@@ -1,43 +1,43 @@
-package pipeline_stage_test
+package stage_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline"
-	"github.com/saantiaguilera/go-pipeline/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"strconv"
 	"testing"
 )
 
-func TestSequentialStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunSequentially(t *testing.T) {
+func TestConcurrentStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var steps []pipeline.Step
+	var steps []api.Step
 	for i := 0; i < 100; i++ {
 		steps = append(steps, createStep(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := pipeline_stage.CreateSequentialStage(steps...)
+	stage := stage.CreateConcurrentStage(steps...)
 
 	err := stage.Run(SimpleExecutor{})
 
 	assert.Nil(t, err)
-	assert.Equal(t, expectedArr, *arr)
+	assert.NotEqual(t, expectedArr, *arr)
+	assert.Equal(t, len(expectedArr), len(*arr))
 	for _, step := range steps {
 		step.(*mockStep).AssertExpectations(t)
 	}
 }
 
-func TestSequentialStage_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterError(t *testing.T) {
+func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *testing.T) {
 	expectedErr := errors.New("error")
-	time := ""
+	times := 0
 	step := new(mockStep)
 	step.On("Run").Run(func(args mock.Arguments) {
-		time += strconv.Itoa(len(time))
-	}).Return(expectedErr).Once()
-	stage := pipeline_stage.CreateSequentialStage(
+		times++
+	}).Return(expectedErr).Times(10)
+	stage := stage.CreateConcurrentStage(
 		step, step, step, step, step,
 		step, step, step, step, step,
 	)
@@ -45,6 +45,6 @@ func TestSequentialStage_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 	err := stage.Run(SimpleExecutor{})
 
 	assert.Equal(t, expectedErr, err)
-	assert.Equal(t, "0", time)
+	assert.Equal(t, 10, times)
 	step.AssertExpectations(t)
 }

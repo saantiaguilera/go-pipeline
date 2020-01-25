@@ -1,7 +1,7 @@
-package pipeline_stage_test
+package stage_test
 
 import (
-	"github.com/saantiaguilera/go-pipeline"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"github.com/stretchr/testify/mock"
 	"sync"
 	"time"
@@ -25,7 +25,7 @@ type mockStage struct {
 	mock.Mock
 }
 
-func (m *mockStage) Run(executor pipeline.Executor) error {
+func (m *mockStage) Run(executor api.Executor) error {
 	args := m.Called(executor)
 
 	return args.Error(0)
@@ -33,12 +33,12 @@ func (m *mockStage) Run(executor pipeline.Executor) error {
 
 type SimpleExecutor struct{}
 
-func (s SimpleExecutor) Run(runnable pipeline.Runnable) error {
+func (s SimpleExecutor) Run(runnable api.Runnable) error {
 	return runnable.Run()
 }
 
 var stepMux = sync.Mutex{}
-func createStep(data int, arr **[]int) pipeline.Step {
+func createStep(data int, arr **[]int) api.Step {
 	step := new(mockStep)
 	step.On("Run").Run(func(args mock.Arguments) {
 		stepMux.Lock()
@@ -52,7 +52,7 @@ func createStep(data int, arr **[]int) pipeline.Step {
 }
 
 var stageMux = sync.Mutex{}
-func createStage(data int, arr **[]int) pipeline.Stage {
+func createStage(data int, arr **[]int) api.Stage {
 	stage := new(mockStage)
 	stage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
 		stageMux.Lock()

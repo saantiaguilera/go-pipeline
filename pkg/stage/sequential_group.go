@@ -1,17 +1,19 @@
-package pipeline_stage
+package stage
 
-import "github.com/saantiaguilera/go-pipeline"
+import (
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
+)
 
-type sequentialGroup []pipeline.Stage
+type sequentialGroup []api.Stage
 
-func (s sequentialGroup) Run(executor pipeline.Executor) error {
+func (s sequentialGroup) Run(executor api.Executor) error {
 	return runSync(len(s), func(index int) error {
 		return s[index].Run(executor)
 	})
 }
 
 // Create a stage that will run each of stages sequentially. If one of them fails, the operation will abort immediately
-func CreateSequentialGroup(stages ...pipeline.Stage) pipeline.Stage {
+func CreateSequentialGroup(stages ...api.Stage) api.Stage {
 	var stage sequentialGroup = stages
 	return &stage
 }
