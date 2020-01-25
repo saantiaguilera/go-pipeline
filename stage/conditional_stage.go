@@ -4,16 +4,29 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-type ConditionalStage struct {
-	Statement func() bool
+type conditionalStage struct {
+	Statement Statement
 	True      pipeline.Step
 	False     pipeline.Step
 }
 
-func (c *ConditionalStage) Run(executor pipeline.Executor) error {
-	if c.Statement() {
-		return executor.Run(c.True)
+func (c *conditionalStage) Run(executor pipeline.Executor) error {
+	if c.Statement != nil && c.Statement() {
+		if c.True != nil {
+			return executor.Run(c.True)
+		}
 	} else {
-		return executor.Run(c.False)
+		if c.False != nil {
+			return executor.Run(c.False)
+		}
+	}
+	return nil
+}
+
+func CreateConditionalStage(statement Statement, true pipeline.Step, false pipeline.Step) pipeline.Stage {
+	return &conditionalStage{
+		Statement: statement,
+		True:      true,
+		False:     false,
 	}
 }

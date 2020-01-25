@@ -4,15 +4,21 @@ type Named interface {
 	Name() string
 }
 
-type Pipeline struct {
-	Before   func() error
-	After    func(stage Stage, err error) error
+type Pipeline interface {
+	Run(stage Stage) error
+	AddOnBeforePipelineRun(beforePipeline func(stage Stage) error)
+	AddAfterPipelineRun(afterPipeline func(stage Stage, err error) error)
+}
+
+type pipeline struct {
+	Before   []func(stage Stage) error
+	After    []func(stage Stage, err error) error
 	Executor Executor
 }
 
-func (p *Pipeline) Run(stage Stage) error {
-	if p.Before != nil {
-		err := p.Before()
+func (p *pipeline) Run(stage Stage) error {
+	for _, before := range p.Before {
+		err := before(stage)
 
 		if err != nil {
 			return err
@@ -21,9 +27,29 @@ func (p *Pipeline) Run(stage Stage) error {
 
 	err := stage.Run(p.Executor)
 
-	if p.After != nil {
-		err = p.After(stage, err)
+	for _, after := range p.After {
+		err = after(stage, err)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return err
+}
+
+func (p *pipeline) AddOnBeforePipelineRun(beforePipeline func(stage Stage) error) {
+	p.Before = append(p.Before, beforePipeline)
+}
+
+func (p *pipeline) AddAfterPipelineRun(afterPipeline func(stage Stage, err error) error) {
+	p.After = append(p.After, afterPipeline)
+}
+
+func CreatePipeline(executor Executor) Pipeline {
+	return &pipeline{
+		Executor: executor,
+		Before:   []func(stage Stage) error{},
+		After:    []func(stage Stage, err error) error{},
+	}
 }

@@ -5,9 +5,9 @@ import (
 	"sync"
 )
 
-type ConcurrentStage []pipeline.Step
+type concurrentStage []pipeline.Step
 
-func (s *ConcurrentStage) Run(executor pipeline.Executor) error {
+func (s concurrentStage) Run(executor pipeline.Executor) error {
 	var wg sync.WaitGroup
 	var finalErr error
 
@@ -21,11 +21,16 @@ func (s *ConcurrentStage) Run(executor pipeline.Executor) error {
 		wg.Done()
 	}
 
-	wg.Add(len(*s))
-	for _, c := range *s {
+	wg.Add(len(s))
+	for _, c := range s {
 		go run(c)
 	}
 
 	wg.Wait()
 	return finalErr
+}
+
+func CreateConcurrentStage(steps ...pipeline.Step) pipeline.Stage {
+	var stage concurrentStage = steps
+	return &stage
 }

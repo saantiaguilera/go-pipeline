@@ -1,10 +1,8 @@
 package pipeline
 
 type Runnable interface {
+	Named
 	Run() error
 }
 
-type Step interface {
-	Runnable
-	Named
-}
+type Step Runnable

@@ -2,13 +2,16 @@ package pipeline_step
 
 import "github.com/saantiaguilera/go-pipeline"
 
-type LifecycleStep struct {
-	Before  func() error
-	After   func(step pipeline.Step, err error) error
+type BeforeStep func() error
+type AfterStep func(step pipeline.Step, err error) error
+
+type lifecycleStep struct {
+	Before  BeforeStep
+	After   AfterStep
 	Step    pipeline.Step
 }
 
-func (l *LifecycleStep) Run() error {
+func (l *lifecycleStep) Run() error {
 	if l.Before != nil {
 		err := l.Before()
 
@@ -25,6 +28,28 @@ func (l *LifecycleStep) Run() error {
 	return err
 }
 
-func (l *LifecycleStep) Name() string {
+func (l *lifecycleStep) Name() string {
 	return l.Step.Name()
+}
+
+func CreateBeforeStepLifecycle(step pipeline.Step, before BeforeStep) pipeline.Step {
+	return &lifecycleStep{
+		Before: before,
+		Step:   step,
+	}
+}
+
+func CreateAfterStepLifecycle(step pipeline.Step, after AfterStep) pipeline.Step {
+	return &lifecycleStep{
+		After:  after,
+		Step:   step,
+	}
+}
+
+func CreateStepLifecycle(step pipeline.Step, before BeforeStep, after AfterStep) pipeline.Step {
+	return &lifecycleStep{
+		Before: before,
+		After:  after,
+		Step:   step,
+	}
 }
