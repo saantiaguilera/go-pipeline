@@ -64,7 +64,7 @@ graph := stage.CreateSequentialGroup(
         stage.CreateSequentialStage(
             your_step.TurnOvenOnStep(),
             // Conditional step, the meat might be too big
-            stage.CreateConditionalStep(
+            stage.CreateConditionalStage(
                 func() bool {
             	    return isMeatTooBigForOven()
             	},
