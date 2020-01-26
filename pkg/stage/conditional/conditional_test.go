@@ -1,4 +1,4 @@
-package stage_test
+package conditional_test
 
 import (
 	"github.com/saantiaguilera/go-pipeline/pkg"

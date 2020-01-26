@@ -1,8 +1,6 @@
-package stage
+package concurrent
 
-import (
-	"sync"
-)
+import "sync"
 
 // Spawn a number of workers asynchronously, waiting for all of them to finish.
 // After they're all done, if one of them failed the error is returned.
@@ -28,16 +26,4 @@ func spawnAsync(workers int, run func(index int) error) error {
 
 	wg.Wait()
 	return finalErr
-}
-
-// Run synchronously a number of workers. If one of them fails, the operation is aborted and the error returned.
-func runSync(workers int, run func(index int) error) error {
-	for i := 0; i < workers; i++ {
-		err := run(i)
-
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

@@ -1,9 +1,9 @@
-package stage_test
+package sequential_test
 
 import (
 	"errors"
 	"github.com/saantiaguilera/go-pipeline/pkg"
-	"github.com/saantiaguilera/go-pipeline/pkg/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/sequential"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"strconv"
@@ -19,7 +19,7 @@ func TestSequentialGroup_GivenStagesWithoutErrors_WhenRun_ThenAllStagesAreRunSeq
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := stage.CreateSequentialGroup(stages...)
+	stage := sequential.CreateSequentialGroup(stages...)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -38,7 +38,7 @@ func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 		time += strconv.Itoa(len(time))
 	}).Return(expectedErr).Once()
 
-	initStage := stage.CreateSequentialGroup(
+	initStage := sequential.CreateSequentialGroup(
 		mockStage, mockStage, mockStage, mockStage, mockStage,
 		mockStage, mockStage, mockStage, mockStage, mockStage,
 	)

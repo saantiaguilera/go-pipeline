@@ -1,4 +1,4 @@
-package stage
+package sequential
 
 import (
 	"github.com/saantiaguilera/go-pipeline/pkg"

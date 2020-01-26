@@ -1,4 +1,4 @@
-package stage
+package conditional
 
 import (
 	"github.com/saantiaguilera/go-pipeline/pkg"

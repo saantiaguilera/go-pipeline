@@ -1,4 +1,4 @@
-package step
+package lifecycle
 
 import (
 	"github.com/saantiaguilera/go-pipeline/pkg"

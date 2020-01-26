@@ -1,9 +1,9 @@
-package stage_test
+package concurrent_test
 
 import (
 	"errors"
 	"github.com/saantiaguilera/go-pipeline/pkg"
-	"github.com/saantiaguilera/go-pipeline/pkg/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/concurrent"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -18,7 +18,7 @@ func TestConcurrentGroup_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcu
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := stage.CreateConcurrentGroup(stages...)
+	stage := concurrent.CreateConcurrentGroup(stages...)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -37,7 +37,7 @@ func TestConcurrentGroup_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 	innerStage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
 		times++
 	}).Return(expectedErr).Times(10)
-	stage := stage.CreateConcurrentGroup(
+	stage := concurrent.CreateConcurrentGroup(
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 	)

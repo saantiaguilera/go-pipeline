@@ -1,8 +1,8 @@
-package stage_test
+package conditional_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/conditional"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestConditionalGroup_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	falseStage.On("Run", SimpleExecutor{}).Return(nil).Once()
 	trueStage := new(mockStage)
 
-	stage := stage.CreateConditionalGroup(nil, trueStage, falseStage)
+	stage := conditional.CreateConditionalGroup(nil, trueStage, falseStage)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -26,7 +26,7 @@ func TestConditionalGroup_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 	trueStage := new(mockStage)
 	trueStage.On("Run", SimpleExecutor{}).Return(nil).Once()
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return true
 	}, trueStage, falseStage)
 
@@ -42,7 +42,7 @@ func TestConditionalGroup_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 	falseStage.On("Run", SimpleExecutor{}).Return(nil).Once()
 	trueStage := new(mockStage)
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return false
 	}, trueStage, falseStage)
 
@@ -56,7 +56,7 @@ func TestConditionalGroup_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 func TestConditionalGroup_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
 	falseStage := new(mockStage)
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return true
 	}, nil, falseStage)
 
@@ -69,7 +69,7 @@ func TestConditionalGroup_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t 
 func TestConditionalGroup_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
 	trueStage := new(mockStage)
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return false
 	}, trueStage, nil)
 
@@ -86,7 +86,7 @@ func TestConditionalGroup_GivenStatementTrueWithTrueError_WhenRun_TrueErrorRetur
 	trueStage := new(mockStage)
 	trueStage.On("Run", SimpleExecutor{}).Return(trueErr).Once()
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return true
 	}, trueStage, falseStage)
 
@@ -104,7 +104,7 @@ func TestConditionalGroup_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	falseStage.On("Run", SimpleExecutor{}).Return(falseErr).Once()
 	trueStage := new(mockStage)
 
-	stage := stage.CreateConditionalGroup(func() bool {
+	stage := conditional.CreateConditionalGroup(func() bool {
 		return false
 	}, trueStage, falseStage)
 

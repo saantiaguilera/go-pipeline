@@ -1,4 +1,4 @@
-package stage
+package concurrent
 
 import (
 	"github.com/saantiaguilera/go-pipeline/pkg"

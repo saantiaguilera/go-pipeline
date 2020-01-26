@@ -5,8 +5,12 @@ import (
 	"github.com/saantiaguilera/go-pipeline/examples/steps"
 	"github.com/saantiaguilera/go-pipeline/pkg"
 	"github.com/saantiaguilera/go-pipeline/pkg/pipeline"
-	"github.com/saantiaguilera/go-pipeline/pkg/stage"
-	"github.com/saantiaguilera/go-pipeline/pkg/step"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/concurrent"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/conditional"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/sequential"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/trace"
+	"github.com/saantiaguilera/go-pipeline/pkg/step/lifecycle"
+	trace2 "github.com/saantiaguilera/go-pipeline/pkg/step/trace"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -73,14 +77,14 @@ func Graph() pkg.Stage {
 	paintSurfaceStep := &steps.PaintSurfaceStep{}
 	paintVolumeStep := &steps.PaintVolumeStep{}
 
-	return stage.CreateSequentialGroup(
-		stage.CreateConcurrentStage(
+	return sequential.CreateSequentialGroup(
+		trace.CreateTracedStage("measurement_stage", concurrent.CreateConcurrentStage(
 			widthStep,
 			heightStep,
 			depthStep,
-		),
-		stage.CreateConcurrentStage(
-			step.CreateBeforeStepLifecycle(
+		)),
+		concurrent.CreateConcurrentStage(
+			lifecycle.CreateBeforeStepLifecycle(
 				calculateVolumeStep,
 				func(step pkg.Step) error {
 					calculateVolumeStep.Width = widthStep.Width
@@ -89,7 +93,7 @@ func Graph() pkg.Stage {
 					return nil
 				},
 			),
-			step.CreateBeforeStepLifecycle(
+			lifecycle.CreateBeforeStepLifecycle(
 				calculateSurfaceStep,
 				func(step pkg.Step) error {
 					calculateSurfaceStep.Width = widthStep.Width
@@ -98,16 +102,16 @@ func Graph() pkg.Stage {
 				},
 			),
 		),
-		stage.CreateConcurrentGroup(
-			stage.CreateSequentialStage(
-				step.CreateBeforeStepLifecycle(
+		concurrent.CreateConcurrentGroup(
+			sequential.CreateSequentialStage(
+				lifecycle.CreateBeforeStepLifecycle(
 					calculatePriceToPaintSurfaceStep,
 					func(step pkg.Step) error {
 						calculatePriceToPaintSurfaceStep.Surface = calculateSurfaceStep.Surface
 						return nil
 					},
 				),
-				step.CreateBeforeStepLifecycle(
+				lifecycle.CreateBeforeStepLifecycle(
 					recordPriceSurfaceStep,
 					func(step pkg.Step) error {
 						recordPriceSurfaceStep.Price = calculatePriceToPaintSurfaceStep.Price
@@ -115,15 +119,15 @@ func Graph() pkg.Stage {
 					},
 				),
 			),
-			stage.CreateSequentialStage(
-				step.CreateBeforeStepLifecycle(
+			sequential.CreateSequentialStage(
+				lifecycle.CreateBeforeStepLifecycle(
 					calculatePriceToPaintVolumeStep,
 					func(step pkg.Step) error {
 						calculatePriceToPaintVolumeStep.Volume = calculateVolumeStep.Volume
 						return nil
 					},
 				),
-				step.CreateBeforeStepLifecycle(
+				lifecycle.CreateBeforeStepLifecycle(
 					recordPriceVolumeStep,
 					func(step pkg.Step) error {
 						recordPriceVolumeStep.Price = calculatePriceToPaintVolumeStep.Price
@@ -132,8 +136,8 @@ func Graph() pkg.Stage {
 				),
 			),
 		),
-		stage.CreateSequentialStage(
-			step.CreateBeforeStepLifecycle(
+		sequential.CreateSequentialStage(
+			lifecycle.CreateBeforeStepLifecycle(
 				evaluateStep,
 				func(step pkg.Step) error {
 					evaluateStep.SurfacePrice = calculatePriceToPaintSurfaceStep.Price
@@ -142,33 +146,33 @@ func Graph() pkg.Stage {
 				},
 			),
 		),
-		stage.CreateConditionalGroup(
+		conditional.CreateConditionalGroup(
 			func() bool {
 				return evaluateStep.ShouldPaint
 			},
-			stage.CreateSequentialGroup(
-				stage.CreateConcurrentStage(
+			sequential.CreateSequentialGroup(
+				concurrent.CreateConcurrentStage(
 					acceptSurfacePaintingStep,
 					acceptVolumePaintingStep,
 				),
-				stage.CreateConcurrentStage(
-					step.CreateBeforeStepLifecycle(
+				concurrent.CreateConcurrentStage(
+					lifecycle.CreateBeforeStepLifecycle(
 						paintSurfaceStep,
 						func(step pkg.Step) error {
 							paintSurfaceStep.Surface = calculateSurfaceStep.Surface
 							return nil
 						},
 					),
-					step.CreateBeforeStepLifecycle(
+					trace2.CreateTracedStep(lifecycle.CreateBeforeStepLifecycle(
 						paintVolumeStep,
 						func(step pkg.Step) error {
 							paintVolumeStep.Volume = calculateVolumeStep.Volume
 							return nil
 						},
-					),
+					)),
 				),
 			),
-			stage.CreateSequentialStage(),
+			sequential.CreateSequentialStage(),
 		),
 	)
 }

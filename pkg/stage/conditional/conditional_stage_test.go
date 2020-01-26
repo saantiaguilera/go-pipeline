@@ -1,8 +1,8 @@
-package stage_test
+package conditional_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg/stage"
+	"github.com/saantiaguilera/go-pipeline/pkg/stage/conditional"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestConditionalStage_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	falseStep.On("Run").Return(nil).Once()
 	trueStep := new(mockStep)
 
-	stage := stage.CreateConditionalStage(nil, trueStep, falseStep)
+	stage := conditional.CreateConditionalStage(nil, trueStep, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -26,7 +26,7 @@ func TestConditionalStage_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 	trueStep := new(mockStep)
 	trueStep.On("Run").Return(nil).Once()
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return true
 	}, trueStep, falseStep)
 
@@ -42,7 +42,7 @@ func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 	falseStep.On("Run").Return(nil).Once()
 	trueStep := new(mockStep)
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return false
 	}, trueStep, falseStep)
 
@@ -56,7 +56,7 @@ func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
 	falseStep := new(mockStep)
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return true
 	}, nil, falseStep)
 
@@ -69,7 +69,7 @@ func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t 
 func TestConditionalStage_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
 	trueStep := new(mockStep)
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return false
 	}, trueStep, nil)
 
@@ -86,7 +86,7 @@ func TestConditionalStage_GivenStatementTrueWithTrueError_WhenRun_TrueErrorRetur
 	trueStep := new(mockStep)
 	trueStep.On("Run").Return(trueErr).Once()
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return true
 	}, trueStep, falseStep)
 
@@ -104,7 +104,7 @@ func TestConditionalStage_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	falseStep.On("Run").Return(falseErr).Once()
 	trueStep := new(mockStep)
 
-	stage := stage.CreateConditionalStage(func() bool {
+	stage := conditional.CreateConditionalStage(func() bool {
 		return false
 	}, trueStep, falseStep)
 

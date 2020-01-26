@@ -1,9 +1,9 @@
-package step_test
+package lifecycle_test
 
 import (
 	"errors"
 	"github.com/saantiaguilera/go-pipeline/pkg"
-	pipeline_step "github.com/saantiaguilera/go-pipeline/pkg/step"
+	"github.com/saantiaguilera/go-pipeline/pkg/step/lifecycle"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -32,7 +32,7 @@ func TestLifecycleStep_GivenAfterFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	step := new(mockStep)
 	step.On("Run").Return(nil).Once()
 
-	lifecycleStep := pipeline_step.CreateAfterStepLifecycle(step, afterFunc)
+	lifecycleStep := lifecycle.CreateAfterStepLifecycle(step, afterFunc)
 	err := lifecycleStep.Run()
 
 	assert.Nil(t, err)
@@ -48,7 +48,7 @@ func TestLifecycleStep_GivenAfterFuncErroring_WhenRun_ThenErrorIsReturned(t *tes
 	step := new(mockStep)
 	step.On("Run").Return(nil).Once()
 
-	lifecycleStep := pipeline_step.CreateAfterStepLifecycle(step, afterFunc)
+	lifecycleStep := lifecycle.CreateAfterStepLifecycle(step, afterFunc)
 	err := lifecycleStep.Run()
 
 	assert.Equal(t, expectedErr, err)
@@ -65,7 +65,7 @@ func TestLifecycleStep_GivenAfterFuncRecoveringError_WhenRun_ThenFuncCanRecover(
 	step := new(mockStep)
 	step.On("Run").Return(expectedErr).Once()
 
-	lifecycleStep := pipeline_step.CreateAfterStepLifecycle(step, afterFunc)
+	lifecycleStep := lifecycle.CreateAfterStepLifecycle(step, afterFunc)
 	err := lifecycleStep.Run()
 
 	assert.Nil(t, err)
@@ -82,7 +82,7 @@ func TestLifecycleStep_GivenBeforeFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	step := new(mockStep)
 	step.On("Run").Return(nil).Once()
 
-	lifecycleStep := pipeline_step.CreateBeforeStepLifecycle(step, beforeFunc)
+	lifecycleStep := lifecycle.CreateBeforeStepLifecycle(step, beforeFunc)
 	err := lifecycleStep.Run()
 
 	assert.Nil(t, err)
@@ -97,7 +97,7 @@ func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsReturned
 	}
 	step := new(mockStep)
 
-	lifecycleStep := pipeline_step.CreateBeforeStepLifecycle(step, beforeFunc)
+	lifecycleStep := lifecycle.CreateBeforeStepLifecycle(step, beforeFunc)
 	err := lifecycleStep.Run()
 
 	assert.Equal(t, expectedErr, err)
@@ -116,7 +116,7 @@ func TestLifecycleStep_GivenBeforeFuncReturningError_WhenRun_ThenStepAndAfterAre
 	}
 	step := new(mockStep)
 
-	lifecycleStep := pipeline_step.CreateStepLifecycle(step, beforeFunc, afterFunc)
+	lifecycleStep := lifecycle.CreateStepLifecycle(step, beforeFunc, afterFunc)
 	err := lifecycleStep.Run()
 
 	assert.Equal(t, expectedErr, err)
@@ -135,7 +135,7 @@ func TestLifecycleStep_GivenAStep_WhenRun_ThenStepIsRun(t *testing.T) {
 	step := new(mockStep)
 	step.On("Run").Return(expectedErr).Once()
 
-	lifecycleStep := pipeline_step.CreateStepLifecycle(step, beforeFunc, afterFunc)
+	lifecycleStep := lifecycle.CreateStepLifecycle(step, beforeFunc, afterFunc)
 	err := lifecycleStep.Run()
 
 	assert.Equal(t, expectedErr, err)
@@ -147,7 +147,7 @@ func TestLifecycleStep_GivenAStep_WhenNamed_ThenStepIsDelegated(t *testing.T) {
 	step := new(mockStep)
 	step.On("Name").Return(expectedName).Once()
 
-	lifecycleStep := pipeline_step.CreateStepLifecycle(step, func(step pkg.Step) error {
+	lifecycleStep := lifecycle.CreateStepLifecycle(step, func(step pkg.Step) error {
 		return nil
 	}, func(step pkg.Step, err error) error {
 		return err
@@ -173,10 +173,10 @@ func TestLifecycleStep_GivenComposition_WhenRun_ThenCompositionBehavesAsAnArray(
 		callings = append(callings, "step")
 	}).Return(nil).Once()
 
-	lifecycleStep := pipeline_step.CreateStepLifecycle(step, before, after)
-	lifecycleStep = pipeline_step.CreateBeforeStepLifecycle(lifecycleStep, before)
-	lifecycleStep = pipeline_step.CreateAfterStepLifecycle(lifecycleStep, after)
-	lifecycleStep = pipeline_step.CreateBeforeStepLifecycle(lifecycleStep, before)
+	lifecycleStep := lifecycle.CreateStepLifecycle(step, before, after)
+	lifecycleStep = lifecycle.CreateBeforeStepLifecycle(lifecycleStep, before)
+	lifecycleStep = lifecycle.CreateAfterStepLifecycle(lifecycleStep, after)
+	lifecycleStep = lifecycle.CreateBeforeStepLifecycle(lifecycleStep, before)
 
 	err := lifecycleStep.Run()
 
