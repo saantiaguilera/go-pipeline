@@ -56,8 +56,8 @@ func CreateBeforeStepLifecycle(step pkg.Step, before BeforeStep) pkg.Step {
 // Create a lifecycle step with an after hook
 func CreateAfterStepLifecycle(step pkg.Step, after AfterStep) pkg.Step {
 	return &lifecycleStep{
-		After:  after,
-		Step:   step,
+		After: after,
+		Step:  step,
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 type GetPriceToPaintSurfaceStep struct {
 	Surface int
 
-	Price  float64
+	Price float64
 }
 
 func (s *GetPriceToPaintSurfaceStep) Run() error {

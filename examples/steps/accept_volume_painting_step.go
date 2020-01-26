@@ -2,7 +2,7 @@ package steps
 
 import "fmt"
 
-type AcceptVolumePaintingStep struct {}
+type AcceptVolumePaintingStep struct{}
 
 func (s *AcceptVolumePaintingStep) Run() error {
 	fmt.Printf("Accepting volume painting\n")

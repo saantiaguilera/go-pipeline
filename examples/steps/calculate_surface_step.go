@@ -3,7 +3,7 @@ package steps
 import "fmt"
 
 type CalculateSurfaceStep struct {
-	Width int
+	Width  int
 	Height int
 
 	Surface int

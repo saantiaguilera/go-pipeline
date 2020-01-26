@@ -185,4 +185,3 @@ func TestLifecycleStep_GivenComposition_WhenRun_ThenCompositionBehavesAsAnArray(
 	assert.Equal(t, []string{"before", "before", "before", "step", "after", "after"}, callings)
 	step.AssertExpectations(t)
 }
-

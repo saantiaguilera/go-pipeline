@@ -6,7 +6,7 @@ import (
 )
 
 type RecordPriceStep struct {
-	Price  float64
+	Price float64
 }
 
 func (s *RecordPriceStep) Run() error {

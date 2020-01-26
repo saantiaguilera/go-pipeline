@@ -9,7 +9,7 @@ type EvaluateStep struct {
 	VolumePrice  float64
 	SurfacePrice float64
 
-	ShouldPaint  bool
+	ShouldPaint bool
 }
 
 func (s *EvaluateStep) Run() error {

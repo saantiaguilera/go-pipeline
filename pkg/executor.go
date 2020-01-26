@@ -7,6 +7,4 @@ type Executor interface {
 
 	// Run a runnable. Returns an error in case the runnable (or the execution itself) fails.
 	Run(runnable Runnable) error
-
 }
-

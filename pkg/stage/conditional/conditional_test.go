@@ -38,6 +38,7 @@ func (s SimpleExecutor) Run(runnable pkg.Runnable) error {
 }
 
 var stepMux = sync.Mutex{}
+
 func createStep(data int, arr **[]int) pkg.Step {
 	step := new(mockStep)
 	step.On("Run").Run(func(args mock.Arguments) {
@@ -45,13 +46,14 @@ func createStep(data int, arr **[]int) pkg.Step {
 		tmp := append(**arr, data)
 		*arr = &tmp
 		stepMux.Unlock()
-		time.Sleep(time.Duration(100 / (data + 1)) * time.Millisecond) // Force a trap / yield
+		time.Sleep(time.Duration(100/(data+1)) * time.Millisecond) // Force a trap / yield
 	}).Return(nil).Once()
 
 	return step
 }
 
 var stageMux = sync.Mutex{}
+
 func createStage(data int, arr **[]int) pkg.Stage {
 	stage := new(mockStage)
 	stage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {

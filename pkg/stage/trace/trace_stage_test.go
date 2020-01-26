@@ -16,7 +16,7 @@ func (t TestStage) Run(executor pkg.Executor) error {
 	return errors.New("some error")
 }
 
-type TestExecutor struct {}
+type TestExecutor struct{}
 
 func (t TestExecutor) Run(runnable pkg.Runnable) error {
 	return runnable.Run()

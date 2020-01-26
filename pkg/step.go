@@ -8,7 +8,6 @@ type Runnable interface {
 
 	// Run the unit, returns error if it fails to complete successfully
 	Run() error
-
 }
 
 // Step is an Alias for runnable.

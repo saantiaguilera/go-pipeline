@@ -10,23 +10,23 @@ import (
 
 func CreateTracedStage(name string, stage pkg.Stage) pkg.Stage {
 	return &tracedStage{
-		Name: name,
-		Stage: stage,
+		Name:   name,
+		Stage:  stage,
 		Writer: os.Stdout,
 	}
 }
 
 func CreateTracedStageWithWriter(name string, stage pkg.Stage, writer io.Writer) pkg.Stage {
 	return &tracedStage{
-		Name: name,
-		Stage: stage,
+		Name:   name,
+		Stage:  stage,
 		Writer: writer,
 	}
 }
 
-type tracedStage struct{
-	Name string
-	Stage pkg.Stage
+type tracedStage struct {
+	Name   string
+	Stage  pkg.Stage
 	Writer io.Writer
 }
 

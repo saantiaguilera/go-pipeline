@@ -10,23 +10,22 @@ import (
 
 func CreateTracedStep(step pkg.Step) pkg.Step {
 	return &tracedStep{
-		Step: step,
+		Step:   step,
 		Writer: os.Stdout,
 	}
 }
 
 func CreateTracedStepWithWriter(step pkg.Step, writer io.Writer) pkg.Step {
 	return &tracedStep{
-		Step: step,
+		Step:   step,
 		Writer: writer,
 	}
 }
 
-type tracedStep struct{
-	Step pkg.Step
+type tracedStep struct {
+	Step   pkg.Step
 	Writer io.Writer
 }
-
 
 func (t *tracedStep) Name() string {
 	return t.Step.Name()

@@ -44,7 +44,7 @@ if paint
   PaintVolume
 else
   nothing
- */
+*/
 
 func Graph() pkg.Stage {
 	// We use steps with before hooks to bind data (thus making a flow), but you can adopt any method of communication
@@ -180,6 +180,7 @@ func Graph() pkg.Stage {
 // You could have your own executor using hystrix or whatever.
 // Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
 type SampleExecutor struct{}
+
 func (t *SampleExecutor) Run(cmd pkg.Runnable) error {
 	fmt.Printf("Running task %s\n", cmd.Name())
 	return cmd.Run()

@@ -8,7 +8,7 @@ import (
 type GetPriceToPaintVolumeStep struct {
 	Volume int
 
-	Price  float64
+	Price float64
 }
 
 func (s *GetPriceToPaintVolumeStep) Run() error {

@@ -7,5 +7,4 @@ type Stage interface {
 
 	// Run a stage with a given executor. Returns an error if this stage fails to complete.
 	Run(executor Executor) error
-
 }

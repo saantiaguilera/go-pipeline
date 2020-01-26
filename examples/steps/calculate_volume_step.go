@@ -3,8 +3,8 @@ package steps
 import "fmt"
 
 type CalculateVolumeStep struct {
-	Depth int
-	Width int
+	Depth  int
+	Width  int
 	Height int
 
 	Volume int
