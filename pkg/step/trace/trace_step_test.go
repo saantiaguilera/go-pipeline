@@ -38,7 +38,7 @@ func TestTrace_GivenAStepToTrace_WhenRun_ThenOutputsInnerStepErr(t *testing.T) {
 func TestTrace_GivenAStepToTrace_WhenRun_ThenSpecificFormatIsUsed(t *testing.T) {
 	writer := bytes.NewBufferString("")
 	step := trace.CreateTracedStepWithWriter(&TestStep{}, writer)
-	validator := regexp.MustCompile(`^\[STEP] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Finished\n$`)
+	validator := regexp.MustCompile(`^\[STEP] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Failure: some error\n$`)
 
 	_ = TestExecutor{}.Run(step)
 

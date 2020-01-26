@@ -34,6 +34,16 @@ func (t *tracedStep) Name() string {
 
 func (t *tracedStep) Run() error {
 	start := time.Now()
-	defer fmt.Fprintf(t.Writer, "[STEP] %s | %s | %s | Finished\n", start.Format("2006-01-02 - 15:04:05"), t.Name(), time.Since(start))
-	return t.Step.Run()
+
+	err := t.Step.Run()
+
+	var message string
+	if err == nil {
+		message = "Success"
+	} else {
+		message = fmt.Sprintf("Failure: %s", err.Error())
+	}
+
+	fmt.Fprintf(t.Writer, "[STEP] %s | %s | %s | %s\n", start.Format("2006-01-02 - 15:04:05"), t.Name(), time.Since(start), message)
+	return err
 }

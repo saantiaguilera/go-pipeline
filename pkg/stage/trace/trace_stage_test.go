@@ -34,7 +34,7 @@ func TestTrace_GivenAStageToTrace_WhenRun_ThenOutputsInnerStageErr(t *testing.T)
 func TestTrace_GivenAStageToTrace_WhenRun_ThenSpecificFormatIsUsed(t *testing.T) {
 	writer := bytes.NewBufferString("")
 	stage := trace.CreateTracedStageWithWriter("test name", &TestStage{}, writer)
-	validator := regexp.MustCompile(`^\[STAGE] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Finished\n$`)
+	validator := regexp.MustCompile(`^\[STAGE] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Failure: some error\n$`)
 
 	_ = stage.Run(&TestExecutor{})
 

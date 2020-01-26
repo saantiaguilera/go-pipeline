@@ -32,6 +32,16 @@ type tracedStage struct{
 
 func (t *tracedStage) Run(executor pkg.Executor) error {
 	start := time.Now()
-	defer fmt.Fprintf(t.Writer, "[STAGE] %s | %s | %s | Finished\n", start.Format("2006-01-02 - 15:04:05"), t.Name, time.Since(start))
-	return t.Stage.Run(executor)
+
+	err := t.Stage.Run(executor)
+
+	var message string
+	if err == nil {
+		message = "Success"
+	} else {
+		message = fmt.Sprintf("Failure: %s", err.Error())
+	}
+
+	fmt.Fprintf(t.Writer, "[STAGE] %s | %s | %s | %s\n", start.Format("2006-01-02 - 15:04:05"), t.Name, time.Since(start), message)
+	return err
 }
