@@ -1,15 +1,15 @@
 package step
 
 import (
-	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg"
 )
 
 // Alias for before hooks of a step. If the hook fails, the step won't be run
-type BeforeStep func(step api.Step) error
+type BeforeStep func(step pkg.Step) error
 
 // Alias for after hooks of a step. If the step fails, one can recover from here or fallback to a new error.
 // Also, this step can fail, thus failing the unit (note that this is a blob of a step, so if a hook fails, the step fails too).
-type AfterStep func(step api.Step, err error) error
+type AfterStep func(step pkg.Step, err error) error
 
 // Blob structure that allows us to decorate a step with pre/post hooks
 // Note that we can compose many lifecycle steps if we want to have multiple hooks. Such as:
@@ -19,7 +19,7 @@ type AfterStep func(step api.Step, err error) error
 type lifecycleStep struct {
 	Before BeforeStep
 	After  AfterStep
-	Step   api.Step
+	Step   pkg.Step
 }
 
 // Run the hooks and the step, validating errors along the way and mutating the step error in case it failed.
@@ -46,7 +46,7 @@ func (l *lifecycleStep) Name() string {
 }
 
 // Create a lifecycle step with a before hook
-func CreateBeforeStepLifecycle(step api.Step, before BeforeStep) api.Step {
+func CreateBeforeStepLifecycle(step pkg.Step, before BeforeStep) pkg.Step {
 	return &lifecycleStep{
 		Before: before,
 		Step:   step,
@@ -54,7 +54,7 @@ func CreateBeforeStepLifecycle(step api.Step, before BeforeStep) api.Step {
 }
 
 // Create a lifecycle step with an after hook
-func CreateAfterStepLifecycle(step api.Step, after AfterStep) api.Step {
+func CreateAfterStepLifecycle(step pkg.Step, after AfterStep) pkg.Step {
 	return &lifecycleStep{
 		After:  after,
 		Step:   step,
@@ -62,7 +62,7 @@ func CreateAfterStepLifecycle(step api.Step, after AfterStep) api.Step {
 }
 
 // Create a lifecycle step with a before and an after hook
-func CreateStepLifecycle(step api.Step, before BeforeStep, after AfterStep) api.Step {
+func CreateStepLifecycle(step pkg.Step, before BeforeStep, after AfterStep) pkg.Step {
 	return &lifecycleStep{
 		Before: before,
 		After:  after,

@@ -2,7 +2,7 @@ package pipeline_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg"
 	"github.com/saantiaguilera/go-pipeline/pkg/pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,7 +13,7 @@ type mockStage struct {
 	mock.Mock
 }
 
-func (m *mockStage) Run(executor api.Executor) error {
+func (m *mockStage) Run(executor pkg.Executor) error {
 	args := m.Called(executor)
 
 	return args.Error(0)
@@ -21,14 +21,14 @@ func (m *mockStage) Run(executor api.Executor) error {
 
 type SimpleExecutor struct{}
 
-func (s SimpleExecutor) Run(runnable api.Runnable) error {
+func (s SimpleExecutor) Run(runnable pkg.Runnable) error {
 	return runnable.Run()
 }
 
 func TestPipeline_GivenAPipelineAddingABeforeHook_WhenRunning_ThenTheBeforeHookIsCalled(t *testing.T) {
 	called := false
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddBeforeRunHook(func(stage api.Stage) error {
+	pipe.AddBeforeRunHook(func(stage pkg.Stage) error {
 		called = true
 		return nil
 	})
@@ -47,7 +47,7 @@ func TestPipeline_GivenAPipelineAddingAFailingBeforeHook_WhenRunning_ThenItFails
 	expectedError := errors.New("error")
 
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddBeforeRunHook(func(stage api.Stage) error {
+	pipe.AddBeforeRunHook(func(stage pkg.Stage) error {
 		return expectedError
 	})
 
@@ -64,11 +64,11 @@ func TestPipeline_GivenAPipelineAddingABeforeHookAndAFailingBeforeHook_WhenRunni
 	expectedError := errors.New("error")
 
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddBeforeRunHook(func(stage api.Stage) error {
+	pipe.AddBeforeRunHook(func(stage pkg.Stage) error {
 		called = true
 		return nil
 	})
-	pipe.AddBeforeRunHook(func(stage api.Stage) error {
+	pipe.AddBeforeRunHook(func(stage pkg.Stage) error {
 		return expectedError
 	})
 
@@ -97,7 +97,7 @@ func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRan(t *testing.T) {
 func TestPipeline_GivenAPipelineAddingAnAfterHook_WhenRunning_TheHookIsCalled(t *testing.T) {
 	called := false
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		called = true
 		return nil
 	})
@@ -115,7 +115,7 @@ func TestPipeline_GivenAPipelineAddingAnAfterHook_WhenRunning_TheHookIsCalled(t 
 func TestPipeline_GivenAPipelineAddingAFailureAfterHook_WhenRunning_ThenItFails(t *testing.T) {
 	expectedErr := errors.New("error")
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		return expectedErr
 	})
 
@@ -133,10 +133,10 @@ func TestPipeline_GivenAPipelineAddingAnAfterHookAndAFailingAfterHook_WhenRunnin
 	expectedError := errors.New("error")
 
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		return err
 	})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		called = true
 		return expectedError
 	})
@@ -155,10 +155,10 @@ func TestPipeline_GivenAPipelineAddingAFailureAfterHookAndARecoveringAfterHook_W
 	expectedError := errors.New("error")
 
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		return expectedError // First fails
 	})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		return nil // Second recovers
 	})
 
@@ -175,7 +175,7 @@ func TestPipeline_GivenAPipelineAddingARecoverAfterHook_WhenRunningAndFailing_Th
 	expectedErr := errors.New("error")
 	var recoveredErr error
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		recoveredErr = err
 		return nil
 	})
@@ -195,11 +195,11 @@ func TestPipeline_GivenAPipelineWithBothHooks_WhenRunning_TheStageAndHooksAreCal
 	afterCalled := false
 
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	pipe.AddBeforeRunHook(func(stage api.Stage) error {
+	pipe.AddBeforeRunHook(func(stage pkg.Stage) error {
 		beforeCalled = true
 		return nil
 	})
-	pipe.AddAfterRunHook(func(stage api.Stage, err error) error {
+	pipe.AddAfterRunHook(func(stage pkg.Stage, err error) error {
 		afterCalled = true
 		return nil
 	})

@@ -1,16 +1,16 @@
 package pipeline
 
 import (
-	"github.com/saantiaguilera/go-pipeline/pkg/api"
+	"github.com/saantiaguilera/go-pipeline/pkg"
 )
 
 type pipe struct {
-	Before   []func(stage api.Stage) error
-	After    []func(stage api.Stage, err error) error
-	Executor api.Executor
+	Before   []func(stage pkg.Stage) error
+	After    []func(stage pkg.Stage, err error) error
+	Executor pkg.Executor
 }
 
-func (p *pipe) Run(stage api.Stage) error {
+func (p *pipe) Run(stage pkg.Stage) error {
 	for _, before := range p.Before {
 		err := before(stage)
 
@@ -28,19 +28,19 @@ func (p *pipe) Run(stage api.Stage) error {
 	return err
 }
 
-func (p *pipe) AddBeforeRunHook(beforePipeline func(stage api.Stage) error) {
+func (p *pipe) AddBeforeRunHook(beforePipeline func(stage pkg.Stage) error) {
 	p.Before = append(p.Before, beforePipeline)
 }
 
-func (p *pipe) AddAfterRunHook(afterPipeline func(stage api.Stage, err error) error) {
+func (p *pipe) AddAfterRunHook(afterPipeline func(stage pkg.Stage, err error) error) {
 	p.After = append(p.After, afterPipeline)
 }
 
 // Create a pipeline with a given executor
-func CreatePipeline(executor api.Executor) api.Pipeline {
+func CreatePipeline(executor pkg.Executor) pkg.Pipeline {
 	return &pipe{
 		Executor: executor,
-		Before:   []func(stage api.Stage) error{},
-		After:    []func(stage api.Stage, err error) error{},
+		Before:   []func(stage pkg.Stage) error{},
+		After:    []func(stage pkg.Stage, err error) error{},
 	}
 }

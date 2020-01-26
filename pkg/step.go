@@ -1,4 +1,4 @@
-package api
+package pkg
 
 // Runnable interface for making a unit work.
 type Runnable interface {

@@ -1,4 +1,4 @@
-package api
+package pkg
 
 // Named interface for allowing command and stages naming
 // TODO: At a later stage it would be nice to graph the pipeline itself with this
@@ -7,12 +7,7 @@ type Named interface {
 	Name() string
 }
 
-// Pipeline contract for running a graph/template.
-type Pipeline interface {
-	// Run a stage graph. This method is blocking until the stage finishes.
-	// Returns an error denoting that the stage couldn't complete (and its reason)
-	Run(stage Stage) error
-
+type PipelineLifecycle interface {
 	// Add a before hook that will be called before a stage is ran by this pipeline.
 	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
 	// process (and not to the flow of the graph stages itself)
@@ -24,4 +19,13 @@ type Pipeline interface {
 	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
 	// process (and not to the flow of the graph stages itself)
 	AddAfterRunHook(afterPipeline func(stage Stage, err error) error)
+}
+
+// Pipeline contract for running a graph/template.
+type Pipeline interface {
+	PipelineLifecycle
+
+	// Run a stage graph. This method is blocking until the stage finishes.
+	// Returns an error denoting that the stage couldn't complete (and its reason)
+	Run(stage Stage) error
 }

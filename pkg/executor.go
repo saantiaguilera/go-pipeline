@@ -1,4 +1,4 @@
-package api
+package pkg
 
 // Executor interface for running units (usually in the form of Step).
 // The executor should be used as a mean for decorating or changing the behaviour of a command execution
