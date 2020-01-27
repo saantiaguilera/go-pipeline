@@ -3,7 +3,7 @@ package examples_test
 import (
 	"fmt"
 	"github.com/saantiaguilera/go-pipeline/examples/steps"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"github.com/saantiaguilera/go-pipeline/pkg/pipeline"
 	"github.com/saantiaguilera/go-pipeline/pkg/stage/concurrent"
 	"github.com/saantiaguilera/go-pipeline/pkg/stage/conditional"
@@ -46,7 +46,7 @@ else
   nothing
 */
 
-func Graph() pkg.Stage {
+func Graph() api.Stage {
 	// We use steps with before hooks to bind data (thus making a flow), but you can adopt any method of communication
 	// between steps such as:
 	// - channels (at creation you bind, a step produces and another consumes)
@@ -86,7 +86,7 @@ func Graph() pkg.Stage {
 		concurrent.CreateConcurrentStage(
 			lifecycle.CreateBeforeStepLifecycle(
 				calculateVolumeStep,
-				func(step pkg.Step) error {
+				func(step api.Step) error {
 					calculateVolumeStep.Width = widthStep.Width
 					calculateVolumeStep.Height = heightStep.Height
 					calculateVolumeStep.Depth = depthStep.Depth
@@ -95,7 +95,7 @@ func Graph() pkg.Stage {
 			),
 			lifecycle.CreateBeforeStepLifecycle(
 				calculateSurfaceStep,
-				func(step pkg.Step) error {
+				func(step api.Step) error {
 					calculateSurfaceStep.Width = widthStep.Width
 					calculateSurfaceStep.Height = heightStep.Height
 					return nil
@@ -106,14 +106,14 @@ func Graph() pkg.Stage {
 			sequential.CreateSequentialStage(
 				lifecycle.CreateBeforeStepLifecycle(
 					calculatePriceToPaintSurfaceStep,
-					func(step pkg.Step) error {
+					func(step api.Step) error {
 						calculatePriceToPaintSurfaceStep.Surface = calculateSurfaceStep.Surface
 						return nil
 					},
 				),
 				lifecycle.CreateBeforeStepLifecycle(
 					recordPriceSurfaceStep,
-					func(step pkg.Step) error {
+					func(step api.Step) error {
 						recordPriceSurfaceStep.Price = calculatePriceToPaintSurfaceStep.Price
 						return nil
 					},
@@ -122,14 +122,14 @@ func Graph() pkg.Stage {
 			sequential.CreateSequentialStage(
 				lifecycle.CreateBeforeStepLifecycle(
 					calculatePriceToPaintVolumeStep,
-					func(step pkg.Step) error {
+					func(step api.Step) error {
 						calculatePriceToPaintVolumeStep.Volume = calculateVolumeStep.Volume
 						return nil
 					},
 				),
 				lifecycle.CreateBeforeStepLifecycle(
 					recordPriceVolumeStep,
-					func(step pkg.Step) error {
+					func(step api.Step) error {
 						recordPriceVolumeStep.Price = calculatePriceToPaintVolumeStep.Price
 						return nil
 					},
@@ -139,7 +139,7 @@ func Graph() pkg.Stage {
 		sequential.CreateSequentialStage(
 			lifecycle.CreateBeforeStepLifecycle(
 				evaluateStep,
-				func(step pkg.Step) error {
+				func(step api.Step) error {
 					evaluateStep.SurfacePrice = calculatePriceToPaintSurfaceStep.Price
 					evaluateStep.VolumePrice = calculatePriceToPaintVolumeStep.Price
 					return nil
@@ -158,14 +158,14 @@ func Graph() pkg.Stage {
 				concurrent.CreateConcurrentStage(
 					lifecycle.CreateBeforeStepLifecycle(
 						paintSurfaceStep,
-						func(step pkg.Step) error {
+						func(step api.Step) error {
 							paintSurfaceStep.Surface = calculateSurfaceStep.Surface
 							return nil
 						},
 					),
 					trace2.CreateTracedStep(lifecycle.CreateBeforeStepLifecycle(
 						paintVolumeStep,
-						func(step pkg.Step) error {
+						func(step api.Step) error {
 							paintVolumeStep.Volume = calculateVolumeStep.Volume
 							return nil
 						},
@@ -181,7 +181,7 @@ func Graph() pkg.Stage {
 // Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
 type SampleExecutor struct{}
 
-func (t *SampleExecutor) Run(cmd pkg.Runnable) error {
+func (t *SampleExecutor) Run(cmd api.Runnable) error {
 	fmt.Printf("Running task %s\n", cmd.Name())
 	return cmd.Run()
 }

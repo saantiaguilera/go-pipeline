@@ -2,20 +2,20 @@ package trace
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"io"
 	"os"
 	"time"
 )
 
-func CreateTracedStep(step pkg.Step) pkg.Step {
+func CreateTracedStep(step api.Step) api.Step {
 	return &tracedStep{
 		Step:   step,
 		Writer: os.Stdout,
 	}
 }
 
-func CreateTracedStepWithWriter(step pkg.Step, writer io.Writer) pkg.Step {
+func CreateTracedStepWithWriter(step api.Step, writer io.Writer) api.Step {
 	return &tracedStep{
 		Step:   step,
 		Writer: writer,
@@ -23,7 +23,7 @@ func CreateTracedStepWithWriter(step pkg.Step, writer io.Writer) pkg.Step {
 }
 
 type tracedStep struct {
-	Step   pkg.Step
+	Step   api.Step
 	Writer io.Writer
 }
 

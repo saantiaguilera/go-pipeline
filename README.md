@@ -1,24 +1,34 @@
 # Go-Pipeline
 
-Toy module for building decoupled pipelines in Golang
+Go module for building pipelines
 
 ### Supported structure
 
-- Stage: Collection of steps
-- Stage group: Also a stage. Represents a collection of stages
+The abstract entities defined by the API are:
 - Step: Single unit of work
+- Stage: Collection of steps
+- Stage group: Collection of stages (also a stage itself)
 
-A pipeline contains a single `Stage`, from which a graph/template can be formed and be used as a template for running a workload.
+The defined structures can be implemented to create several behaviours, such as:
+- Concurrency: Run stages or steps concurrently
+- Sequentially: Run stages or steps sequentially
+- Conditionals: Run either a flow or another one depending on the evaluation of a statement
+- Tracers: Add tracers to a stage or step
+- Lifecycle: Add lifecycle methods (before / after) to a stage or step
 
-There are different type of stages, eg. 
+With them one can build a graph-like / template structure, that will be executed by a `Pipeline`
 
-- `ConcurrentStage` which runs steps concurrently
-- `SequentialStage` which runs them sequentially.
-- `ConditionalStage` which given a statement, runs one stage or another.
+### Pipeline
+
+A pipeline is simply a structure for executing a root stage (that will internally execute nested stages, thus evaluating the whole graph).
+
+If needed, one can add before / after execution hooks to enrich it (eg. Decorating requests pre execution, recovering errors, tracing, etc)
 
 ### Executor
 
-A pipeline can have an executor, which will define the flow for executing a Step. This is useful if we want to add hooks / circuit-breakers / tracers / etc to the pipeline.
+An executor is someone capable of running `Runnable` (the single unit of work. A `Step` is a `Runnable`)
+
+This is useful if we want to add global step hooks / circuit-breakers / tracers / etc to the step's graph.
 
 ### Example
 
@@ -39,8 +49,8 @@ graph := stage.CreateSequentialGroup(
     // Concurrent stage, given we are 3, we can do the salad / meat separately
     stage.CreateConcurrentGroup(
         // This will be the salad flow. It can be done concurrently with the meat
-        stage.CreateSequentialGroup(
-        	// Eggs and carrots can be operated concurrently too
+        stage.CreateSequentialGroup( 
+            // Eggs and carrots can be operated concurrently too
             stage.CreateConcurrentGroup(
                 // Sequential stage for the eggs flow
                 stage.CreateSequentialStage(
@@ -61,19 +71,26 @@ graph := stage.CreateSequentialGroup(
             )
         ),
         // Another sequential stage for the meat (concurrently with salad)
-        stage.CreateSequentialStage(
-            your_step.TurnOvenOnStep(),
-            // Conditional step, the meat might be too big
-            stage.CreateConditionalStage(
-                func() bool {
-            	    return isMeatTooBigForOven()
-            	},
-                // True:
-                your_step.CutMeatStep(meatChan),
-                // False:
-                nil,
+        stage.CreateSequentialGroup(
+        	// If we end up cutting the meat, we can optimize it with the oven operation
+        	stage.CreateConcurrentGroup(
+                // Conditional stage, the meat might be too big
+                stage.CreateConditionalStage(
+                    func() bool {
+                        return isMeatTooBigForOven()
+                    },
+                    // True:
+                    your_step.CutMeatStep(meatChan),
+                    // False:
+                    nil,
+                ),
+                stage.CreateSequentialStage(
+                    your_step.TurnOvenOnStep(),
+                ),
             ),
-            your_step.PutMeatInOvenStep(meatChan),
+            stage.CreateSequentialStage(
+                your_step.PutMeatInOvenStep(meatChan),
+            ),
         ),
     ),
     // When everything is done. Serve

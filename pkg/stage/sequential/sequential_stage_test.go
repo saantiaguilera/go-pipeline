@@ -2,7 +2,7 @@ package sequential_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"github.com/saantiaguilera/go-pipeline/pkg/stage/sequential"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,7 +13,7 @@ import (
 func TestSequentialStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunSequentially(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var steps []pkg.Step
+	var steps []api.Step
 	for i := 0; i < 100; i++ {
 		steps = append(steps, createStep(i, &arr))
 		expectedArr = append(expectedArr, i)

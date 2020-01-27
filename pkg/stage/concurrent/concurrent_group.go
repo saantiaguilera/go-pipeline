@@ -1,12 +1,12 @@
 package concurrent
 
 import (
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 )
 
-type concurrentGroup []pkg.Stage
+type concurrentGroup []api.Stage
 
-func (s concurrentGroup) Run(executor pkg.Executor) error {
+func (s concurrentGroup) Run(executor api.Executor) error {
 	return spawnAsync(len(s), func(index int) error {
 		return s[index].Run(executor)
 	})
@@ -17,7 +17,7 @@ func (s concurrentGroup) Run(executor pkg.Executor) error {
 //
 // If one of them fails, the stage will wait until everyone finishes and after that return the error.
 // If more than one fails, then the error will be the one delivered by the last failure.
-func CreateConcurrentGroup(stages ...pkg.Stage) pkg.Stage {
+func CreateConcurrentGroup(stages ...api.Stage) api.Stage {
 	var stage concurrentGroup = stages
 	return &stage
 }

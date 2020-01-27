@@ -1,4 +1,4 @@
-package pkg
+package api
 
 // Stage is a grouping of units (steps / stages / etc) allowing one to create a workflow/template/graph of a given
 // problem.

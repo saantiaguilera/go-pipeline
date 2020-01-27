@@ -2,7 +2,7 @@ package concurrent_test
 
 import (
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"github.com/saantiaguilera/go-pipeline/pkg/stage/concurrent"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -12,7 +12,7 @@ import (
 func TestConcurrentGroup_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var stages []pkg.Stage
+	var stages []api.Stage
 	for i := 0; i < 100; i++ {
 		stages = append(stages, createStage(i, &arr))
 		expectedArr = append(expectedArr, i)

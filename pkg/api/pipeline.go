@@ -1,4 +1,4 @@
-package pkg
+package api
 
 // Named interface for allowing command and stages naming
 // TODO: At a later stage it would be nice to graph the pipeline itself with this

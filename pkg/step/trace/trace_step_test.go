@@ -3,7 +3,7 @@ package trace_test
 import (
 	"bytes"
 	"errors"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"github.com/saantiaguilera/go-pipeline/pkg/step/trace"
 	"github.com/stretchr/testify/assert"
 	"regexp"
@@ -22,7 +22,7 @@ func (t TestStep) Run() error {
 
 type TestExecutor struct{}
 
-func (t TestExecutor) Run(runnable pkg.Runnable) error {
+func (t TestExecutor) Run(runnable api.Runnable) error {
 	return runnable.Run()
 }
 

@@ -2,13 +2,13 @@ package trace
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline/pkg"
+	"github.com/saantiaguilera/go-pipeline/pkg/api"
 	"io"
 	"os"
 	"time"
 )
 
-func CreateTracedStage(name string, stage pkg.Stage) pkg.Stage {
+func CreateTracedStage(name string, stage api.Stage) api.Stage {
 	return &tracedStage{
 		Name:   name,
 		Stage:  stage,
@@ -16,7 +16,7 @@ func CreateTracedStage(name string, stage pkg.Stage) pkg.Stage {
 	}
 }
 
-func CreateTracedStageWithWriter(name string, stage pkg.Stage, writer io.Writer) pkg.Stage {
+func CreateTracedStageWithWriter(name string, stage api.Stage, writer io.Writer) api.Stage {
 	return &tracedStage{
 		Name:   name,
 		Stage:  stage,
@@ -26,11 +26,11 @@ func CreateTracedStageWithWriter(name string, stage pkg.Stage, writer io.Writer)
 
 type tracedStage struct {
 	Name   string
-	Stage  pkg.Stage
+	Stage  api.Stage
 	Writer io.Writer
 }
 
-func (t *tracedStage) Run(executor pkg.Executor) error {
+func (t *tracedStage) Run(executor api.Executor) error {
 	start := time.Now()
 
 	err := t.Stage.Run(executor)
