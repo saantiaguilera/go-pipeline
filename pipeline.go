@@ -54,7 +54,7 @@ Stage group
 
 A stage group is a collection of stages. It's also a Stage itself, thus a group can be used in the same scope as a stage.
 
-	pipeline.CreateSequentialGroup(
+	stage := pipeline.CreateSequentialGroup(
 		pipeline.CreateConcurrentGroup(
 			pipeline.CreateSequentialStage(
 				CreateBoilEggsStep(numberOfEggs, eggsChan),
