@@ -4,7 +4,7 @@ Go module for building pipelines. For more information visit the [GoDoc API](htt
 
 ### Example
 
-_This code can be found under [[examples/cook_example]] if you want to play with it._
+_This code can be found under the [examples directory](examples/cook_example/) if you want to play with it._
 
 Imagine we are 3 persons making a dish. We have to:
 1. Put the eggs to boil. When done, cut them.
