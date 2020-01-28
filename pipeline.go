@@ -1,5 +1,5 @@
 /*
-Package go-pipeline is a pure Go client library for building pipelines in a declarative way.
+Package pipeline is a pure Go client library for building pipelines in a declarative way.
 It includes a high level API for easily building a graph/template of a structure to represent.
 
 If the defined implementations of the API are insufficient, one can create their own implementation adding new behaviours,
