@@ -1,6 +1,6 @@
 /*
-Package go-pipeline is a pure Go client library for building pipelines in a declarative way (similar to Keras or other
-deep learning frameworks). It includes a high level API for easily building a graph/template of a structure to represent.
+Package go-pipeline is a pure Go client library for building pipelines in a declarative way.
+It includes a high level API for easily building a graph/template of a structure to represent.
 
 If the defined implementations of the API are insufficient, one can create their own implementation adding new behaviours,
 such as circuit-breaker executors, panic recover executors, new-relic step decorators, among any idea or feature you would
@@ -10,19 +10,19 @@ Supported structure
 
 The high level structures defined by the API are:
 
-- Step: Single unit of work. Alias for Runnable
+* Step: Single unit of work. Alias for Runnable
 
-- Stage: Collection of steps
+* Stage: Collection of steps
 
-- Stage group: Collection of stages (also a Stage itself)
+* Stage group: Collection of stages (also a Stage itself)
 
 The defined structures can be implemented to create several behaviours, such as:
 
-- Concurrent: Run stages or steps concurrently
+* Concurrent: Run stages or steps concurrently
 
-- Sequential: Run stages or steps sequentially
+* Sequential: Run stages or steps sequentially
 
-- Conditional: Run either a flow or another one depending on the evaluation of a statement
+* Conditional: Run either a flow or another one depending on the evaluation of a statement
 
 - Tracer: Add tracers to a stage or step
 
