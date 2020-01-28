@@ -6,7 +6,7 @@ If the defined implementations of the API are insufficient, one can create their
 such as circuit-breaker executors, panic recover executors, new-relic step decorators, among any idea or feature you would
 like.
 
-### Supported structure
+Supported structure
 
 The high level structures defined by the API are:
 - Step: Single unit of work. Alias for Runnable
@@ -20,17 +20,17 @@ The defined structures can be implemented to create several behaviours, such as:
 - Tracer: Add tracers to a stage or step
 - Lifecycle: Add lifecycle methods (before / after) to a stage or step
 
-With them one can build a graph-like / template structure, that will be executed by a `Pipeline` through an `Executor`
+With them one can build a graph-like / template structure, that will be executed by a Pipeline through an Executor
 
-### Pipeline
+Pipeline
 
 A pipeline is a contract for executing a root stage (that will internally execute nested stages, thus evaluating the whole graph).
 
 If needed, one can add before / after execution hooks to enrich it (eg. Decorating requests pre execution, recovering errors, tracing, etc)
 
-### Executor
+Executor
 
-An executor is a contract capable of running `Runnable` (the single unit of work.)
+An executor is a contract capable of running Runnable (the single unit of work.)
 
 This is useful if we want to add global step hooks / circuit-breakers / tracers / etc to the step's graph.
 */

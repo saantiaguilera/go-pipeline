@@ -1,4 +1,4 @@
-package paint_sample_test
+package paint_example_test
 
 import (
 	"fmt"
