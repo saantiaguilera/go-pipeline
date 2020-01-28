@@ -8,27 +8,84 @@ like.
 
 Supported structure
 
-The high level structures defined by the API are:
+Below you can find the atomic types this API exposes. This elements are mandatory for creating and executing a graph in a pipeline.
 
-* Step: Single unit of work. Alias for Runnable
+Step
 
-* Stage: Collection of steps
+A step is a single unit of work. It's an alias for Runnable
 
-* Stage group: Collection of stages (also a Stage itself)
+	type createUserStep struct {
+		Service      user.Service
+		InputStream  chan *model.AuthenticatedUser
+		OutputStream chan *model.User
+	}
 
-The defined structures can be implemented to create several behaviours, such as:
+	func (s *createUserStep) Name() string {
+		return "create_user_step"
+	}
 
-* Concurrent: Run stages or steps concurrently
+	func (s *createUserStep) Run() error {
+		defer close(s.OutputStream)
+		user, err := s.Service.Create(<-s.InputStream)
+		if err == nil {
+			s.OutputStream <- user
+		}
+		return err
+	}
 
-* Sequential: Run stages or steps sequentially
+	func CreateUserStep(service user.Service, input chan *model.AuthenticatedUser) pipeline.Step {
+		return &createUserStep{
+			Service:      service,
+			InputStream:  input,
+			OutputStream: make(chan *model.User, 1),
+		}
+	}
 
-* Conditional: Run either a flow or another one depending on the evaluation of a statement
+Stage
+
+A stage contains a collection of steps. The collection will be executed according to the stage implementation (eg. concurrently, sequentially, condition-based, etc).
+
+	stage := pipeline.CreateSequentialStage(
+		user.CreateGetAuthenticatedUserStep(request, userChan),
+		user.CreateUserStep(userService, userChan),
+	)
+
+Stage group
+
+A stage group is a collection of stages. It's also a Stage itself, thus a group can be used in the same scope as a stage.
+
+	pipeline.CreateSequentialGroup(
+		pipeline.CreateConcurrentGroup(
+			pipeline.CreateSequentialStage(
+				CreateBoilEggsStep(numberOfEggs, eggsChan),
+				CreateCutEggsStep(eggsChan),
+			),
+			pipeline.CreateSequentialStage(
+				CreateWashCarrotsStep(numberOfCarrots, carrotsChan),
+				CreateCutCarrotsStep(carrotsChan),
+			),
+		),
+		pipeline.CreateSequentialStage(
+			CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
+		),
+	)
+
+Defined structures
+
+We already implement out of the box some structures that are pretty much mandatory. You can make your own custom
+implementation to create behaviours we are not currently defining. The provided ones are:
+
+- Concurrent: Run stages or steps concurrently
+
+- Sequential: Run stages or steps sequentially
+
+- Conditional: Run either a flow or another one depending on the evaluation of a statement
 
 - Tracer: Add tracers to a stage or step
 
 - Lifecycle: Add lifecycle methods (before / after) to a stage or step
 
-With them one can build a graph-like / template structure, that will be executed by a Pipeline through an Executor
+With the use of them a graph-like / template structure can be achieved, that will be executed by a Pipeline through an Executor.
 
 Pipeline
 
