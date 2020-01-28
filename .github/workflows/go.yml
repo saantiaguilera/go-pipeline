@@ -19,15 +19,19 @@ jobs:
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
+        go get golang.org/x/tools/cmd/goimports
+        go get golang.org/x/lint/golint
     
     - name: Formatting
       run: gofmt -l . | if [ $(grep -c -o -E ".*") -gt 0 ]; then return 1; fi
     
     - name: Imports
-      run: goimports -l . | if [ $(grep -c -o -E ".*") -gt 0 ]; then return 1; fi
-          
+      run: |
+        `go list -f {{.Target}} golang.org/x/tools/cmd/goimports` -l . | if [ $(grep -c -o -E ".*") -gt 0 ]; then return 1; fi
+      
     - name: Lint
-      run: golint -set_exit_status ./...
+      run: |
+        `go list -f {{.Target}} golang.org/x/lint/golint` -set_exit_status ./...
 
     - name: Build
       run: go build -v ./...
