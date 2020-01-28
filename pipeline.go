@@ -26,8 +26,6 @@ Pipeline
 
 A pipeline is a contract for executing a root stage (that will internally execute nested stages, thus evaluating the whole graph).
 
-If needed, one can add before / after execution hooks to enrich it (eg. Decorating requests pre execution, recovering errors, tracing, etc)
-
 Executor
 
 An executor is a contract capable of running Runnable (the single unit of work.)
@@ -36,67 +34,24 @@ This is useful if we want to add global step hooks / circuit-breakers / tracers 
 */
 package pipeline
 
-// Lifecycle is a contract for attaching hooks to the lifecycle of a pipeline execution
-type Lifecycle interface {
-	// AddBeforeRunHook adds a before hook that will be called before a stage is ran by this pipeline.
-	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
-	// process (and not to the flow of the graph stages itself)
-	AddBeforeRunHook(beforePipeline func(stage Stage) error)
-
-	// AddAfterRunHook adds an after hook that will be called after a stage is ran by this pipeline, with the error (in case the stage
-	// wasn't completed) and is able to return a new error (or nil if you can fallback/recover from the provided one).
-	//
-	// Note: This doesn't apply for inner stages, as this method is for hooking to the pipeline
-	// process (and not to the flow of the graph stages itself)
-	AddAfterRunHook(afterPipeline func(stage Stage, err error) error)
-}
-
 // Pipeline contract for running a graph/template.
 type Pipeline interface {
-	Lifecycle
-
 	// Run a stage graph. This method is blocking until the stage finishes.
 	// Returns an error denoting that the stage couldn't complete (and its reason)
 	Run(stage Stage) error
 }
 
 type pipeline struct {
-	Before   []func(stage Stage) error
-	After    []func(stage Stage, err error) error
 	Executor Executor
 }
 
 func (p *pipeline) Run(stage Stage) error {
-	for _, before := range p.Before {
-		err := before(stage)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	err := stage.Run(p.Executor)
-
-	for _, after := range p.After {
-		err = after(stage, err)
-	}
-
-	return err
-}
-
-func (p *pipeline) AddBeforeRunHook(beforePipeline func(stage Stage) error) {
-	p.Before = append(p.Before, beforePipeline)
-}
-
-func (p *pipeline) AddAfterRunHook(afterPipeline func(stage Stage, err error) error) {
-	p.After = append(p.After, afterPipeline)
+	return stage.Run(p.Executor)
 }
 
 // CreatePipeline creates a pipeline with a given executor
 func CreatePipeline(executor Executor) Pipeline {
 	return &pipeline{
 		Executor: executor,
-		Before:   []func(stage Stage) error{},
-		After:    []func(stage Stage, err error) error{},
 	}
 }
