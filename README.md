@@ -4,6 +4,8 @@ Go module for building pipelines. For more information visit the [GoDoc API](htt
 
 ### Example
 
+_This code can be found under [[examples/cook_example]] if you want to play with it._
+
 Imagine we are 3 persons making a dish. We have to:
 1. Put the eggs to boil. When done, cut them.
 2. Wash the carrots. Cut them.
@@ -17,57 +19,57 @@ This flow can be achieved as such:
 ```go
 // Complete stage. Its sequential because we can't serve
 // before all the others are done. 
-graph := stage.CreateSequentialGroup(
+graph := pipeline.CreateSequentialGroup(
     // Concurrent stage, given we are 3, we can do the salad / meat separately
-    stage.CreateConcurrentGroup(
+    pipeline.CreateConcurrentGroup(
         // This will be the salad flow. It can be done concurrently with the meat
-        stage.CreateSequentialGroup( 
+        pipeline.CreateSequentialGroup( 
             // Eggs and carrots can be operated concurrently too
-            stage.CreateConcurrentGroup(
+            pipeline.CreateConcurrentGroup(
                 // Sequential stage for the eggs flow
-                stage.CreateSequentialStage(
+                pipeline.CreateSequentialStage(
                     // Use a mean of communication. Channels could be one.
-                    your_step.CreateBoilEggsStep(eggsChan),
-                    your_step.CreateCutEggsStep(eggsChan),
+                    CreateBoilEggsStep(eggsChan),
+                    CreateCutEggsStep(eggsChan),
                 ),
                 // Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
-                stage.CreateSequentialStage(
+                pipeline.CreateSequentialStage(
                     // Use a mean of communication. Channels could be one.
-                    your_step.CreateWashCarrotsStep(carrotsChan),
-                    your_step.CreateCutCarrotsStep(carrotsChan),
+                    CreateWashCarrotsStep(carrotsChan),
+                    CreateCutCarrotsStep(carrotsChan),
                 ),
             ),
             // This is sequential. When carrots and eggs are done, this will run
-            stage.CreateSequentialStage(
-                your_step.MakeSaladStep(carrotsChan, eggsChan, saladChan)
-            )
+            pipeline.CreateSequentialStage(
+                CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
+            ),
         ),
         // Another sequential stage for the meat (concurrently with salad)
-        stage.CreateSequentialGroup(
+        pipeline.CreateSequentialGroup(
             // If we end up cutting the meat, we can optimize it with the oven operation
-            stage.CreateConcurrentGroup(
+            pipeline.CreateConcurrentGroup(
                 // Conditional stage, the meat might be too big
-                stage.CreateConditionalStage(
+                pipeline.CreateConditionalStage(
                     func() bool {
-                        return isMeatTooBigForOven()
+                        return IsMeatTooBigForTheOven()
                     },
                     // True:
-                    your_step.CutMeatStep(meatChan),
+                    CreateCutMeatStep(meatChan),
                     // False:
                     nil,
                 ),
-                stage.CreateSequentialStage(
-                    your_step.TurnOvenOnStep(),
+                pipeline.CreateSequentialStage(
+                    CreateTurnOvenOnStep(),
                 ),
             ),
-            stage.CreateSequentialStage(
-                your_step.PutMeatInOvenStep(meatChan),
+            pipeline.CreateSequentialStage(
+                CreatePutMeatInOvenStep(meatChan),
             ),
         ),
     ),
     // When everything is done. Serve
-    stage.CreateSequentialStage(
-        your_step.ServeStep(meatChan, saladChan)
+    pipeline.CreateSequentialStage(
+        CreateServeStep(meatChan, saladChan),
     ),
 )
 
