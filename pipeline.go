@@ -9,15 +9,23 @@ like.
 Supported structure
 
 The high level structures defined by the API are:
+
 - Step: Single unit of work. Alias for Runnable
+
 - Stage: Collection of steps
+
 - Stage group: Collection of stages (also a Stage itself)
 
 The defined structures can be implemented to create several behaviours, such as:
+
 - Concurrent: Run stages or steps concurrently
+
 - Sequential: Run stages or steps sequentially
+
 - Conditional: Run either a flow or another one depending on the evaluation of a statement
+
 - Tracer: Add tracers to a stage or step
+
 - Lifecycle: Add lifecycle methods (before / after) to a stage or step
 
 With them one can build a graph-like / template structure, that will be executed by a Pipeline through an Executor
