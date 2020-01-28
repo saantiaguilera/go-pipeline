@@ -2,8 +2,9 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type washCarrotsStep struct {

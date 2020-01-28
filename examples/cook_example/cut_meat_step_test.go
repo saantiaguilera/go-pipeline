@@ -2,14 +2,15 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type cutMeatStep struct {
-	MeatSize   int
-	OvenSize  int
-	Stream chan int
+	MeatSize int
+	OvenSize int
+	Stream   chan int
 }
 
 func (s *cutMeatStep) Name() string {
@@ -33,9 +34,9 @@ func CreateCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step 
 }
 
 type addMeatStep struct {
-	MeatSize   int
-	OvenSize  int
-	Stream chan int
+	MeatSize int
+	OvenSize int
+	Stream   chan int
 }
 
 func (s *addMeatStep) Name() string {
@@ -43,7 +44,7 @@ func (s *addMeatStep) Name() string {
 }
 
 func (s *addMeatStep) Run() error {
-	fmt.Printf("Adding %d meat\n", s.OvenSize - s.MeatSize)
+	fmt.Printf("Adding %d meat\n", s.OvenSize-s.MeatSize)
 	time.Sleep(1 * time.Second) // Simulate time it takes to do this action
 
 	s.Stream <- s.OvenSize

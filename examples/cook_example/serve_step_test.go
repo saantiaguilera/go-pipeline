@@ -2,13 +2,14 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type serveStep struct {
 	Salad chan int
-	Meat chan int
+	Meat  chan int
 }
 
 func (s *serveStep) Name() string {
@@ -25,7 +26,7 @@ func (s *serveStep) Run() error {
 
 func CreateServeStep(meatChan chan int, saladChan chan int) pipeline.Step {
 	return &serveStep{
-		Meat: meatChan,
+		Meat:  meatChan,
 		Salad: saladChan,
 	}
 }

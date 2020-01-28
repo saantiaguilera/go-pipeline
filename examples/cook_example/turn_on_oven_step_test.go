@@ -2,11 +2,12 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
-type turnOnOvenStep struct {}
+type turnOnOvenStep struct{}
 
 func (s *turnOnOvenStep) Name() string {
 	return "turn_on_oven_step"

@@ -2,12 +2,13 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type boilEggsStep struct {
-	Eggs int
+	Eggs   int
 	Stream chan int
 }
 
@@ -25,7 +26,7 @@ func (s *boilEggsStep) Run() error {
 
 func CreateBoilEggsStep(eggs int, eggsChan chan int) pipeline.Step {
 	return &boilEggsStep{
-		Eggs: eggs,
+		Eggs:   eggs,
 		Stream: eggsChan,
 	}
 }

@@ -2,14 +2,15 @@ package cook_example_test
 
 import (
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type makeSaladStep struct {
-	Eggs   chan int
+	Eggs    chan int
 	Carrots chan int
-	Salad chan int
+	Salad   chan int
 }
 
 func (s *makeSaladStep) Name() string {
