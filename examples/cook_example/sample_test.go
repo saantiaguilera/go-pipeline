@@ -2,6 +2,7 @@ package cook_example_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/saantiaguilera/go-pipeline"
@@ -12,7 +13,7 @@ func Graph() pipeline.Stage {
 	numberOfCarrots := 8
 	numberOfEggs := 5
 
-	meatSize := 100
+	meatSize := 600
 	ovenSize := 500
 
 	// Channels as a mean for communicating input / output.
@@ -25,7 +26,7 @@ func Graph() pipeline.Stage {
 	// Complete stage. Its sequential because we can't serve
 	// before all the others are done.
 	graph := pipeline.CreateSequentialGroup(
-		// Concurrent stage, given we are 3, we can do the salad / meat separately
+		// AddConcurrency stage, given we are 3, we can do the salad / meat separately
 		pipeline.CreateConcurrentGroup(
 			// This will be the salad flow. It can be done concurrently with the meat
 			pipeline.CreateSequentialGroup(
@@ -55,13 +56,11 @@ func Graph() pipeline.Stage {
 				pipeline.CreateConcurrentGroup(
 					// Conditional stage, the meat might be too big
 					pipeline.CreateConditionalStage(
-						func() bool {
-							return IsMeatTooBigForTheOven(meatSize, ovenSize)
-						},
+						CreateMeatTooBigStatement(meatSize, ovenSize),
 						// True:
 						CreateCutMeatStep(meatSize, ovenSize, meatChan),
 						// False:
-						CreateAddMeatStep(meatSize, ovenSize, meatChan),
+						nil,
 					),
 					pipeline.CreateSequentialStage(
 						CreateTurnOnOvenStep(),
@@ -92,6 +91,20 @@ func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
 	return err
 }
 
+func Test_GraphRendering(t *testing.T) {
+	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		Type: pipeline.UMLFormatSVG,
+	})
+	file, _ := os.Create("template.svg")
+
+	Graph().Draw(diagram)
+
+	err := renderer.Render(diagram, file)
+
+	assert.Nil(t, err)
+}
+
 // Output: (one of many)
 //
 // Turning oven on
@@ -107,6 +120,5 @@ func Test_Pipeline(t *testing.T) {
 	p := pipeline.CreatePipeline(&SampleExecutor{})
 
 	err := p.Run(Graph())
-
 	assert.Nil(t, err)
 }

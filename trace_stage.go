@@ -31,6 +31,10 @@ type tracedStage struct {
 	Writer io.Writer
 }
 
+func (t *tracedStage) Draw(graph GraphDiagram) {
+	t.Stage.Draw(graph)
+}
+
 func (t *tracedStage) Run(executor Executor) error {
 	start := time.Now()
 

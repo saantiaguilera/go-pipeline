@@ -33,32 +33,19 @@ func CreateCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step 
 	}
 }
 
-type addMeatStep struct {
-	MeatSize int
-	OvenSize int
-	Stream   chan int
-}
-
-func (s *addMeatStep) Name() string {
-	return "cut_meat_step"
-}
-
-func (s *addMeatStep) Run() error {
-	fmt.Printf("Adding %d meat\n", s.OvenSize-s.MeatSize)
-	time.Sleep(1 * time.Second) // Simulate time it takes to do this action
-
-	s.Stream <- s.OvenSize
-	return nil
-}
-
-func CreateAddMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step {
-	return &addMeatStep{
+func CreateMeatTooBigStatement(meatSize, ovenSize int) func() bool {
+	s := &MeatTooBig{
 		MeatSize: meatSize,
 		OvenSize: ovenSize,
-		Stream:   meatChan,
 	}
+	return s.IsMeatTooBigForTheOven
 }
 
-func IsMeatTooBigForTheOven(meatSize, ovenSize int) bool {
-	return meatSize > ovenSize
+type MeatTooBig struct {
+	MeatSize int
+	OvenSize int
+}
+
+func (m *MeatTooBig) IsMeatTooBigForTheOven() bool {
+	return m.MeatSize > m.OvenSize
 }

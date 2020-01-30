@@ -49,3 +49,19 @@ func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 	assert.Equal(t, "0", time)
 	mockStage.AssertExpectations(t)
 }
+
+func TestSequentialGroup_GivenAGraphToDraw_WhenDrawn_ThenStagesAreDrawn(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+
+	mockStage := new(mockStage)
+	mockStage.On("Draw", mockGraphDiagram).Times(6)
+
+	initStage := pipeline.CreateSequentialGroup(
+		mockStage, mockStage, mockStage, mockStage, mockStage, mockStage,
+	)
+
+	initStage.Draw(mockGraphDiagram)
+
+	mockStage.AssertExpectations(t)
+	mockGraphDiagram.AssertExpectations(t)
+}

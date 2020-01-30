@@ -18,6 +18,10 @@ type lifecycleStage struct {
 	Stage  Stage
 }
 
+func (l *lifecycleStage) Draw(graph GraphDiagram) {
+	l.Stage.Draw(graph)
+}
+
 // Run the hooks and the stage, validating errors along the way and mutating the stage error in case it failed.
 func (l *lifecycleStage) Run(executor Executor) error {
 	if l.Before != nil {

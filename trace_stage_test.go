@@ -35,3 +35,16 @@ func TestTrace_GivenAStageToTrace_WhenRun_ThenSpecificFormatIsUsed(t *testing.T)
 
 	assert.True(t, validator.Match(output))
 }
+
+func TestTrace_GivenAStageToDraw_WhenDrawn_ThenDelegatesToInnerStage(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockStage := new(mockStage)
+	mockStage.On("Draw", mockGraphDiagram).Once()
+
+	stage := pipeline.CreateTracedStage("test name", mockStage)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	mockStage.AssertExpectations(t)
+}

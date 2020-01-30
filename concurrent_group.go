@@ -2,6 +2,23 @@ package pipeline
 
 type concurrentGroup []Stage
 
+func (s concurrentGroup) createStageGraphActivity(drawable DrawableDiagram) DrawDiagram {
+	return func(graph GraphDiagram) {
+		drawable.Draw(graph)
+	}
+}
+
+func (s concurrentGroup) Draw(graph GraphDiagram) {
+	if len(s) > 0 {
+		var forkStages []DrawDiagram
+		for _, stage := range s {
+			forkStages = append(forkStages, s.createStageGraphActivity(stage))
+		}
+
+		graph.AddConcurrency(forkStages...)
+	}
+}
+
 func (s concurrentGroup) Run(executor Executor) error {
 	return spawnAsync(len(s), func(index int) error {
 		return s[index].Run(executor)

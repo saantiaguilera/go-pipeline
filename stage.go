@@ -4,6 +4,7 @@ package pipeline
 // problem.
 // A stage can be run with a given executor
 type Stage interface {
+	DrawableDiagram
 
 	// Run a stage with a given executor. Returns an error if this stage fails to complete.
 	Run(executor Executor) error
