@@ -3,11 +3,12 @@ package pipeline_test
 import (
 	"flag"
 	"fmt"
-	"github.com/saantiaguilera/go-pipeline"
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
 	"testing"
+
+	"github.com/saantiaguilera/go-pipeline"
+	"github.com/stretchr/testify/assert"
 )
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
@@ -68,7 +69,7 @@ func createNumberedStep(number **int) pipeline.Step {
 	// We give 50% chances to channels, as it's probably the most used way to pass data around
 	case 2, 3:
 		c := make(chan int, 1)
-		c<-current
+		c <- current
 		return &chanStep{
 			NumberChan: c,
 		}
