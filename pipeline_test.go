@@ -38,6 +38,10 @@ type mockStage struct {
 	mock.Mock
 }
 
+func (m *mockStage) Draw(graph pipeline.GraphDiagram) {
+	_ = m.Called(graph)
+}
+
 func (m *mockStage) Run(executor pipeline.Executor) error {
 	args := m.Called(executor)
 

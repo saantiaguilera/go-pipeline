@@ -2,6 +2,7 @@ package paint_example_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/saantiaguilera/go-pipeline"
@@ -179,10 +180,23 @@ func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
 	return cmd.Run()
 }
 
+func Test_GraphRendering(t *testing.T) {
+	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		Type: pipeline.UMLFormatSVG,
+	})
+	file, _ := os.Create("template.svg")
+
+	Graph().Draw(diagram)
+
+	err := renderer.Render(diagram, file)
+
+	assert.Nil(t, err)
+}
+
 func Test_Pipeline(t *testing.T) {
 	p := pipeline.CreatePipeline(&SampleExecutor{})
 
 	err := p.Run(Graph())
-
 	assert.Nil(t, err)
 }

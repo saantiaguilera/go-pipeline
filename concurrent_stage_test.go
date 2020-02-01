@@ -48,3 +48,50 @@ func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 	assert.Equal(t, 10, times)
 	step.AssertExpectations(t)
 }
+
+func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApplied(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	innerStep := new(mockStep)
+	var diagrams []pipeline.DrawDiagram
+
+	innerStep.On("Name").Return("testname").Times(6)
+	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj []pipeline.DrawDiagram) bool {
+		diagrams = obj
+		return true
+	})).Once()
+
+	stage := pipeline.CreateConcurrentStage(
+		innerStep, innerStep, innerStep, innerStep, innerStep, innerStep,
+	)
+
+	stage.Draw(mockGraphDiagram)
+
+	assert.Len(t, diagrams, 6)
+	innerStep.AssertExpectations(t)
+	mockGraphDiagram.AssertExpectations(t)
+}
+
+func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentStepsAreAddedAsActionsByTheirNames(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	innerStep := new(mockStep)
+
+	innerStep.On("Name").Return("testname").Times(5)
+	mockGraphDiagram.On("AddActivity", "testname").Times(5)
+	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj interface{}) bool {
+		return true
+	})).Run(func(args mock.Arguments) {
+		diagrams := args.Get(0).([]pipeline.DrawDiagram)
+		for _, d := range diagrams {
+			d(mockGraphDiagram)
+		}
+	})
+
+	stage := pipeline.CreateConcurrentStage(
+		innerStep, innerStep, innerStep, innerStep, innerStep,
+	)
+
+	stage.Draw(mockGraphDiagram)
+
+	innerStep.AssertExpectations(t)
+	mockGraphDiagram.AssertExpectations(t)
+}

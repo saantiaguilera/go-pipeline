@@ -48,3 +48,20 @@ func TestSequentialStage_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 	assert.Equal(t, "0", time)
 	step.AssertExpectations(t)
 }
+
+func TestSequentialStage_GivenAGraphToDraw_WhenDrawn_ThenStepsAreAddedAsActivitiesByTheirNames(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On("AddActivity", "mock stage name").Times(6)
+
+	mockStep := new(mockStep)
+	mockStep.On("Name").Return("mock stage name").Times(6)
+
+	initStage := pipeline.CreateSequentialStage(
+		mockStep, mockStep, mockStep, mockStep, mockStep, mockStep,
+	)
+
+	initStage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	mockStep.AssertExpectations(t)
+}

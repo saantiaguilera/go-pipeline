@@ -1,10 +1,10 @@
 # Go-Pipeline
 
-Go module for building pipelines. For more information visit the [GoDoc API](https://godoc.org/github.com/saantiaguilera/go-pipeline)
+Go module for building, executing and representing pipelines. For more information visit the [GoDoc API](https://godoc.org/github.com/saantiaguilera/go-pipeline)
 
 ### Example
 
-_This code can be found under the [examples directory](examples/cook_example/) if you want to play with it._
+_The following code and representation can be found under the [examples directory](examples/cook_example/) if you want to play with it._
 
 Imagine we are 3 persons making a dish. We have to:
 1. Put the eggs to boil. When done, cut them.
@@ -13,9 +13,11 @@ Imagine we are 3 persons making a dish. We have to:
 4. Make a salad with the cut eggs and carrots
 5. Serve
 
-You might realize there are a lot of things that don't depend on each other. Eg. you can do the salad and meat separately.
+The following can be represented as such (using the `pipeline.DrawableDiagram` API)
 
-This flow can be achieved as such:
+![](examples/cook_example/template.svg)
+
+This flow can be built and executed as such:
 ```go
 // Complete stage. Its sequential because we can't serve
 // before all the others are done. 

@@ -1,6 +1,6 @@
 /*
 Package pipeline is a pure Go client library for building pipelines in a declarative way.
-It includes a high level API for easily building a graph/template of a structure to represent.
+It includes a high level API to easily build, execute and draw a graph/template of a desired structure.
 
 If the defined implementations of the API are insufficient, one can create their own implementation adding new behaviours,
 such as circuit-breaker executors, panic recover executors, new-relic step decorators, among any idea or feature you would
@@ -75,7 +75,7 @@ Defined structures
 We already implement out of the box some structures that are pretty much mandatory. You can make your own custom
 implementation to create behaviours we are not currently defining. The provided ones are:
 
-- Concurrent: Run stages or steps concurrently
+- AddConcurrency: Run stages or steps concurrently
 
 - Sequential: Run stages or steps sequentially
 
@@ -96,6 +96,20 @@ Executor
 An executor is a contract capable of running Runnable (the single unit of work.)
 
 This is useful if we want to add global step hooks / circuit-breakers / tracers / etc to the step's graph.
+
+Drawing
+
+The package comes with a handy drawing API for representing the created graphs.
+
+	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		Type: pipeline.UMLFormatSVG,
+	})
+	file, _ := os.Create("outputFile.svg")
+
+	yourStage.Draw(diagram)
+
+	err := renderer.Render(diagram, file)
 */
 package pipeline
 

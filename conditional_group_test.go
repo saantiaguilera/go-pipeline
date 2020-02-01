@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 )
@@ -114,4 +116,148 @@ func TestConditionalGroup_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	assert.Equal(t, falseErr, err)
 	falseStage.AssertExpectations(t)
 	trueStage.AssertExpectations(t)
+}
+
+func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFuncWithoutDots(t *testing.T) {
+	statement := func() bool {
+		return true
+	}
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On(
+		"AddDecision",
+		"func1",
+		mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}), mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}),
+	)
+
+	falseStage := new(mockStage)
+	trueStage := new(mockStage)
+
+	stage := pipeline.CreateConditionalGroup(statement, trueStage, falseStage)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	falseStage.AssertExpectations(t)
+	trueStage.AssertExpectations(t)
+}
+
+type simpleStructFunc struct{}
+
+func (s *simpleStructFunc) SomeFuncName() bool {
+	return true
+}
+
+func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFunc(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On(
+		"AddDecision",
+		"SomeFuncName",
+		mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}), mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}),
+	)
+
+	falseStage := new(mockStage)
+	trueStage := new(mockStage)
+
+	stage := pipeline.CreateConditionalGroup((&simpleStructFunc{}).SomeFuncName, trueStage, falseStage)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	falseStage.AssertExpectations(t)
+	trueStage.AssertExpectations(t)
+}
+
+func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWithBothBranches(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On(
+		"AddDecision",
+		mock.Anything,
+		mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}), mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}),
+	).Run(func(args mock.Arguments) {
+		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+	})
+
+	falseStage := new(mockStage)
+	falseStage.On("Draw", mockGraphDiagram)
+	trueStage := new(mockStage)
+	trueStage.On("Draw", mockGraphDiagram)
+
+	stage := pipeline.CreateConditionalGroup(func() bool {
+		return true
+	}, trueStage, falseStage)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	falseStage.AssertExpectations(t)
+	trueStage.AssertExpectations(t)
+}
+
+func TestConditionalGroup_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseBranchIsNilValidated(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On(
+		"AddDecision",
+		mock.Anything,
+		mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}), mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}),
+	).Run(func(args mock.Arguments) {
+		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+	})
+
+	trueStage := new(mockStage)
+	trueStage.On("Draw", mockGraphDiagram)
+
+	stage := pipeline.CreateConditionalGroup(func() bool {
+		return true
+	}, trueStage, nil)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	trueStage.AssertExpectations(t)
+}
+
+func TestConditionalGroup_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBranchIsNilValidated(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On(
+		"AddDecision",
+		mock.Anything,
+		mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}), mock.MatchedBy(func(obj interface{}) bool {
+			return true
+		}),
+	).Run(func(args mock.Arguments) {
+		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+	})
+
+	falseStage := new(mockStage)
+	falseStage.On("Draw", mockGraphDiagram)
+
+	stage := pipeline.CreateConditionalGroup(func() bool {
+		return true
+	}, nil, falseStage)
+
+	stage.Draw(mockGraphDiagram)
+
+	mockGraphDiagram.AssertExpectations(t)
+	falseStage.AssertExpectations(t)
 }

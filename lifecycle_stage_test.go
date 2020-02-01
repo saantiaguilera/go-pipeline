@@ -156,3 +156,20 @@ func TestLifecycleStage_GivenComposition_WhenRun_ThenCompositionBehavesAsAnArray
 	assert.Equal(t, []string{"before", "before", "before", "stage", "after", "after"}, callings)
 	stage.AssertExpectations(t)
 }
+
+func TestLifecycleStage_GivenAGraphToDraw_WhenDrawn_ThenDelegatesToInnerStage(t *testing.T) {
+	before := func(stage pipeline.Stage) error {
+		return nil
+	}
+
+	mockGraphDiagram := new(mockGraphDiagram)
+
+	stage := new(mockStage)
+	stage.On("Draw", mockGraphDiagram).Once()
+
+	lifecycleStage := pipeline.CreateBeforeStageLifecycle(stage, before)
+	lifecycleStage.Draw(mockGraphDiagram)
+
+	stage.AssertExpectations(t)
+	mockGraphDiagram.AssertExpectations(t)
+}
