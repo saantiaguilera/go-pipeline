@@ -1,6 +1,7 @@
 package paint_example_test
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -39,6 +40,8 @@ if paint
 else
   nothing
 */
+
+var render = flag.Bool("pipeline.render", false, "render pipeline")
 
 func Graph() pipeline.Stage {
 	// We use steps with before hooks to bind data (thus making a flow), but you can adopt any method of communication
@@ -181,17 +184,19 @@ func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
 }
 
 func Test_GraphRendering(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
-		Type: pipeline.UMLFormatSVG,
-	})
-	file, _ := os.Create("template.svg")
+	if *render {
+		diagram := pipeline.CreateUMLActivityGraphDiagram()
+		renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+			Type: pipeline.UMLFormatSVG,
+		})
+		file, _ := os.Create("template.svg")
 
-	Graph().Draw(diagram)
+		Graph().Draw(diagram)
 
-	err := renderer.Render(diagram, file)
+		err := renderer.Render(diagram, file)
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
+	}
 }
 
 func Test_Pipeline(t *testing.T) {

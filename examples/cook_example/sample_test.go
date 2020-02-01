@@ -1,6 +1,7 @@
 package cook_example_test
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -8,6 +9,8 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 )
+
+var render = flag.Bool("pipeline.render", false, "render pipeline")
 
 func Graph() pipeline.Stage {
 	numberOfCarrots := 8
@@ -92,17 +95,19 @@ func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
 }
 
 func Test_GraphRendering(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
-		Type: pipeline.UMLFormatSVG,
-	})
-	file, _ := os.Create("template.svg")
+	if *render {
+		diagram := pipeline.CreateUMLActivityGraphDiagram()
+		renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+			Type: pipeline.UMLFormatSVG,
+		})
+		file, _ := os.Create("template.svg")
 
-	Graph().Draw(diagram)
+		Graph().Draw(diagram)
 
-	err := renderer.Render(diagram, file)
+		err := renderer.Render(diagram, file)
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
+	}
 }
 
 // Output: (one of many)
