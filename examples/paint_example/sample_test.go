@@ -144,9 +144,9 @@ func Graph() pipeline.Stage {
 			),
 		),
 		pipeline.CreateConditionalGroup(
-			func() bool {
+			pipeline.CreateSimpleStatement("should_paint", func() bool {
 				return evaluateStep.ShouldPaint
-			},
+			}),
 			pipeline.CreateSequentialGroup(
 				pipeline.CreateConcurrentStage(
 					acceptSurfacePaintingStep,

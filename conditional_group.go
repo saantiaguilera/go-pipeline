@@ -1,14 +1,5 @@
 package pipeline
 
-import (
-	"reflect"
-	"runtime"
-	"strings"
-)
-
-// Statement is an alias for a function that returns a boolean
-type Statement func() bool
-
 type conditionalGroup struct {
 	Statement Statement
 	True      Stage
@@ -16,14 +7,8 @@ type conditionalGroup struct {
 }
 
 func (c *conditionalGroup) Draw(graph GraphDiagram) {
-	name := runtime.FuncForPC(reflect.ValueOf(c.Statement).Pointer()).Name()
-	name = name[strings.LastIndexByte(name, '.')+1:]
-	if i := strings.LastIndexByte(name, '-'); i > 0 {
-		name = name[:i]
-	}
-
 	graph.AddDecision(
-		name,
+		c.Statement.Name(),
 		func(graph GraphDiagram) {
 			if c.True != nil {
 				c.True.Draw(graph)
@@ -38,7 +23,7 @@ func (c *conditionalGroup) Draw(graph GraphDiagram) {
 }
 
 func (c *conditionalGroup) Run(executor Executor) error {
-	if c.Statement != nil && c.Statement() {
+	if c.Statement != nil && c.Statement.Evaluate() {
 		if c.True != nil {
 			return c.True.Run(executor)
 		}

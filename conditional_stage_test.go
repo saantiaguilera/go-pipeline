@@ -29,9 +29,9 @@ func TestConditionalStage_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 	trueStep := new(mockStep)
 	trueStep.On("Run").Return(nil).Once()
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, trueStep, falseStep)
+	}), trueStep, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -45,9 +45,9 @@ func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 	falseStep.On("Run").Return(nil).Once()
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return false
-	}, trueStep, falseStep)
+	}), trueStep, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -59,9 +59,9 @@ func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
 	falseStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, nil, falseStep)
+	}), nil, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -72,9 +72,9 @@ func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t 
 func TestConditionalStage_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return false
-	}, trueStep, nil)
+	}), trueStep, nil)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -89,9 +89,9 @@ func TestConditionalStage_GivenStatementTrueWithTrueError_WhenRun_TrueErrorRetur
 	trueStep := new(mockStep)
 	trueStep.On("Run").Return(trueErr).Once()
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, trueStep, falseStep)
+	}), trueStep, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -107,9 +107,9 @@ func TestConditionalStage_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	falseStep.On("Run").Return(falseErr).Once()
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return false
-	}, trueStep, falseStep)
+	}), trueStep, falseStep)
 
 	err := stage.Run(SimpleExecutor{})
 
@@ -118,14 +118,14 @@ func TestConditionalStage_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	trueStep.AssertExpectations(t)
 }
 
-func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFuncWithoutDots(t *testing.T) {
-	statement := func() bool {
+func TestConditionalStage_GivenAGraphToDrawWithAnonymouseStatement_WhenDrawn_ThenConditionGetsEmptyName(t *testing.T) {
+	statement := pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}
+	})
 	mockGraphDiagram := new(mockGraphDiagram)
 	mockGraphDiagram.On(
 		"AddDecision",
-		"func1",
+		"",
 		mock.MatchedBy(func(obj interface{}) bool {
 			return true
 		}), mock.MatchedBy(func(obj interface{}) bool {
@@ -145,13 +145,7 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFun
 	trueStep.AssertExpectations(t)
 }
 
-type simpleStepStructFunc struct{}
-
-func (s *simpleStepStructFunc) SomeFuncName() bool {
-	return true
-}
-
-func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFunc(t *testing.T) {
+func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfStatement(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
 	mockGraphDiagram.On(
 		"AddDecision",
@@ -166,7 +160,7 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFun
 	falseStep := new(mockStep)
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage((&simpleStepStructFunc{}).SomeFuncName, trueStep, falseStep)
+	stage := pipeline.CreateConditionalStage(pipeline.CreateSimpleStatement("SomeFuncName", nil), trueStep, falseStep)
 
 	stage.Draw(mockGraphDiagram)
 
@@ -197,9 +191,9 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWith
 	trueStep := new(mockStep)
 	trueStep.On("Name").Return("truestep").Once()
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, trueStep, falseStep)
+	}), trueStep, falseStep)
 
 	stage.Draw(mockGraphDiagram)
 
@@ -227,9 +221,9 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBra
 	falseStep := new(mockStep)
 	falseStep.On("Name").Return("falsestep").Once()
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, nil, falseStep)
+	}), nil, falseStep)
 
 	stage.Draw(mockGraphDiagram)
 
@@ -256,9 +250,9 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseB
 	trueStep := new(mockStep)
 	trueStep.On("Name").Return("truestep").Once()
 
-	stage := pipeline.CreateConditionalStage(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
 		return true
-	}, trueStep, nil)
+	}), trueStep, nil)
 
 	stage.Draw(mockGraphDiagram)
 

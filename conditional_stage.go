@@ -1,11 +1,5 @@
 package pipeline
 
-import (
-	"reflect"
-	"runtime"
-	"strings"
-)
-
 type conditionalStage struct {
 	Statement Statement
 	True      Step
@@ -13,14 +7,8 @@ type conditionalStage struct {
 }
 
 func (c *conditionalStage) Draw(graph GraphDiagram) {
-	name := runtime.FuncForPC(reflect.ValueOf(c.Statement).Pointer()).Name()
-	name = name[strings.LastIndexByte(name, '.')+1:]
-	if i := strings.LastIndexByte(name, '-'); i > 0 {
-		name = name[:i]
-	}
-
 	graph.AddDecision(
-		name,
+		c.Statement.Name(),
 		func(graph GraphDiagram) {
 			if c.True != nil {
 				graph.AddActivity(c.True.Name())
@@ -35,7 +23,7 @@ func (c *conditionalStage) Draw(graph GraphDiagram) {
 }
 
 func (c *conditionalStage) Run(executor Executor) error {
-	if c.Statement != nil && c.Statement() {
+	if c.Statement != nil && c.Statement.Evaluate() {
 		if c.True != nil {
 			return executor.Run(c.True)
 		}

@@ -87,9 +87,9 @@ func createImmenseGraph() pipeline.Stage {
 			createNumberedStep(&posN),
 		),
 		pipeline.CreateConditionalGroup(
-			func() bool {
+			pipeline.CreateSimpleStatement("some name", func() bool {
 				return true
-			},
+			}),
 			pipeline.CreateConcurrentGroup(
 				pipeline.CreateSequentialGroup(
 					pipeline.CreateSequentialStage(
@@ -102,23 +102,23 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								func() bool {
+								pipeline.CreateAnonymousStatement(func() bool {
 									return true // documents ok
-								},
+								}),
 								createNumberedStep(&posN),
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalGroup(
-								func() bool {
+								pipeline.CreateSimpleStatement("some name", func() bool {
 									return true
-								},
+								}),
 								pipeline.CreateSequentialStage(
 									createNumberedStep(&posN),
 								),
 								pipeline.CreateConditionalStage(
-									func() bool {
+									pipeline.CreateAnonymousStatement(func() bool {
 										return true // agreement accepted
-									},
+									}),
 									createNumberedStep(&posN),
 									nil,
 								),
@@ -139,9 +139,9 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								func() bool {
+								pipeline.CreateSimpleStatement("some name", func() bool {
 									return false
-								},
+								}),
 								nil,
 								createNumberedStep(&posN),
 							),
@@ -152,9 +152,9 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								func() bool {
+								pipeline.CreateAnonymousStatement(func() bool {
 									return true
-								},
+								}),
 								createNumberedStep(&posN),
 								createNumberedStep(&posN),
 							),
@@ -177,9 +177,9 @@ func createImmenseGraph() pipeline.Stage {
 							createNumberedStep(&posN),
 						),
 						pipeline.CreateConditionalStage(
-							func() bool {
+							pipeline.CreateSimpleStatement("some name", func() bool {
 								return true
-							},
+							}),
 							createNumberedStep(&posN),
 							createNumberedStep(&posN),
 						),
@@ -190,9 +190,9 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalGroup(
-								func() bool {
+								pipeline.CreateSimpleStatement("some name", func() bool {
 									return true // Closed
-								},
+								}),
 								pipeline.CreateSequentialGroup(
 									pipeline.CreateSequentialStage(
 										createNumberedStep(&posN),
@@ -248,14 +248,14 @@ func createImmenseGraph() pipeline.Stage {
 				),
 				pipeline.CreateSequentialGroup(
 					pipeline.CreateConditionalGroup(
-						func() bool {
+						pipeline.CreateSimpleStatement("some name", func() bool {
 							return true
-						},
+						}),
 						pipeline.CreateConcurrentGroup(
 							pipeline.CreateConditionalGroup(
-								func() bool {
+								pipeline.CreateSimpleStatement("some name", func() bool {
 									return true
-								},
+								}),
 								pipeline.CreateSequentialGroup(
 									pipeline.CreateSequentialStage(
 										createNumberedStep(&posN),
@@ -287,13 +287,13 @@ func createImmenseGraph() pipeline.Stage {
 							),
 						),
 						pipeline.CreateConditionalGroup(
-							func() bool {
+							pipeline.CreateSimpleStatement("some name", func() bool {
 								return true
-							},
+							}),
 							pipeline.CreateConditionalGroup(
-								func() bool {
+								pipeline.CreateSimpleStatement("some name", func() bool {
 									return true
-								},
+								}),
 								pipeline.CreateSequentialGroup(
 									pipeline.CreateSequentialStage(
 										createNumberedStep(&posN),
@@ -305,9 +305,9 @@ func createImmenseGraph() pipeline.Stage {
 										createNumberedStep(&posN),
 									),
 									pipeline.CreateConditionalGroup(
-										func() bool {
+										pipeline.CreateSimpleStatement("some name", func() bool {
 											return true
-										},
+										}),
 										pipeline.CreateSequentialGroup(
 											pipeline.CreateSequentialStage(
 												createNumberedStep(&posN),
