@@ -39,7 +39,7 @@ jobs:
     - name: Test  
       run: go test ./...
 
-    - uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} #required
-        fail_ci_if_error: true
+    - name: Coverage
+      run: |
+        go test -coverprofile=coverage.txt -covermode=atomic
+        bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
