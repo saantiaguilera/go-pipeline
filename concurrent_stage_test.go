@@ -2,6 +2,7 @@ package pipeline_test
 
 import (
 	"errors"
+	"sync/atomic"
 	"testing"
 
 	"github.com/saantiaguilera/go-pipeline"
@@ -30,12 +31,22 @@ func TestConcurrentStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcu
 	}
 }
 
+type count32 int32
+
+func (c *count32) increment() int32 {
+	return atomic.AddInt32((*int32)(c), 1)
+}
+
+func (c *count32) get() int32 {
+	return atomic.LoadInt32((*int32)(c))
+}
+
 func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *testing.T) {
 	expectedErr := errors.New("error")
-	times := 0
+	var times count32
 	step := new(mockStep)
 	step.On("Run").Run(func(args mock.Arguments) {
-		times++
+		times.increment()
 	}).Return(expectedErr).Times(10)
 	stage := pipeline.CreateConcurrentStage(
 		step, step, step, step, step,
@@ -45,7 +56,7 @@ func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 	err := stage.Run(SimpleExecutor{})
 
 	assert.Equal(t, expectedErr, err)
-	assert.Equal(t, 10, times)
+	assert.Equal(t, count32(10), times)
 	step.AssertExpectations(t)
 }
 
