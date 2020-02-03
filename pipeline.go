@@ -45,10 +45,14 @@ Stage
 
 A stage contains a collection of steps. The collection will be executed according to the stage implementation (eg. concurrently, sequentially, condition-based, etc).
 
+To create one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
+
 	stage := pipeline.CreateSequentialStage(
 		user.CreateGetAuthenticatedUserStep(request, userChan),
 		user.CreateUserStep(userService, userChan),
 	)
+
+Since a stage is nothing more than an interface, you can create your own implementations abiding that contract.
 
 Stage group
 
@@ -69,6 +73,8 @@ A stage group is a collection of stages. It's also a Stage itself, thus a group 
 			CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
 		),
 	)
+
+Again, as long as you abide the Stage contract, you can create your own ones.
 
 Defined structures
 
