@@ -75,7 +75,7 @@ Defined structures
 We already implement out of the box some structures that are pretty much mandatory. You can make your own custom
 implementation to create behaviours we are not currently defining. The provided ones are:
 
-- AddConcurrency: Run stages or steps concurrently
+- Concurrent: Run stages or steps concurrently
 
 - Sequential: Run stages or steps sequentially
 

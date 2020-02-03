@@ -29,7 +29,7 @@ func Graph() pipeline.Stage {
 	// Complete stage. Its sequential because we can't serve
 	// before all the others are done.
 	graph := pipeline.CreateSequentialGroup(
-		// AddConcurrency stage, given we are 3, we can do the salad / meat separately
+		// Concurrent stage, given we are 3, we can do the salad / meat separately
 		pipeline.CreateConcurrentGroup(
 			// This will be the salad flow. It can be done concurrently with the meat
 			pipeline.CreateSequentialGroup(
