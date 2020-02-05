@@ -396,10 +396,11 @@ func Test_GraphRendering(t *testing.T) {
 func BenchmarkPipeline_Run(b *testing.B) {
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
 	graph := createImmenseGraph()
+	ctx := pipeline.CreateContext()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		err := pipe.Run(graph, pipeline.CreateContext())
+		err := pipe.Run(graph, ctx)
 
 		b.StopTimer()
 		if err != nil {
