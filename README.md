@@ -1,5 +1,7 @@
 # Go-Pipeline
 
+![Build](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) [![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)
+
 Go module for building, executing and representing pipelines. For more information visit the [GoDoc API](https://godoc.org/github.com/saantiaguilera/go-pipeline)
 
 ### Example
