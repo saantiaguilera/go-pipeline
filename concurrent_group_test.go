@@ -20,7 +20,7 @@ func TestConcurrentGroup_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcu
 
 	stage := pipeline.CreateConcurrentGroup(stages...)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, expectedArr, *arr)
@@ -34,7 +34,7 @@ func TestConcurrentGroup_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 	expectedErr := errors.New("error")
 	var times count32
 	innerStage := new(mockStage)
-	innerStage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
+	innerStage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
 		times.increment()
 	}).Return(expectedErr).Times(10)
 	stage := pipeline.CreateConcurrentGroup(
@@ -42,7 +42,7 @@ func TestConcurrentGroup_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 	)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, count32(10), times)

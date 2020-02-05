@@ -11,17 +11,17 @@ import (
 
 func TestLifecyclePipeline_GivenAfterFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	called := false
-	afterFunc := func(stage pipeline.Stage, err error) error {
+	afterFunc := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		called = true
 		return nil
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Return(nil).Once()
+	mockPipeline.On("Run", stage, &mockContext{}).Return(nil).Once()
 
 	lifecyclePipeline := pipeline.CreateAfterPipelineLifecycle(mockPipeline, afterFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.True(t, called)
@@ -30,16 +30,16 @@ func TestLifecyclePipeline_GivenAfterFunc_WhenRun_ThenFuncAreCalled(t *testing.T
 
 func TestLifecyclePipeline_GivenAfterFuncErroring_WhenRun_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	afterFunc := func(stage pipeline.Stage, err error) error {
+	afterFunc := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		return expectedErr
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Return(nil).Once()
+	mockPipeline.On("Run", stage, &mockContext{}).Return(nil).Once()
 
 	lifecyclePipeline := pipeline.CreateAfterPipelineLifecycle(mockPipeline, afterFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	mockPipeline.AssertExpectations(t)
@@ -48,17 +48,17 @@ func TestLifecyclePipeline_GivenAfterFuncErroring_WhenRun_ThenErrorIsReturned(t 
 func TestLifecyclePipeline_GivenAfterFuncRecoveringError_WhenRun_ThenFuncCanRecover(t *testing.T) {
 	expectedErr := errors.New("some error")
 	var retrievedErr error
-	afterFunc := func(stage pipeline.Stage, err error) error {
+	afterFunc := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		retrievedErr = err
 		return nil
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Return(expectedErr).Once()
+	mockPipeline.On("Run", stage, &mockContext{}).Return(expectedErr).Once()
 
 	lifecyclePipeline := pipeline.CreateAfterPipelineLifecycle(mockPipeline, afterFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedErr, retrievedErr)
@@ -67,17 +67,17 @@ func TestLifecyclePipeline_GivenAfterFuncRecoveringError_WhenRun_ThenFuncCanReco
 
 func TestLifecyclePipeline_GivenBeforeFunc_WhenRun_ThenFuncAreCalled(t *testing.T) {
 	called := false
-	beforeFunc := func(stage pipeline.Stage) error {
+	beforeFunc := func(stage pipeline.Stage, ctx pipeline.Context) error {
 		called = true
 		return nil
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Return(nil).Once()
+	mockPipeline.On("Run", stage, &mockContext{}).Return(nil).Once()
 
 	lifecyclePipeline := pipeline.CreateBeforePipelineLifecycle(mockPipeline, beforeFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.True(t, called)
@@ -86,7 +86,7 @@ func TestLifecyclePipeline_GivenBeforeFunc_WhenRun_ThenFuncAreCalled(t *testing.
 
 func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	beforeFunc := func(stage pipeline.Stage) error {
+	beforeFunc := func(stage pipeline.Stage, ctx pipeline.Context) error {
 		return expectedErr
 	}
 	stage := &mockStage{}
@@ -94,7 +94,7 @@ func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsRetu
 	mockPipeline := new(mockPipeline)
 
 	lifecyclePipeline := pipeline.CreateBeforePipelineLifecycle(mockPipeline, beforeFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	mockPipeline.AssertExpectations(t)
@@ -103,10 +103,10 @@ func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenErrorIsRetu
 func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenPipelineAndAfterAreNotRan(t *testing.T) {
 	expectedErr := errors.New("some error")
 	called := false
-	beforeFunc := func(stage pipeline.Stage) error {
+	beforeFunc := func(stage pipeline.Stage, ctx pipeline.Context) error {
 		return expectedErr
 	}
-	afterFunc := func(stage pipeline.Stage, err error) error {
+	afterFunc := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		called = true
 		return nil
 	}
@@ -115,7 +115,7 @@ func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenPipelineAnd
 	mockPipeline := new(mockPipeline)
 
 	lifecyclePipeline := pipeline.CreatePipelineLifecycle(mockPipeline, beforeFunc, afterFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	assert.False(t, called)
@@ -124,19 +124,19 @@ func TestLifecyclePipeline_GivenBeforeFuncReturningError_WhenRun_ThenPipelineAnd
 
 func TestLifecyclePipeline_GivenAPipeline_WhenRun_ThenPipelineIsRun(t *testing.T) {
 	expectedErr := errors.New("some error")
-	beforeFunc := func(stage pipeline.Stage) error {
+	beforeFunc := func(stage pipeline.Stage, ctx pipeline.Context) error {
 		return nil
 	}
-	afterFunc := func(stage pipeline.Stage, err error) error {
+	afterFunc := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		return err
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Return(expectedErr).Once()
+	mockPipeline.On("Run", stage, &mockContext{}).Return(expectedErr).Once()
 
 	lifecyclePipeline := pipeline.CreatePipelineLifecycle(mockPipeline, beforeFunc, afterFunc)
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	mockPipeline.AssertExpectations(t)
@@ -144,18 +144,18 @@ func TestLifecyclePipeline_GivenAPipeline_WhenRun_ThenPipelineIsRun(t *testing.T
 
 func TestLifecyclePipeline_GivenComposition_WhenRun_ThenCompositionBehavesAsAnArray(t *testing.T) {
 	var callings []string
-	before := func(stage pipeline.Stage) error {
+	before := func(stage pipeline.Stage, ctx pipeline.Context) error {
 		callings = append(callings, "before")
 		return nil
 	}
-	after := func(stage pipeline.Stage, err error) error {
+	after := func(stage pipeline.Stage, ctx pipeline.Context, err error) error {
 		callings = append(callings, "after")
 		return err
 	}
 	stage := &mockStage{}
 
 	mockPipeline := new(mockPipeline)
-	mockPipeline.On("Run", stage).Run(func(args mock.Arguments) {
+	mockPipeline.On("Run", stage, &mockContext{}).Run(func(args mock.Arguments) {
 		callings = append(callings, "pipeline")
 	}).Return(nil).Once()
 
@@ -164,7 +164,7 @@ func TestLifecyclePipeline_GivenComposition_WhenRun_ThenCompositionBehavesAsAnAr
 	lifecyclePipeline = pipeline.CreateAfterPipelineLifecycle(lifecyclePipeline, after)
 	lifecyclePipeline = pipeline.CreateBeforePipelineLifecycle(lifecyclePipeline, before)
 
-	err := lifecyclePipeline.Run(stage)
+	err := lifecyclePipeline.Run(stage, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.Len(t, callings, 6)

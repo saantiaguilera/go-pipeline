@@ -21,7 +21,7 @@ func (n *numberedStep) Name() string {
 	return fmt.Sprintf("Step %d", n.Number)
 }
 
-func (n *numberedStep) Run() error {
+func (n *numberedStep) Run(ctx pipeline.Context) error {
 	return nil // Do nothing
 }
 
@@ -33,7 +33,7 @@ func (n *stringedStep) Name() string {
 	return fmt.Sprintf("Step %s", n.Number)
 }
 
-func (n *stringedStep) Run() error {
+func (n *stringedStep) Run(ctx pipeline.Context) error {
 	return nil // Do nothing
 }
 
@@ -45,7 +45,7 @@ func (n *chanStep) Name() string {
 	return fmt.Sprintf("Step %d", <-n.NumberChan)
 }
 
-func (n *chanStep) Run() error {
+func (n *chanStep) Run(ctx pipeline.Context) error {
 	return nil // Do nothing
 }
 
@@ -87,7 +87,7 @@ func createImmenseGraph() pipeline.Stage {
 			createNumberedStep(&posN),
 		),
 		pipeline.CreateConditionalGroup(
-			pipeline.CreateSimpleStatement("some name", func() bool {
+			pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 				return true
 			}),
 			pipeline.CreateConcurrentGroup(
@@ -102,22 +102,22 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								pipeline.CreateAnonymousStatement(func() bool {
-									return true // documents ok
+								pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+									return true
 								}),
 								createNumberedStep(&posN),
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func() bool {
+								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 									return true
 								}),
 								pipeline.CreateSequentialStage(
 									createNumberedStep(&posN),
 								),
 								pipeline.CreateConditionalStage(
-									pipeline.CreateAnonymousStatement(func() bool {
-										return true // agreement accepted
+									pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+										return true
 									}),
 									createNumberedStep(&posN),
 									nil,
@@ -139,7 +139,7 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								pipeline.CreateSimpleStatement("some name", func() bool {
+								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 									return false
 								}),
 								nil,
@@ -152,7 +152,7 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalStage(
-								pipeline.CreateAnonymousStatement(func() bool {
+								pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 									return true
 								}),
 								createNumberedStep(&posN),
@@ -177,7 +177,7 @@ func createImmenseGraph() pipeline.Stage {
 							createNumberedStep(&posN),
 						),
 						pipeline.CreateConditionalStage(
-							pipeline.CreateSimpleStatement("some name", func() bool {
+							pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 								return true
 							}),
 							createNumberedStep(&posN),
@@ -190,7 +190,7 @@ func createImmenseGraph() pipeline.Stage {
 								createNumberedStep(&posN),
 							),
 							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func() bool {
+								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 									return true // Closed
 								}),
 								pipeline.CreateSequentialGroup(
@@ -248,12 +248,12 @@ func createImmenseGraph() pipeline.Stage {
 				),
 				pipeline.CreateSequentialGroup(
 					pipeline.CreateConditionalGroup(
-						pipeline.CreateSimpleStatement("some name", func() bool {
+						pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 							return true
 						}),
 						pipeline.CreateConcurrentGroup(
 							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func() bool {
+								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 									return true
 								}),
 								pipeline.CreateSequentialGroup(
@@ -287,11 +287,11 @@ func createImmenseGraph() pipeline.Stage {
 							),
 						),
 						pipeline.CreateConditionalGroup(
-							pipeline.CreateSimpleStatement("some name", func() bool {
+							pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 								return true
 							}),
 							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func() bool {
+								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 									return true
 								}),
 								pipeline.CreateSequentialGroup(
@@ -305,7 +305,7 @@ func createImmenseGraph() pipeline.Stage {
 										createNumberedStep(&posN),
 									),
 									pipeline.CreateConditionalGroup(
-										pipeline.CreateSimpleStatement("some name", func() bool {
+										pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 											return true
 										}),
 										pipeline.CreateSequentialGroup(
@@ -385,21 +385,6 @@ func Test_GraphRendering(t *testing.T) {
 	}
 }
 
-// Benchmark for getting input if creating a big graph costs too much (given that we are favouring runtime graph creations
-// instead of compile time ones while passing around interface{} simulating 'generics' across the functions)
-//
-// We are not benchmarking single stages because their implementation is too simple and doesnt rely on any external
-// dependency
-// We are creating random steps of chan/int/string given that the graph will probably carry a "session" around
-//
-// The current graph has 112 steps (chan/int/string), the UML can be seen at pipeline_benchmark_test.svg
-// Output: BenchmarkPipeline_Creation-4   	   60474	     18737 ns/op (0.018ms)
-func BenchmarkPipeline_Creation(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = createImmenseGraph()
-	}
-}
-
 // Benchmark for getting input if traversing a graph costs too much
 //
 // Steps are stubbed so that we measure only the cost of walking the whole graph with a simple pipeline
@@ -411,10 +396,11 @@ func BenchmarkPipeline_Creation(b *testing.B) {
 func BenchmarkPipeline_Run(b *testing.B) {
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
 	graph := createImmenseGraph()
+	ctx := pipeline.CreateContext()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		err := pipe.Run(graph)
+		err := pipe.Run(graph, ctx)
 
 		b.StopTimer()
 		if err != nil {

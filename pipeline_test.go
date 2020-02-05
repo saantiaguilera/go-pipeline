@@ -15,8 +15,8 @@ type mockPipeline struct {
 	mock.Mock
 }
 
-func (m mockPipeline) Run(stage pipeline.Stage) error {
-	args := m.Called(stage)
+func (m mockPipeline) Run(stage pipeline.Stage, ctx pipeline.Context) error {
+	args := m.Called(stage, ctx)
 	return args.Error(0)
 }
 
@@ -29,8 +29,8 @@ func (m *mockStep) Name() string {
 	return args.String(0)
 }
 
-func (m *mockStep) Run() error {
-	args := m.Called()
+func (m *mockStep) Run(ctx pipeline.Context) error {
+	args := m.Called(ctx)
 	return args.Error(0)
 }
 
@@ -42,23 +42,23 @@ func (m *mockStage) Draw(graph pipeline.GraphDiagram) {
 	_ = m.Called(graph)
 }
 
-func (m *mockStage) Run(executor pipeline.Executor) error {
-	args := m.Called(executor)
+func (m *mockStage) Run(executor pipeline.Executor, ctx pipeline.Context) error {
+	args := m.Called(executor, ctx)
 
 	return args.Error(0)
 }
 
 type SimpleExecutor struct{}
 
-func (s SimpleExecutor) Run(runnable pipeline.Runnable) error {
-	return runnable.Run()
+func (s SimpleExecutor) Run(runnable pipeline.Runnable, ctx pipeline.Context) error {
+	return runnable.Run(ctx)
 }
 
 var stepMux = sync.Mutex{}
 
 func createStep(data int, arr **[]int) pipeline.Step {
 	step := new(mockStep)
-	step.On("Run").Run(func(args mock.Arguments) {
+	step.On("Run", &mockContext{}).Run(func(args mock.Arguments) {
 		stepMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
@@ -73,7 +73,7 @@ var stageMux = sync.Mutex{}
 
 func createStage(data int, arr **[]int) pipeline.Stage {
 	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
+	stage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
 		stageMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
@@ -89,9 +89,9 @@ func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRan(t *testing.T) {
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})
 
 	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}).Return(expectedErr).Once()
+	stage.On("Run", SimpleExecutor{}, mock.Anything).Return(expectedErr).Once()
 
-	err := pipe.Run(stage)
+	err := pipe.Run(stage, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	stage.AssertExpectations(t)

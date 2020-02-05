@@ -8,7 +8,7 @@ import (
 )
 
 func TestStatement_GivenAnAnonymousStatement_WhenNamed_ThenReturnsEmpty(t *testing.T) {
-	statement := pipeline.CreateAnonymousStatement(func() bool {
+	statement := pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	})
 
@@ -16,15 +16,15 @@ func TestStatement_GivenAnAnonymousStatement_WhenNamed_ThenReturnsEmpty(t *testi
 }
 
 func TestStatement_GivenAnAnonymousStatement_WhenEvaluated_ThenEvaluatesPassed(t *testing.T) {
-	statement := pipeline.CreateAnonymousStatement(func() bool {
+	statement := pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	})
 
-	assert.True(t, statement.Evaluate())
+	assert.True(t, statement.Evaluate(&mockContext{}))
 }
 
 func TestStatement_GivenAStatement_WhenNamed_ThenReturnsName(t *testing.T) {
-	statement := pipeline.CreateSimpleStatement("some name", func() bool {
+	statement := pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 		return true
 	})
 
@@ -32,21 +32,21 @@ func TestStatement_GivenAStatement_WhenNamed_ThenReturnsName(t *testing.T) {
 }
 
 func TestStatement_GivenAStatement_WhenEvaluated_ThenEvaluatesPassed(t *testing.T) {
-	statement := pipeline.CreateSimpleStatement("some name", func() bool {
+	statement := pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
 		return true
 	})
 
-	assert.True(t, statement.Evaluate())
+	assert.True(t, statement.Evaluate(&mockContext{}))
 }
 
 func TestStatement_GivenAnAnonymousStatementWithNoFunc_WhenEvaluated_ThenReturnsFalse(t *testing.T) {
 	statement := pipeline.CreateAnonymousStatement(nil)
 
-	assert.False(t, statement.Evaluate())
+	assert.False(t, statement.Evaluate(&mockContext{}))
 }
 
 func TestStatement_GivenAStatementWithNoFunc_WhenEvaluated_ThenReturnsFalse(t *testing.T) {
 	statement := pipeline.CreateSimpleStatement("some name", nil)
 
-	assert.False(t, statement.Evaluate())
+	assert.False(t, statement.Evaluate(&mockContext{}))
 }

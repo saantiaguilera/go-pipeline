@@ -10,34 +10,39 @@ Supported structure
 
 Below you can find the atomic types this API exposes. This elements are mandatory for creating and executing a graph in a pipeline.
 
+Context
+
+A context is supplied across all the graph flow for communicating data across different units of work. This is useful when
+having single graph instances and reusing them constantly (thus having stateless elements besides the injected behaviours).
+
 Step
 
 A step is a single unit of work. It's an alias for Runnable
 
 	type createUserStep struct {
 		Service      user.Service
-		InputStream  chan *model.AuthenticatedUser
-		OutputStream chan *model.User
 	}
 
 	func (s *createUserStep) Name() string {
 		return "create_user_step"
 	}
 
-	func (s *createUserStep) Run() error {
-		defer close(s.OutputStream)
-		user, err := s.Service.Create(<-s.InputStream)
+	func (s *createUserStep) Run(ctx pipeline.Context) error {
+		user, exists := ctx.Get(TagUser)
+		if !exists {
+			return errors.New("no user in current context to save")
+		}
+
+		userId, err := s.Service.Create(user)
 		if err == nil {
-			s.OutputStream <- user
+			ctx.Set(TagUserId, userId)
 		}
 		return err
 	}
 
-	func CreateUserStep(service user.Service, input chan *model.AuthenticatedUser) pipeline.Step {
+	func CreateUserStep(service user.Service) pipeline.Step {
 		return &createUserStep{
 			Service:      service,
-			InputStream:  input,
-			OutputStream: make(chan *model.User, 1),
 		}
 	}
 
@@ -48,8 +53,8 @@ A stage contains a collection of steps. The collection will be executed accordin
 To create one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
 
 	stage := pipeline.CreateSequentialStage(
-		user.CreateGetAuthenticatedUserStep(request, userChan),
-		user.CreateUserStep(userService, userChan),
+		user.CreateGetAuthenticatedUserStep(jwtTokenHandler),
+		user.CreateUserStep(userService),
 	)
 
 Since a stage is nothing more than an interface, you can create your own implementations abiding that contract.
@@ -61,16 +66,16 @@ A stage group is a collection of stages. It's also a Stage itself, thus a group 
 	stage := pipeline.CreateSequentialGroup(
 		pipeline.CreateConcurrentGroup(
 			pipeline.CreateSequentialStage(
-				CreateBoilEggsStep(numberOfEggs, eggsChan),
-				CreateCutEggsStep(eggsChan),
+				CreateBoilEggsStep(),
+				CreateCutEggsStep(),
 			),
 			pipeline.CreateSequentialStage(
-				CreateWashCarrotsStep(numberOfCarrots, carrotsChan),
-				CreateCutCarrotsStep(carrotsChan),
+				CreateWashCarrotsStep(),
+				CreateCutCarrotsStep(),
 			),
 		),
 		pipeline.CreateSequentialStage(
-			CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
+			CreateMakeSaladStep(),
 		),
 	)
 
@@ -89,7 +94,7 @@ implementation to create behaviours we are not currently defining. The provided 
 
 - Tracer: Add tracers to a stage or step
 
-- Lifecycle: Add lifecycle methods (before / after) to a stage or step
+- Lifecycle: Add lifecycle methods (before / after) to a stage or step.
 
 With the use of them a graph-like / template structure can be achieved, that will be executed by a Pipeline through an Executor.
 
@@ -121,17 +126,19 @@ package pipeline
 
 // Pipeline contract for running a graph/template.
 type Pipeline interface {
-	// Run a stage graph. This method is blocking until the stage finishes.
+	// Run a stage graph with a starting context. Consider inflating the context with useful data that will work as
+	// input for the steps.
+	// This method is blocking until the stage finishes.
 	// Returns an error denoting that the stage couldn't complete (and its reason)
-	Run(stage Stage) error
+	Run(stage Stage, ctx Context) error
 }
 
 type pipeline struct {
 	Executor Executor
 }
 
-func (p *pipeline) Run(stage Stage) error {
-	return stage.Run(p.Executor)
+func (p *pipeline) Run(stage Stage, ctx Context) error {
+	return stage.Run(p.Executor, ctx)
 }
 
 // CreatePipeline creates a pipeline with a given executor

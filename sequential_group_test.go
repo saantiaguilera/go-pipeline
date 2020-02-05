@@ -21,7 +21,7 @@ func TestSequentialGroup_GivenStagesWithoutErrors_WhenRun_ThenAllStagesAreRunSeq
 
 	stage := pipeline.CreateSequentialGroup(stages...)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedArr, *arr)
@@ -34,7 +34,7 @@ func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 	expectedErr := errors.New("error")
 	time := ""
 	mockStage := new(mockStage)
-	mockStage.On("Run", SimpleExecutor{}).Run(func(args mock.Arguments) {
+	mockStage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
 		time += strconv.Itoa(len(time))
 	}).Return(expectedErr).Once()
 
@@ -43,7 +43,7 @@ func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 		mockStage, mockStage, mockStage, mockStage, mockStage,
 	)
 
-	err := initStage.Run(SimpleExecutor{})
+	err := initStage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, "0", time)

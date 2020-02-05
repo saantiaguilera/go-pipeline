@@ -2,9 +2,9 @@ package pipeline
 
 type sequentialStage []Step
 
-func (s sequentialStage) Run(executor Executor) error {
+func (s sequentialStage) Run(executor Executor, ctx Context) error {
 	return runSync(len(s), func(index int) error {
-		return executor.Run(s[index])
+		return executor.Run(s[index], ctx)
 	})
 }
 

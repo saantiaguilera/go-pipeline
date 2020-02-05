@@ -17,7 +17,7 @@ func TestTrace_GivenAStepToTrace_WhenRun_ThenOutputsInnerStepErr(t *testing.T) {
 	mockStep.On("Run", mock.Anything).Return(errors.New("some error"))
 	step := pipeline.CreateTracedStep(mockStep)
 
-	err := SimpleExecutor{}.Run(step)
+	err := SimpleExecutor{}.Run(step, &mockContext{})
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "some error", err.Error())
@@ -32,7 +32,7 @@ func TestTrace_GivenAStepToTrace_WhenRun_ThenSpecificFormatIsUsed(t *testing.T) 
 	step := pipeline.CreateTracedStepWithWriter(mockStep, writer)
 	validator := regexp.MustCompile(`^\[STEP] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Failure: some error\n$`)
 
-	_ = SimpleExecutor{}.Run(step)
+	_ = SimpleExecutor{}.Run(step, &mockContext{})
 
 	output := writer.Bytes()
 

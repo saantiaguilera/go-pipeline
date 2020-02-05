@@ -7,7 +7,9 @@ type Runnable interface {
 	Named
 
 	// Run the unit, returns error if it fails to complete successfully
-	Run() error
+	// The provided context is the same across all units, so it's useful to store and retrieve data as a mean of
+	// communication between different units
+	Run(ctx Context) error
 }
 
 // Step is an Alias for runnable.

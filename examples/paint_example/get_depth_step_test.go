@@ -1,14 +1,16 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type GetDepthStep struct {
-	Depth int
-}
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-func (s *GetDepthStep) Run() error {
-	s.Depth = 1234
+type GetDepthStep struct{}
+
+func (s *GetDepthStep) Run(ctx pipeline.Context) error {
 	fmt.Print("Getting depth: 1234\n")
+	ctx.Set(TagDepth, 1234)
 	return nil
 }
 

@@ -7,45 +7,30 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-type cutMeatStep struct {
-	MeatSize int
-	OvenSize int
-	Stream   chan int
-}
+type cutMeatStep struct{}
 
 func (s *cutMeatStep) Name() string {
 	return "cut_meat_step"
 }
 
-func (s *cutMeatStep) Run() error {
-	fmt.Printf("Cutting meat of size %d into %d\n", s.MeatSize, s.OvenSize)
+func (s *cutMeatStep) Run(ctx pipeline.Context) error {
+	meatSize, _ := ctx.GetInt(TagMeatSize)
+	ovenSize, _ := ctx.GetInt(TagOvenSize)
+	fmt.Printf("Cutting meat of size %d into %d\n", meatSize, ovenSize)
 	time.Sleep(1 * time.Second)
 
-	s.Stream <- s.OvenSize
+	ctx.Set(TagMeatSize, ovenSize)
 	return nil
 }
 
-func CreateCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step {
-	return &cutMeatStep{
-		MeatSize: meatSize,
-		OvenSize: ovenSize,
-		Stream:   meatChan,
+func CreateCutMeatStep() pipeline.Step {
+	return &cutMeatStep{}
+}
+
+func CreateMeatTooBigStatement() func(ctx pipeline.Context) bool {
+	return func(ctx pipeline.Context) bool {
+		meatSize, _ := ctx.GetInt(TagMeatSize)
+		ovenSize, _ := ctx.GetInt(TagOvenSize)
+		return meatSize > ovenSize
 	}
-}
-
-func CreateMeatTooBigStatement(meatSize, ovenSize int) func() bool {
-	s := &MeatTooBig{
-		MeatSize: meatSize,
-		OvenSize: ovenSize,
-	}
-	return s.IsMeatTooBigForTheOven
-}
-
-type MeatTooBig struct {
-	MeatSize int
-	OvenSize int
-}
-
-func (m *MeatTooBig) IsMeatTooBigForTheOven() bool {
-	return m.MeatSize > m.OvenSize
 }

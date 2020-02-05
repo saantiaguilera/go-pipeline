@@ -3,19 +3,17 @@ package paint_example_test
 import (
 	"fmt"
 	"time"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
-type EvaluateStep struct {
-	VolumePrice  float64
-	SurfacePrice float64
+type EvaluateStep struct{}
 
-	ShouldPaint bool
-}
-
-func (s *EvaluateStep) Run() error {
+func (s *EvaluateStep) Run(ctx pipeline.Context) error {
+	volumePrice, _ := ctx.GetFloat64(TagVolumePrice)
+	surfacePrice, _ := ctx.GetFloat64(TagSurfacePrice)
 	time.Sleep(100 * time.Millisecond) // Simulate time it takes to use a service
-	fmt.Printf("Evaluating prices: %f and %f\n", s.VolumePrice, s.SurfacePrice)
-	s.ShouldPaint = true
+	fmt.Printf("Evaluating prices: %f and %f\n", volumePrice, surfacePrice)
 	return nil
 }
 

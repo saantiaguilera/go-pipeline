@@ -13,19 +13,6 @@ import (
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
 func Graph() pipeline.Stage {
-	numberOfCarrots := 8
-	numberOfEggs := 5
-
-	meatSize := 600
-	ovenSize := 500
-
-	// Channels as a mean for communicating input / output.
-	// interface{} would be a struct for your model
-	eggsChan := make(chan int, 1)
-	carrotsChan := make(chan int, 1)
-	saladChan := make(chan int, 1)
-	meatChan := make(chan int, 1)
-
 	// Complete stage. Its sequential because we can't serve
 	// before all the others are done.
 	graph := pipeline.CreateSequentialGroup(
@@ -33,24 +20,22 @@ func Graph() pipeline.Stage {
 		pipeline.CreateConcurrentGroup(
 			// This will be the salad flow. It can be done concurrently with the meat
 			pipeline.CreateSequentialGroup(
-				// Stream and carrots can be operated concurrently too
+				// Eggs and carrots can be operated concurrently too
 				pipeline.CreateConcurrentGroup(
 					// Sequential stage for the eggs flow
 					pipeline.CreateSequentialStage(
-						// Use a mean of communication. Channels could be one.
-						CreateBoilEggsStep(numberOfEggs, eggsChan),
-						CreateCutEggsStep(eggsChan),
+						CreateBoilEggsStep(),
+						CreateCutEggsStep(),
 					),
 					// Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
 					pipeline.CreateSequentialStage(
-						// Use a mean of communication. Channels could be one.
-						CreateWashCarrotsStep(numberOfCarrots, carrotsChan),
-						CreateCutCarrotsStep(carrotsChan),
+						CreateWashCarrotsStep(),
+						CreateCutCarrotsStep(),
 					),
 				),
 				// This is sequential. When carrots and eggs are done, this will run
 				pipeline.CreateSequentialStage(
-					CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
+					CreateMakeSaladStep(),
 				),
 			),
 			// Another sequential stage for the meat (concurrently with salad)
@@ -59,9 +44,9 @@ func Graph() pipeline.Stage {
 				pipeline.CreateConcurrentGroup(
 					// Conditional stage, the meat might be too big
 					pipeline.CreateConditionalStage(
-						pipeline.CreateSimpleStatement("is_meat_too_big", CreateMeatTooBigStatement(meatSize, ovenSize)),
+						pipeline.CreateSimpleStatement("is_meat_too_big", CreateMeatTooBigStatement()),
 						// True:
-						CreateCutMeatStep(meatSize, ovenSize, meatChan),
+						CreateCutMeatStep(),
 						// False:
 						nil,
 					),
@@ -70,13 +55,13 @@ func Graph() pipeline.Stage {
 					),
 				),
 				pipeline.CreateSequentialStage(
-					CreatePutMeatInOvenStep(meatChan),
+					CreatePutMeatInOvenStep(),
 				),
 			),
 		),
 		// When everything is done. Serve
 		pipeline.CreateSequentialStage(
-			CreateServeStep(meatChan, saladChan),
+			CreateServeStep(),
 		),
 	)
 
@@ -87,9 +72,9 @@ func Graph() pipeline.Stage {
 // Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
 type SampleExecutor struct{}
 
-func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
+func (t *SampleExecutor) Run(cmd pipeline.Runnable, ctx pipeline.Context) error {
 	fmt.Printf("Running task %s\n", cmd.Name()) // Log when the task starts running
-	err := cmd.Run()
+	err := cmd.Run(ctx)
 	fmt.Printf("Finished task %s\n", cmd.Name()) // Log when the task ends running
 	return err
 }
@@ -119,11 +104,22 @@ func Test_GraphRendering(t *testing.T) {
 // Cutting 5 eggs into 25 pieces
 // Putting in the oven 500 meat
 // Cutting 8 carrots into 40 pieces
-// Making salad with 40 eggs and 25 carrots
+// Making salad with 25 eggs and 40 carrots
 // Serving 65 of salad and 500 of meat
 func Test_Pipeline(t *testing.T) {
-	p := pipeline.CreatePipeline(&SampleExecutor{})
+	// Create a pipeline with our own traced executor (no circuit breakers, nothing). Also a graph, its stateless
+	// so it can be re-run as many times as we like
+	pipe := pipeline.CreatePipeline(&SampleExecutor{})
+	graph := Graph()
 
-	err := p.Run(Graph())
+	// Initial context input data
+	ctx := pipeline.CreateContext()
+	ctx.Set(TagNumberOfCarrots, 8)
+	ctx.Set(TagNumberOfEggs, 5)
+	ctx.Set(TagMeatSize, 600)
+	ctx.Set(TagOvenSize, 500)
+
+	// Run and assert.
+	err := pipe.Run(graph, ctx)
 	assert.Nil(t, err)
 }

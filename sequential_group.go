@@ -2,9 +2,9 @@ package pipeline
 
 type sequentialGroup []Stage
 
-func (s sequentialGroup) Run(executor Executor) error {
+func (s sequentialGroup) Run(executor Executor, ctx Context) error {
 	return runSync(len(s), func(index int) error {
-		return s[index].Run(executor)
+		return s[index].Run(executor, ctx)
 	})
 }
 

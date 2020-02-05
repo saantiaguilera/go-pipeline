@@ -35,10 +35,10 @@ func (t *tracedStage) Draw(graph GraphDiagram) {
 	t.Stage.Draw(graph)
 }
 
-func (t *tracedStage) Run(executor Executor) error {
+func (t *tracedStage) Run(executor Executor, ctx Context) error {
 	start := time.Now()
 
-	err := t.Stage.Run(executor)
+	err := t.Stage.Run(executor, ctx)
 
 	var message string
 	if err == nil {

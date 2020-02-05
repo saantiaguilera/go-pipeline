@@ -1,10 +1,14 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/saantiaguilera/go-pipeline"
+)
 
 type AcceptVolumePaintingStep struct{}
 
-func (s *AcceptVolumePaintingStep) Run() error {
+func (s *AcceptVolumePaintingStep) Run(ctx pipeline.Context) error {
 	fmt.Printf("Accepting volume painting\n")
 	return nil
 }
