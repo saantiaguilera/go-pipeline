@@ -39,6 +39,16 @@ func (m *mockContext) GetInt(key pipeline.Tag) (i int, exists bool) {
 	return args.Int(0), args.Bool(1)
 }
 
+func (m *mockContext) GetUInt(key pipeline.Tag) (i uint, exists bool) {
+	args := m.Called(key)
+	return args.Get(0).(uint), args.Bool(1)
+}
+
+func (m *mockContext) GetUInt64(key pipeline.Tag) (i uint64, exists bool) {
+	args := m.Called(key)
+	return args.Get(0).(uint64), args.Bool(1)
+}
+
 func (m *mockContext) GetInt64(key pipeline.Tag) (i64 int64, exists bool) {
 	args := m.Called(key)
 	return args.Get(0).(int64), args.Bool(1)

@@ -330,6 +330,152 @@ func TestPipelineContext_GetInt_Suite(t *testing.T) {
 	}
 }
 
+func TestPipelineContext_GetUInt_Suite(t *testing.T) {
+	tests := []struct {
+		name  string
+		store struct {
+			key   Tag
+			value interface{}
+		}
+		retrieve Tag
+		want     struct {
+			value  interface{}
+			exists bool
+		}
+	}{
+		{
+			name: "given a stored value, when retrieving it, then it exists and it's the same",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: uint(12)},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint(12), exists: true},
+		},
+		{
+			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: true},
+			retrieve: TestKey2Tag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint(0), exists: false},
+		},
+		{
+			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: "asdf"},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint(0), exists: true},
+		},
+		{
+			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: nil},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint(0), exists: true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := CreateContext()
+			ctx.Set(tt.store.key, tt.store.value)
+			if got, exists := ctx.GetUInt(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
+				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
+			}
+		})
+	}
+}
+
+func TestPipelineContext_GetUInt64_Suite(t *testing.T) {
+	tests := []struct {
+		name  string
+		store struct {
+			key   Tag
+			value interface{}
+		}
+		retrieve Tag
+		want     struct {
+			value  interface{}
+			exists bool
+		}
+	}{
+		{
+			name: "given a stored value, when retrieving it, then it exists and it's the same",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: uint64(12)},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint64(12), exists: true},
+		},
+		{
+			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: true},
+			retrieve: TestKey2Tag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint64(0), exists: false},
+		},
+		{
+			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: "asdf"},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint64(0), exists: true},
+		},
+		{
+			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
+			store: struct {
+				key   Tag
+				value interface{}
+			}{key: TestKeyTag, value: nil},
+			retrieve: TestKeyTag,
+			want: struct {
+				value  interface{}
+				exists bool
+			}{value: uint64(0), exists: true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := CreateContext()
+			ctx.Set(tt.store.key, tt.store.value)
+			if got, exists := ctx.GetUInt64(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
+				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
+			}
+		})
+	}
+}
+
 func TestPipelineContext_GetInt64_Suite(t *testing.T) {
 	tests := []struct {
 		name  string

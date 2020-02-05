@@ -73,6 +73,26 @@ func (c *memMapContext) GetInt(key Tag) (i int, exists bool) {
 	return
 }
 
+// GetUInt returns the value associated with the key as an uint if possible, and if it exists regardless of the type.
+// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
+func (c *memMapContext) GetUInt(key Tag) (i uint, exists bool) {
+	var val interface{}
+	if val, exists = c.Get(key); exists && val != nil {
+		i, _ = val.(uint)
+	}
+	return
+}
+
+// GetUInt64 returns the value associated with the key as an uint if possible, and if it exists regardless of the type.
+// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
+func (c *memMapContext) GetUInt64(key Tag) (i uint64, exists bool) {
+	var val interface{}
+	if val, exists = c.Get(key); exists && val != nil {
+		i, _ = val.(uint64)
+	}
+	return
+}
+
 // GetInt64 returns the value associated with the key as an integer if possible, and if it exists regardless of the type.
 // Note that if the type stored is different from the expected, the value will be nil but the exists will be true
 func (c *memMapContext) GetInt64(key Tag) (i64 int64, exists bool) {

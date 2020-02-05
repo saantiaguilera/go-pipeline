@@ -33,6 +33,14 @@ type Context interface {
 	// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
 	GetInt(key Tag) (i int, exists bool)
 
+	// GetUInt returns the value associated with the key as an uint if possible, and if it exists regardless of the type.
+	// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
+	GetUInt(key Tag) (i uint, exists bool)
+
+	// GetUInt64 returns the value associated with the key as an uint64 if possible, and if it exists regardless of the type.
+	// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
+	GetUInt64(key Tag) (i uint64, exists bool)
+
 	// GetInt64 returns the value associated with the key as an integer if possible, and if it exists regardless of the type.
 	// Note that if the type stored is different from the expected, the value will be nil but the exists will be true
 	GetInt64(key Tag) (i64 int64, exists bool)
