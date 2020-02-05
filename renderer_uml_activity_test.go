@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/saantiaguilera/go-pipeline"
@@ -62,6 +63,29 @@ func TestRenderer_GivenARenderer_WhenFailingRenderingRaw_ThenErrorIsReturned(t *
 	assert.Equal(t, expectedErr, err)
 	mockGraphDiagram.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
+}
+
+func TestRenderer_GivenARenderer_WhenRenderingWithoutSpecifyingType_ThenSvgIsUsedByDefault(t *testing.T) {
+	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraphDiagram.On("String").Return("content string")
+
+	mockWriteCloser := new(mockWriteCloser)
+	mockWriteCloser.On("Close").Return(nil)
+
+	var urlUsed string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		urlUsed = r.URL.String()
+	}))
+	defer ts.Close()
+
+	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		BaseURL: ts.URL,
+	})
+	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+
+	assert.Nil(t, err)
+	assert.True(t, strings.HasPrefix(urlUsed, "/svg/"))
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreDeflatedAndBased64(t *testing.T) {

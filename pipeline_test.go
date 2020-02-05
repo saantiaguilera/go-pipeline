@@ -96,3 +96,22 @@ func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRan(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 	stage.AssertExpectations(t)
 }
+
+func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRanWithTheSameContext(t *testing.T) {
+	var tag pipeline.Tag = "tag"
+	expectedErr := errors.New("error")
+	pipe := pipeline.CreatePipeline(SimpleExecutor{})
+	ctx := new(mockContext)
+	ctx.On("Set", tag, "value").Once()
+
+	stage := new(mockStage)
+	stage.On("Run", SimpleExecutor{}, ctx).Run(func(args mock.Arguments) {
+		args.Get(1).(pipeline.Context).Set(tag, "value")
+	}).Return(expectedErr).Once()
+
+	err := pipe.Run(stage, ctx)
+
+	assert.Equal(t, expectedErr, err)
+	ctx.AssertExpectations(t)
+	stage.AssertExpectations(t)
+}
