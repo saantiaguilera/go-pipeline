@@ -28,7 +28,12 @@ A step is a single unit of work. It's an alias for Runnable
 	}
 
 	func (s *createUserStep) Run(ctx pipeline.Context) error {
-		userId, err := s.Service.Create(ctx.Get(TagUser))
+		user, exists := ctx.Get(TagUser)
+		if !exists {
+			return errors.New("no user in current context to save")
+		}
+
+		userId, err := s.Service.Create(user)
 		if err == nil {
 			ctx.Set(TagUserId, userId)
 		}
@@ -48,7 +53,7 @@ A stage contains a collection of steps. The collection will be executed accordin
 To create one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
 
 	stage := pipeline.CreateSequentialStage(
-		user.CreateGetAuthenticatedUserStep(request),
+		user.CreateGetAuthenticatedUserStep(jwtTokenHandler),
 		user.CreateUserStep(userService),
 	)
 
