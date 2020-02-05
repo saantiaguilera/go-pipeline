@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -105,7 +104,7 @@ func TestPipelineContext_GetAnonymous_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.Get(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.Get(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = %v, want %v", got, tt.want)
 			}
 		})
@@ -178,7 +177,7 @@ func TestPipelineContext_GetString_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetString(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetString(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -251,7 +250,7 @@ func TestPipelineContext_GetBool_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetBool(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetBool(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -324,7 +323,7 @@ func TestPipelineContext_GetInt_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetInt(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetInt(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -397,7 +396,7 @@ func TestPipelineContext_GetInt64_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetInt64(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetInt64(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -470,7 +469,7 @@ func TestPipelineContext_GetFloat64_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetFloat64(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetFloat64(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -543,7 +542,7 @@ func TestPipelineContext_GetTime_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetTime(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetTime(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -616,7 +615,7 @@ func TestPipelineContext_GetDuration_Suite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetDuration(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetDuration(tt.retrieve); got != tt.want.value || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -624,6 +623,8 @@ func TestPipelineContext_GetDuration_Suite(t *testing.T) {
 }
 
 func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
+	b := []byte("")
+
 	tests := []struct {
 		name  string
 		store struct {
@@ -632,8 +633,8 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 		}
 		retrieve Tag
 		want     struct {
-			value  interface{}
-			exists bool
+			valuelen int
+			exists   bool
 		}
 	}{
 		{
@@ -641,24 +642,24 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: []byte("abc")},
+			}{key: TestKeyTag, value: b},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []byte("abc"), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: len(b), exists: true},
 		},
 		{
 			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: []byte("abc")},
+			}{key: TestKeyTag, value: b},
 			retrieve: TestKey2Tag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []byte(nil), exists: false},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
@@ -668,9 +669,9 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: 123},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []byte(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -680,16 +681,16 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: nil},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []byte(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetByteSlice(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetByteSlice(tt.retrieve); len(got) != tt.want.valuelen || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -697,6 +698,8 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 }
 
 func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
+	s := []string{"a", "b"}
+
 	tests := []struct {
 		name  string
 		store struct {
@@ -705,8 +708,8 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 		}
 		retrieve Tag
 		want     struct {
-			value  interface{}
-			exists bool
+			valuelen int
+			exists   bool
 		}
 	}{
 		{
@@ -714,24 +717,24 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: []string{"a", "b"}},
+			}{key: TestKeyTag, value: s},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []string{"a", "b"}, exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: len(s), exists: true},
 		},
 		{
 			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: []string{"a"}},
+			}{key: TestKeyTag, value: s},
 			retrieve: TestKey2Tag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []string(nil), exists: false},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
@@ -741,9 +744,9 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: 123},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -753,16 +756,16 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: nil},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: []string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetStringSlice(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetStringSlice(tt.retrieve); len(got) != tt.want.valuelen || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -770,6 +773,8 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 }
 
 func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
+	m := map[string]interface{}{}
+
 	tests := []struct {
 		name  string
 		store struct {
@@ -778,8 +783,8 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 		}
 		retrieve Tag
 		want     struct {
-			value  interface{}
-			exists bool
+			valuelen int
+			exists   bool
 		}
 	}{
 		{
@@ -787,12 +792,12 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: map[string]interface{}{}},
+			}{key: TestKeyTag, value: m},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]interface{}{}, exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: len(m), exists: true},
 		},
 		{
 			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
@@ -802,9 +807,9 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: true},
 			retrieve: TestKey2Tag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]interface{}(nil), exists: false},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
@@ -814,9 +819,9 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: 123},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]interface{}(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -826,16 +831,16 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: nil},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]interface{}(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetStringMap(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetStringMap(tt.retrieve); len(got) != tt.want.valuelen || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -843,6 +848,8 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 }
 
 func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
+	m := map[string]string{}
+
 	tests := []struct {
 		name  string
 		store struct {
@@ -851,8 +858,8 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 		}
 		retrieve Tag
 		want     struct {
-			value  interface{}
-			exists bool
+			valuelen int
+			exists   bool
 		}
 	}{
 		{
@@ -860,12 +867,12 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: map[string]string{}},
+			}{key: TestKeyTag, value: m},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]string{}, exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: len(m), exists: true},
 		},
 		{
 			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
@@ -875,9 +882,9 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: true},
 			retrieve: TestKey2Tag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]string(nil), exists: false},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
@@ -887,9 +894,9 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: 123},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -899,16 +906,16 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: nil},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string]string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetStringMapString(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetStringMapString(tt.retrieve); len(got) != tt.want.valuelen || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
@@ -916,6 +923,8 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 }
 
 func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
+	m := map[string][]string{}
+
 	tests := []struct {
 		name  string
 		store struct {
@@ -924,8 +933,8 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 		}
 		retrieve Tag
 		want     struct {
-			value  interface{}
-			exists bool
+			valuelen int
+			exists   bool
 		}
 	}{
 		{
@@ -933,12 +942,12 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 			store: struct {
 				key   Tag
 				value interface{}
-			}{key: TestKeyTag, value: map[string][]string{}},
+			}{key: TestKeyTag, value: m},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string][]string{}, exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored value, when retrieving something else, then it doesnt exists and it's null",
@@ -948,9 +957,9 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: true},
 			retrieve: TestKey2Tag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string][]string(nil), exists: false},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored value of a different type, when retrieving it, then it exists but is default value",
@@ -960,9 +969,9 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: 123},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string][]string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -972,16 +981,16 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 			}{key: TestKeyTag, value: nil},
 			retrieve: TestKeyTag,
 			want: struct {
-				value  interface{}
-				exists bool
-			}{value: map[string][]string(nil), exists: true},
+				valuelen int
+				exists   bool
+			}{valuelen: 0, exists: true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := CreateContext()
 			ctx.Set(tt.store.key, tt.store.value)
-			if got, exists := ctx.GetStringMapStringSlice(tt.retrieve); !reflect.DeepEqual(got, tt.want.value) || exists != tt.want.exists {
+			if got, exists := ctx.GetStringMapStringSlice(tt.retrieve); len(got) != tt.want.valuelen || exists != tt.want.exists {
 				t.Errorf("expected - got = {%v %v}, want %v", got, exists, tt.want)
 			}
 		})
