@@ -1,13 +1,16 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type PaintVolumeStep struct {
-	Volume int
-}
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-func (s *PaintVolumeStep) Run() error {
-	fmt.Printf("Painting %d volume\n", s.Volume)
+type PaintVolumeStep struct{}
+
+func (s *PaintVolumeStep) Run(ctx pipeline.Context) error {
+	volume, _ := ctx.Get(TagVolume)
+	fmt.Printf("Painting %d volume\n", volume)
 	return nil
 }
 

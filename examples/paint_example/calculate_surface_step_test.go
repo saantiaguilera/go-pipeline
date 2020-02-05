@@ -1,17 +1,20 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type CalculateSurfaceStep struct {
-	Width  int
-	Height int
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-	Surface int
-}
+type CalculateSurfaceStep struct{}
 
-func (s *CalculateSurfaceStep) Run() error {
-	s.Surface = s.Width * s.Height
-	fmt.Printf("Getting surface: %d\n", s.Surface)
+func (s *CalculateSurfaceStep) Run(ctx pipeline.Context) error {
+	width, _ := ctx.GetInt(TagWidth)
+	height, _ := ctx.GetInt(TagHeight)
+	surface := width * height
+	fmt.Printf("Getting surface: %d\n", surface)
+
+	ctx.Set(TagSurface, surface)
 	return nil
 }
 

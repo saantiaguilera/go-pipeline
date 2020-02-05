@@ -44,15 +44,6 @@ else
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
 func Graph() pipeline.Stage {
-	// We use steps with before hooks to bind data (thus making a flow), but you can adopt any method of communication
-	// between steps such as:
-	// - channels (at creation you bind, a step produces and another consumes)
-	// - pointers (at creation you set a same pointer to both steps, one sets data into, the other consumes)
-	// - interfaces (each step knows a X interface which implements the consumer step, when called the data is applied
-	// to the implementing step, which will use it later.
-
-	// As long as you dont couple steps between each other, everything works
-
 	widthStep := &GetWidthStep{}
 	heightStep := &GetHeightStep{}
 	depthStep := &GetDepthStep{}
@@ -63,8 +54,12 @@ func Graph() pipeline.Stage {
 	calculatePriceToPaintSurfaceStep := &GetPriceToPaintSurfaceStep{}
 	calculatePriceToPaintVolumeStep := &GetPriceToPaintVolumeStep{}
 
-	recordPriceSurfaceStep := &RecordPriceStep{}
-	recordPriceVolumeStep := &RecordPriceStep{}
+	recordPriceSurfaceStep := &RecordPriceStep{
+		PriceType: TagSurfacePrice,
+	}
+	recordPriceVolumeStep := &RecordPriceStep{
+		PriceType: TagVolumePrice,
+	}
 
 	evaluateStep := &EvaluateStep{}
 
@@ -81,71 +76,27 @@ func Graph() pipeline.Stage {
 			depthStep,
 		)),
 		pipeline.CreateConcurrentStage(
-			pipeline.CreateBeforeStepLifecycle(
-				calculateVolumeStep,
-				func(step pipeline.Step) error {
-					calculateVolumeStep.Width = widthStep.Width
-					calculateVolumeStep.Height = heightStep.Height
-					calculateVolumeStep.Depth = depthStep.Depth
-					return nil
-				},
-			),
-			pipeline.CreateBeforeStepLifecycle(
-				calculateSurfaceStep,
-				func(step pipeline.Step) error {
-					calculateSurfaceStep.Width = widthStep.Width
-					calculateSurfaceStep.Height = heightStep.Height
-					return nil
-				},
-			),
+			calculateVolumeStep,
+			calculateSurfaceStep,
 		),
 		pipeline.CreateConcurrentGroup(
 			pipeline.CreateSequentialStage(
-				pipeline.CreateBeforeStepLifecycle(
-					calculatePriceToPaintSurfaceStep,
-					func(step pipeline.Step) error {
-						calculatePriceToPaintSurfaceStep.Surface = calculateSurfaceStep.Surface
-						return nil
-					},
-				),
-				pipeline.CreateBeforeStepLifecycle(
-					recordPriceSurfaceStep,
-					func(step pipeline.Step) error {
-						recordPriceSurfaceStep.Price = calculatePriceToPaintSurfaceStep.Price
-						return nil
-					},
-				),
+				calculatePriceToPaintSurfaceStep,
+				recordPriceSurfaceStep,
 			),
 			pipeline.CreateSequentialStage(
-				pipeline.CreateBeforeStepLifecycle(
-					calculatePriceToPaintVolumeStep,
-					func(step pipeline.Step) error {
-						calculatePriceToPaintVolumeStep.Volume = calculateVolumeStep.Volume
-						return nil
-					},
-				),
-				pipeline.CreateBeforeStepLifecycle(
-					recordPriceVolumeStep,
-					func(step pipeline.Step) error {
-						recordPriceVolumeStep.Price = calculatePriceToPaintVolumeStep.Price
-						return nil
-					},
-				),
+				calculatePriceToPaintVolumeStep,
+				recordPriceVolumeStep,
 			),
 		),
 		pipeline.CreateSequentialStage(
-			pipeline.CreateBeforeStepLifecycle(
-				evaluateStep,
-				func(step pipeline.Step) error {
-					evaluateStep.SurfacePrice = calculatePriceToPaintSurfaceStep.Price
-					evaluateStep.VolumePrice = calculatePriceToPaintVolumeStep.Price
-					return nil
-				},
-			),
+			evaluateStep,
 		),
 		pipeline.CreateConditionalGroup(
-			pipeline.CreateSimpleStatement("should_paint", func() bool {
-				return evaluateStep.ShouldPaint
+			pipeline.CreateSimpleStatement("should_paint", func(ctx pipeline.Context) bool {
+				volumePrice, _ := ctx.GetFloat64(TagVolumePrice)
+				surfacePrice, _ := ctx.GetFloat64(TagSurfacePrice)
+				return volumePrice+surfacePrice < 100000
 			}),
 			pipeline.CreateSequentialGroup(
 				pipeline.CreateConcurrentStage(
@@ -153,20 +104,8 @@ func Graph() pipeline.Stage {
 					acceptVolumePaintingStep,
 				),
 				pipeline.CreateConcurrentStage(
-					pipeline.CreateBeforeStepLifecycle(
-						paintSurfaceStep,
-						func(step pipeline.Step) error {
-							paintSurfaceStep.Surface = calculateSurfaceStep.Surface
-							return nil
-						},
-					),
-					pipeline.CreateTracedStep(pipeline.CreateBeforeStepLifecycle(
-						paintVolumeStep,
-						func(step pipeline.Step) error {
-							paintVolumeStep.Volume = calculateVolumeStep.Volume
-							return nil
-						},
-					)),
+					pipeline.CreateTracedStep(paintSurfaceStep),
+					pipeline.CreateTracedStep(paintVolumeStep),
 				),
 			),
 			pipeline.CreateSequentialStage(),
@@ -178,9 +117,9 @@ func Graph() pipeline.Stage {
 // Decorate it with tracers / circuit-breakers / loggers / new-relic / etc.
 type SampleExecutor struct{}
 
-func (t *SampleExecutor) Run(cmd pipeline.Runnable) error {
+func (t *SampleExecutor) Run(cmd pipeline.Runnable, ctx pipeline.Context) error {
 	fmt.Printf("Running task %s\n", cmd.Name())
-	return cmd.Run()
+	return cmd.Run(ctx)
 }
 
 func Test_GraphRendering(t *testing.T) {
@@ -200,8 +139,14 @@ func Test_GraphRendering(t *testing.T) {
 }
 
 func Test_Pipeline(t *testing.T) {
-	p := pipeline.CreatePipeline(&SampleExecutor{})
+	// Create initial data, this can be created once and reused multiple times
+	pipe := pipeline.CreatePipeline(&SampleExecutor{})
+	graph := Graph()
 
-	err := p.Run(Graph())
+	// Create context to be used on a single graph evaluation. Feed inputs for the starting steps here.
+	ctx := pipeline.CreateContext()
+
+	// Evaluate graph and assert errors.
+	err := pipe.Run(graph, ctx)
 	assert.Nil(t, err)
 }

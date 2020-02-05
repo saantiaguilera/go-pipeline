@@ -22,14 +22,14 @@ func (c *conditionalGroup) Draw(graph GraphDiagram) {
 	)
 }
 
-func (c *conditionalGroup) Run(executor Executor) error {
-	if c.Statement != nil && c.Statement.Evaluate() {
+func (c *conditionalGroup) Run(executor Executor, ctx Context) error {
+	if c.Statement != nil && c.Statement.Evaluate(ctx) {
 		if c.True != nil {
-			return c.True.Run(executor)
+			return c.True.Run(executor, ctx)
 		}
 	} else {
 		if c.False != nil {
-			return c.False.Run(executor)
+			return c.False.Run(executor, ctx)
 		}
 	}
 	return nil

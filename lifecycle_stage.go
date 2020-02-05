@@ -1,11 +1,13 @@
 package pipeline
 
-// BeforeStage is an alias for before hooks of a stage. If the hook fails, the stage won't be executed
-type BeforeStage func(stage Stage) error
+// BeforeStage is an alias for before hooks of a stage about to be executed with a given context.
+// If the hook fails, the stage won't be executed
+type BeforeStage func(stage Stage, ctx Context) error
 
 // AfterStage is an alias for after hooks of a stage. If the stage fails, one can recover from here or fallback to a new error.
 // Also, this stage can fail, thus failing the execution (note that this is a blob of a stage, so if a hook fails, the stage fails too).
-type AfterStage func(stage Stage, err error) error
+// The provided context was the resulting one after the stage was executed
+type AfterStage func(stage Stage, ctx Context, err error) error
 
 // Blob structure that allows us to decorate a stage with pre/post hooks
 // Note that we can compose many lifecycle stages if we want to have multiple hooks. Such as:
@@ -23,19 +25,19 @@ func (l *lifecycleStage) Draw(graph GraphDiagram) {
 }
 
 // Run the hooks and the stage, validating errors along the way and mutating the stage error in case it failed.
-func (l *lifecycleStage) Run(executor Executor) error {
+func (l *lifecycleStage) Run(executor Executor, ctx Context) error {
 	if l.Before != nil {
-		err := l.Before(l.Stage)
+		err := l.Before(l.Stage, ctx)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	err := l.Stage.Run(executor)
+	err := l.Stage.Run(executor, ctx)
 
 	if l.After != nil {
-		err = l.After(l.Stage, err)
+		err = l.After(l.Stage, ctx, err)
 	}
 	return err
 }

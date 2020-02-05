@@ -30,20 +30,18 @@ graph := pipeline.CreateSequentialGroup(
             pipeline.CreateConcurrentGroup(
                 // Sequential stage for the eggs flow
                 pipeline.CreateSequentialStage(
-                    // Use a mean of communication. Channels could be one.
-                    CreateBoilEggsStep(eggsChan),
-                    CreateCutEggsStep(eggsChan),
+                    CreateBoilEggsStep(),
+                    CreateCutEggsStep(),
                 ),
                 // Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
                 pipeline.CreateSequentialStage(
-                    // Use a mean of communication. Channels could be one.
-                    CreateWashCarrotsStep(carrotsChan),
-                    CreateCutCarrotsStep(carrotsChan),
+                    CreateWashCarrotsStep(),
+                    CreateCutCarrotsStep(),
                 ),
             ),
             // This is sequential. When carrots and eggs are done, this will run
             pipeline.CreateSequentialStage(
-                CreateMakeSaladStep(carrotsChan, eggsChan, saladChan),
+                CreateMakeSaladStep(),
             ),
         ),
         // Another sequential stage for the meat (concurrently with salad)
@@ -54,7 +52,7 @@ graph := pipeline.CreateSequentialGroup(
                 pipeline.CreateConditionalStage(
                     pipeline.CreateSimpleStatement("is_meat_too_big", IsMeatTooBigForTheOven),
                     // True:
-                    CreateCutMeatStep(meatChan),
+                    CreateCutMeatStep(),
                     // False:
                     nil,
                 ),
@@ -63,16 +61,16 @@ graph := pipeline.CreateSequentialGroup(
                 ),
             ),
             pipeline.CreateSequentialStage(
-                CreatePutMeatInOvenStep(meatChan),
+                CreatePutMeatInOvenStep(),
             ),
         ),
     ),
     // When everything is done. Serve
     pipeline.CreateSequentialStage(
-        CreateServeStep(meatChan, saladChan),
+        CreateServeStep(),
     ),
 )
 
 pipe := pipeline.CreatePipeline(CreateYourExecutor())
-pipe.Run(graph)
+pipe.Run(graph, CreateYourInputContext())
 ```

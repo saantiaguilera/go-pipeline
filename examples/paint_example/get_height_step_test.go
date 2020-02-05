@@ -1,14 +1,16 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type GetHeightStep struct {
-	Height int
-}
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-func (s *GetHeightStep) Run() error {
-	s.Height = 1234
+type GetHeightStep struct{}
+
+func (s *GetHeightStep) Run(ctx pipeline.Context) error {
 	fmt.Print("Getting height: 1234\n")
+	ctx.Set(TagHeight, 1234)
 	return nil
 }
 

@@ -1,13 +1,16 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type PaintSurfaceStep struct {
-	Surface int
-}
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-func (s *PaintSurfaceStep) Run() error {
-	fmt.Printf("Painting %d surface\n", s.Surface)
+type PaintSurfaceStep struct{}
+
+func (s *PaintSurfaceStep) Run(ctx pipeline.Context) error {
+	surface, _ := ctx.Get(TagSurface)
+	fmt.Printf("Painting %d surface\n", surface)
 	return nil
 }
 

@@ -32,10 +32,10 @@ func (t *tracedStep) Name() string {
 	return t.Step.Name()
 }
 
-func (t *tracedStep) Run() error {
+func (t *tracedStep) Run(ctx Context) error {
 	start := time.Now()
 
-	err := t.Step.Run()
+	err := t.Step.Run(ctx)
 
 	var message string
 	if err == nil {

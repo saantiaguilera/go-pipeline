@@ -7,30 +7,22 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-type makeSaladStep struct {
-	Eggs    chan int
-	Carrots chan int
-	Salad   chan int
-}
+type makeSaladStep struct{}
 
 func (s *makeSaladStep) Name() string {
 	return "make_salad_step"
 }
 
-func (s *makeSaladStep) Run() error {
-	eggs := <-s.Eggs
-	carrots := <-s.Carrots
+func (s *makeSaladStep) Run(ctx pipeline.Context) error {
+	eggs, _ := ctx.GetInt(TagNumberOfEggs)
+	carrots, _ := ctx.GetInt(TagNumberOfCarrots)
 	fmt.Printf("Making salad with %d eggs and %d carrots\n", eggs, carrots)
 	time.Sleep(1 * time.Second) // Simulate time it takes to do this action
 
-	s.Salad <- eggs + carrots
+	ctx.Set(TagSalad, eggs+carrots)
 	return nil
 }
 
-func CreateMakeSaladStep(eggsChan chan int, carrotsChan chan int, saladChan chan int) pipeline.Step {
-	return &makeSaladStep{
-		Eggs:    eggsChan,
-		Carrots: carrotsChan,
-		Salad:   saladChan,
-	}
+func CreateMakeSaladStep() pipeline.Step {
+	return &makeSaladStep{}
 }

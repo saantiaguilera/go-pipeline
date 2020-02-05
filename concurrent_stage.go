@@ -19,9 +19,9 @@ func (s concurrentStage) Draw(graph GraphDiagram) {
 	}
 }
 
-func (s concurrentStage) Run(executor Executor) error {
+func (s concurrentStage) Run(executor Executor, ctx Context) error {
 	return spawnAsync(len(s), func(index int) error {
-		return executor.Run(s[index])
+		return executor.Run(s[index], ctx)
 	})
 }
 

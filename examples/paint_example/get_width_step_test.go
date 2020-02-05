@@ -1,14 +1,16 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type GetWidthStep struct {
-	Width int
-}
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-func (s *GetWidthStep) Run() error {
-	s.Width = 1234
+type GetWidthStep struct{}
+
+func (s *GetWidthStep) Run(ctx pipeline.Context) error {
 	fmt.Print("Getting width: 1234\n")
+	ctx.Set(TagWidth, 1234)
 	return nil
 }
 

@@ -12,12 +12,12 @@ import (
 
 func TestConditionalStage_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	falseStep := new(mockStep)
-	falseStep.On("Run").Return(nil).Once()
+	falseStep.On("Run", &mockContext{}).Return(nil).Once()
 	trueStep := new(mockStep)
 
 	stage := pipeline.CreateConditionalStage(nil, trueStep, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	falseStep.AssertExpectations(t)
@@ -27,13 +27,13 @@ func TestConditionalStage_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 func TestConditionalStage_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 	falseStep := new(mockStep)
 	trueStep := new(mockStep)
-	trueStep.On("Run").Return(nil).Once()
+	trueStep.On("Run", &mockContext{}).Return(nil).Once()
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), trueStep, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	falseStep.AssertExpectations(t)
@@ -42,14 +42,14 @@ func TestConditionalStage_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 
 func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 	falseStep := new(mockStep)
-	falseStep.On("Run").Return(nil).Once()
+	falseStep.On("Run", &mockContext{}).Return(nil).Once()
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return false
 	}), trueStep, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	falseStep.AssertExpectations(t)
@@ -59,11 +59,11 @@ func TestConditionalStage_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
 	falseStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), nil, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	falseStep.AssertExpectations(t)
@@ -72,11 +72,11 @@ func TestConditionalStage_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t 
 func TestConditionalStage_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return false
 	}), trueStep, nil)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Nil(t, err)
 	trueStep.AssertExpectations(t)
@@ -87,13 +87,13 @@ func TestConditionalStage_GivenStatementTrueWithTrueError_WhenRun_TrueErrorRetur
 
 	falseStep := new(mockStep)
 	trueStep := new(mockStep)
-	trueStep.On("Run").Return(trueErr).Once()
+	trueStep.On("Run", &mockContext{}).Return(trueErr).Once()
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), trueStep, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Equal(t, trueErr, err)
 	falseStep.AssertExpectations(t)
@@ -104,14 +104,14 @@ func TestConditionalStage_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 	falseErr := errors.New("error")
 
 	falseStep := new(mockStep)
-	falseStep.On("Run").Return(falseErr).Once()
+	falseStep.On("Run", &mockContext{}).Return(falseErr).Once()
 	trueStep := new(mockStep)
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return false
 	}), trueStep, falseStep)
 
-	err := stage.Run(SimpleExecutor{})
+	err := stage.Run(SimpleExecutor{}, &mockContext{})
 
 	assert.Equal(t, falseErr, err)
 	falseStep.AssertExpectations(t)
@@ -119,7 +119,7 @@ func TestConditionalStage_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 }
 
 func TestConditionalStage_GivenAGraphToDrawWithAnonymouseStatement_WhenDrawn_ThenConditionGetsEmptyName(t *testing.T) {
-	statement := pipeline.CreateAnonymousStatement(func() bool {
+	statement := pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	})
 	mockGraphDiagram := new(mockGraphDiagram)
@@ -191,7 +191,7 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWith
 	trueStep := new(mockStep)
 	trueStep.On("Name").Return("truestep").Once()
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), trueStep, falseStep)
 
@@ -221,7 +221,7 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBra
 	falseStep := new(mockStep)
 	falseStep.On("Name").Return("falsestep").Once()
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), nil, falseStep)
 
@@ -250,7 +250,7 @@ func TestConditionalStage_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseB
 	trueStep := new(mockStep)
 	trueStep.On("Name").Return("truestep").Once()
 
-	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func() bool {
+	stage := pipeline.CreateConditionalStage(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
 		return true
 	}), trueStep, nil)
 

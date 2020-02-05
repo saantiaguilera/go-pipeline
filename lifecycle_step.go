@@ -1,11 +1,13 @@
 package pipeline
 
-// BeforeStep is an alias for before hooks of a step. If the hook fails, the step won't be run
-type BeforeStep func(step Step) error
+// BeforeStep is an alias for before hooks of a step about to be executed with a given context.
+// If the hook fails, the step won't be run.
+type BeforeStep func(step Step, ctx Context) error
 
 // AfterStep is an alias for after hooks of a step. If the step fails, one can recover from here or fallback to a new error.
 // Also, this step can fail, thus failing the unit (note that this is a blob of a step, so if a hook fails, the step fails too).
-type AfterStep func(step Step, err error) error
+// The context provided is the resulting one after the step was executed
+type AfterStep func(step Step, ctx Context, err error) error
 
 // Blob structure that allows us to decorate a step with pre/post hooks
 // Note that we can compose many lifecycle steps if we want to have multiple hooks. Such as:
@@ -19,19 +21,19 @@ type lifecycleStep struct {
 }
 
 // Run the hooks and the step, validating errors along the way and mutating the step error in case it failed.
-func (l *lifecycleStep) Run() error {
+func (l *lifecycleStep) Run(ctx Context) error {
 	if l.Before != nil {
-		err := l.Before(l.Step)
+		err := l.Before(l.Step, ctx)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	err := l.Step.Run()
+	err := l.Step.Run(ctx)
 
 	if l.After != nil {
-		err = l.After(l.Step, err)
+		err = l.After(l.Step, ctx, err)
 	}
 	return err
 }

@@ -1,18 +1,21 @@
 package paint_example_test
 
-import "fmt"
+import (
+	"fmt"
 
-type CalculateVolumeStep struct {
-	Depth  int
-	Width  int
-	Height int
+	"github.com/saantiaguilera/go-pipeline"
+)
 
-	Volume int
-}
+type CalculateVolumeStep struct{}
 
-func (s *CalculateVolumeStep) Run() error {
-	s.Volume = s.Depth * s.Width * s.Height
-	fmt.Printf("Getting volume: %d\n", s.Volume)
+func (s *CalculateVolumeStep) Run(ctx pipeline.Context) error {
+	width, _ := ctx.GetInt(TagWidth)
+	height, _ := ctx.GetInt(TagHeight)
+	depth, _ := ctx.GetInt(TagDepth)
+	volume := width * height * depth
+	fmt.Printf("Getting volume: %d\n", volume)
+
+	ctx.Set(TagVolume, volume)
 	return nil
 }
 
