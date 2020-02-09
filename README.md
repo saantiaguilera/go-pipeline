@@ -1,6 +1,6 @@
 # Go-Pipeline
 
-[![Build Status](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) 
+![Build Status](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) 
 [![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)
 [![Go Report Card](https://goreportcard.com/badge/github.com/saantiaguilera/go-pipeline)](https://goreportcard.com/report/github.com/saantiaguilera/go-pipeline)
 [![GoDoc](https://godoc.org/github.com/saantiaguilera/go-pipeline?status.svg)](https://godoc.org/github.com/saantiaguilera/go-pipeline)
