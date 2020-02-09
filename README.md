@@ -1,10 +1,25 @@
 # Go-Pipeline
 
-![Build](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) [![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)
+[![Build Status](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) 
+[![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)
+[![Go Report Card](https://goreportcard.com/badge/github.com/saantiaguilera/go-pipeline)](https://goreportcard.com/report/github.com/saantiaguilera/go-pipeline)
+[![GoDoc](https://godoc.org/github.com/saantiaguilera/go-pipeline?status.svg)](https://godoc.org/github.com/saantiaguilera/go-pipeline)
+[![Release](https://img.shields.io/github/release/saantiaguilera/go-pipeline.svg?style=flat-square)](https://github.com/saantiaguilera/go-pipeline/releases)
 
-Go module for building, executing and representing pipelines. For more information visit the [GoDoc API](https://godoc.org/github.com/saantiaguilera/go-pipeline)
+Pipeline is a GPL3-licensed Go package for building, executing and representing pipelines.
 
-### Example
+## Getting started
+
+- API documentation and examples are available via [godoc](https://godoc.org/github.com/saantiaguilera/go-pipeline).
+- The [examples](./examples) directory contains more elaborate example applications.
+- The package is highly decoupled and flexible so no mocks are needed for testing. You can create your own ones however you prefer to.
+
+## API stability
+
+Pipeline follows semantic versioning and provides API stability via the gopkg.in service.
+You can import a version with a guaranteed stable API via http://gopkg.in/saantiaguilera/go-pipeline.v0
+
+## Example
 
 _The following code and representation can be found under the [examples directory](examples/cook_example/) if you want to play with it._
 
