@@ -400,12 +400,12 @@ func BenchmarkPipeline_Run(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		b.StartTimer()
 		err := pipe.Run(graph, ctx)
-
 		b.StopTimer()
+
 		if err != nil {
 			b.Fail()
 		}
-		b.StartTimer()
 	}
 }

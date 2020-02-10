@@ -3,9 +3,14 @@ package pipeline
 type sequentialStage []Step
 
 func (s sequentialStage) Run(executor Executor, ctx Context) error {
-	return runSync(len(s), func(index int) error {
-		return executor.Run(s[index], ctx)
-	})
+	for _, step := range s {
+		err := executor.Run(step, ctx)
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s sequentialStage) Draw(graph GraphDiagram) {
