@@ -1,4 +1,4 @@
-# Go-Pipeline
+# Pipeline
 
 ![Build Status](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) 
 [![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)

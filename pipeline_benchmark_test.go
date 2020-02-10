@@ -391,7 +391,7 @@ func Test_GraphRendering(t *testing.T) {
 // Also, the graph contains all conditionals returning the "worse" possible path (the largest way)
 //
 // The current graph has 112 steps (chan/int/string), the UML can be seen at pipeline_benchmark_test.svg
-// Output: BenchmarkPipeline_Run-4   	   40408	     31035 ns/op (0.031ms)
+// Output: BenchmarkPipeline_Run-4   	   46436	     26635 ns/op (0.026ms)
 // Given this graph magnitude, the cost of traversing it is negligible in comparison to a step operation.
 func BenchmarkPipeline_Run(b *testing.B) {
 	pipe := pipeline.CreatePipeline(SimpleExecutor{})

@@ -1,18 +1,17 @@
 /*
-Package pipeline is a pure Go client library for building pipelines in a declarative way.
-It includes a high level API to easily build, execute and draw a graph/template of a desired structure.
+Package pipeline is a pure Go client library for building and executing pipelines in a declarative way.
+It includes a high level API to easily build, execute and draw graphs of a desired structure.
 
-If the defined implementations of the API are insufficient, one can create their own implementation adding new behaviours,
-such as circuit-breaker executors, panic recover executors, new-relic step decorators, among any idea or feature you would
-like.
+If the defined implementations of the API are insufficient, one can create their own implementations adding new behaviours,
+such as circuit-breakers, panic recovers, APM decorators, custom stages, custom steps, etc.
 
 Supported structure
 
-Below you can find the atomic types this API exposes. This elements are mandatory for creating and executing a graph in a pipeline.
+Below you can find the atomic types this API exposes. These elements are mandatory for creating and executing a graph in a pipeline.
 
 Context
 
-A context is supplied across all the graph flow for communicating data across different units of work. This is useful when
+A context is supplied across all the graph for communicating data across different units of work. This is useful when
 having single graph instances and reusing them constantly (thus having stateless elements besides the injected behaviours).
 
 Step
