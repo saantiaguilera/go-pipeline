@@ -158,7 +158,7 @@ func TestPipelineContext_GetString_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: "", exists: true},
+			}{value: "", exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -231,7 +231,7 @@ func TestPipelineContext_GetBool_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: false, exists: true},
+			}{value: false, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -304,7 +304,7 @@ func TestPipelineContext_GetInt_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: 0, exists: true},
+			}{value: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -377,7 +377,7 @@ func TestPipelineContext_GetUInt_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: uint(0), exists: true},
+			}{value: uint(0), exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -450,7 +450,7 @@ func TestPipelineContext_GetUInt64_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: uint64(0), exists: true},
+			}{value: uint64(0), exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -523,7 +523,7 @@ func TestPipelineContext_GetInt64_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: int64(0), exists: true},
+			}{value: int64(0), exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -596,7 +596,7 @@ func TestPipelineContext_GetFloat64_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: float64(0), exists: true},
+			}{value: float64(0), exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -669,7 +669,7 @@ func TestPipelineContext_GetTime_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: time.Time{}, exists: true},
+			}{value: time.Time{}, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -742,7 +742,7 @@ func TestPipelineContext_GetDuration_Suite(t *testing.T) {
 			want: struct {
 				value  interface{}
 				exists bool
-			}{value: time.Duration(0), exists: true},
+			}{value: time.Duration(0), exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -817,7 +817,7 @@ func TestPipelineContext_GetByteSlice_Suite(t *testing.T) {
 			want: struct {
 				valuelen int
 				exists   bool
-			}{valuelen: 0, exists: true},
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -892,7 +892,7 @@ func TestPipelineContext_GetStringSlice_Suite(t *testing.T) {
 			want: struct {
 				valuelen int
 				exists   bool
-			}{valuelen: 0, exists: true},
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -967,7 +967,7 @@ func TestPipelineContext_GetStringMap_Suite(t *testing.T) {
 			want: struct {
 				valuelen int
 				exists   bool
-			}{valuelen: 0, exists: true},
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -1042,7 +1042,7 @@ func TestPipelineContext_GetStringMapString_Suite(t *testing.T) {
 			want: struct {
 				valuelen int
 				exists   bool
-			}{valuelen: 0, exists: true},
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",
@@ -1117,7 +1117,7 @@ func TestPipelineContext_GetStringMapStringSlice_Suite(t *testing.T) {
 			want: struct {
 				valuelen int
 				exists   bool
-			}{valuelen: 0, exists: true},
+			}{valuelen: 0, exists: false},
 		},
 		{
 			name: "given a stored nil value, when retrieving it, then it exist and it's default value",

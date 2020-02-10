@@ -48,7 +48,7 @@ func (c *memMapContext) Delete(key Tag) {
 func (c *memMapContext) GetString(key Tag) (s string, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		s, _ = val.(string)
+		s, exists = val.(string)
 	}
 	return
 }
@@ -58,7 +58,7 @@ func (c *memMapContext) GetString(key Tag) (s string, exists bool) {
 func (c *memMapContext) GetBool(key Tag) (b bool, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		b, _ = val.(bool)
+		b, exists = val.(bool)
 	}
 	return
 }
@@ -68,7 +68,7 @@ func (c *memMapContext) GetBool(key Tag) (b bool, exists bool) {
 func (c *memMapContext) GetInt(key Tag) (i int, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		i, _ = val.(int)
+		i, exists = val.(int)
 	}
 	return
 }
@@ -78,7 +78,7 @@ func (c *memMapContext) GetInt(key Tag) (i int, exists bool) {
 func (c *memMapContext) GetUInt(key Tag) (i uint, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		i, _ = val.(uint)
+		i, exists = val.(uint)
 	}
 	return
 }
@@ -88,7 +88,7 @@ func (c *memMapContext) GetUInt(key Tag) (i uint, exists bool) {
 func (c *memMapContext) GetUInt64(key Tag) (i uint64, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		i, _ = val.(uint64)
+		i, exists = val.(uint64)
 	}
 	return
 }
@@ -98,7 +98,7 @@ func (c *memMapContext) GetUInt64(key Tag) (i uint64, exists bool) {
 func (c *memMapContext) GetInt64(key Tag) (i64 int64, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		i64, _ = val.(int64)
+		i64, exists = val.(int64)
 	}
 	return
 }
@@ -108,7 +108,7 @@ func (c *memMapContext) GetInt64(key Tag) (i64 int64, exists bool) {
 func (c *memMapContext) GetFloat64(key Tag) (f64 float64, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		f64, _ = val.(float64)
+		f64, exists = val.(float64)
 	}
 	return
 }
@@ -118,7 +118,7 @@ func (c *memMapContext) GetFloat64(key Tag) (f64 float64, exists bool) {
 func (c *memMapContext) GetTime(key Tag) (t time.Time, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		t, _ = val.(time.Time)
+		t, exists = val.(time.Time)
 	}
 	return
 }
@@ -128,7 +128,7 @@ func (c *memMapContext) GetTime(key Tag) (t time.Time, exists bool) {
 func (c *memMapContext) GetDuration(key Tag) (d time.Duration, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		d, _ = val.(time.Duration)
+		d, exists = val.(time.Duration)
 	}
 	return
 }
@@ -138,7 +138,7 @@ func (c *memMapContext) GetDuration(key Tag) (d time.Duration, exists bool) {
 func (c *memMapContext) GetByteSlice(key Tag) (ss []byte, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		ss, _ = val.([]byte)
+		ss, exists = val.([]byte)
 	}
 	return
 }
@@ -148,7 +148,7 @@ func (c *memMapContext) GetByteSlice(key Tag) (ss []byte, exists bool) {
 func (c *memMapContext) GetStringSlice(key Tag) (ss []string, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		ss, _ = val.([]string)
+		ss, exists = val.([]string)
 	}
 	return
 }
@@ -158,7 +158,7 @@ func (c *memMapContext) GetStringSlice(key Tag) (ss []string, exists bool) {
 func (c *memMapContext) GetStringMap(key Tag) (sm map[string]interface{}, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		sm, _ = val.(map[string]interface{})
+		sm, exists = val.(map[string]interface{})
 	}
 	return
 }
@@ -168,7 +168,7 @@ func (c *memMapContext) GetStringMap(key Tag) (sm map[string]interface{}, exists
 func (c *memMapContext) GetStringMapString(key Tag) (sms map[string]string, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		sms, _ = val.(map[string]string)
+		sms, exists = val.(map[string]string)
 	}
 	return
 }
@@ -178,7 +178,7 @@ func (c *memMapContext) GetStringMapString(key Tag) (sms map[string]string, exis
 func (c *memMapContext) GetStringMapStringSlice(key Tag) (smss map[string][]string, exists bool) {
 	var val interface{}
 	if val, exists = c.Get(key); exists && val != nil {
-		smss, _ = val.(map[string][]string)
+		smss, exists = val.(map[string][]string)
 	}
 	return
 }
