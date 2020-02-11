@@ -45,6 +45,12 @@ A step is a single unit of work. It's an alias for Runnable
 		}
 	}
 
+If your step is completely stateless, you can create an immutable instance through CreateSimpleStep
+
+    step := pipeline.CreateSimpleStep("step_name", func(ctx pipeline.Context) error {
+        // Do stuff.
+    })
+
 Stage
 
 A stage contains a collection of steps. The collection will be executed according to the stage implementation (eg. concurrently, sequentially, condition-based, etc).
@@ -56,7 +62,7 @@ To create one of the already defined stages, we can simply invoke its constructo
 		user.CreateUserStep(userService),
 	)
 
-Since a stage is nothing more than an interface, you can create your own implementations abiding that contract.
+Since a stage is nothing more than an interface, you can create your own custom implementations abiding that contract.
 
 Stage group
 
