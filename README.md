@@ -1,4 +1,8 @@
-# Pipeline
+<p align="center">
+    <img width="175" align="center" src="https://github.com/saantiaguilera/go-pipeline/raw/master/logo/logo.png"/><br>
+    <br>
+    <b>Pipeline</b>
+</p>
 
 ![Build Status](https://github.com/saantiaguilera/go-pipeline/workflows/Go/badge.svg) 
 [![Coverage](https://codecov.io/gh/saantiaguilera/go-pipeline/branch/master/graph/badge.svg)](https://codecov.io/gh/saantiaguilera/go-pipeline)
@@ -21,7 +25,7 @@ You can import a version with a guaranteed stable API via http://gopkg.in/saanti
 
 ## Example
 
-_The following code and representation can be found under the [examples directory](examples/cook_example/) if you want to play with it._
+_The following code and representation can be found under the [examples directory](examples/static/cook_example/) if you want to play with it._
 
 Imagine we are 3 persons making a dish. We have to:
 1. Put the eggs to boil. When done, cut them.
@@ -32,7 +36,7 @@ Imagine we are 3 persons making a dish. We have to:
 
 The following can be represented as such (using the `pipeline.DrawableDiagram` API)
 
-![](examples/cook_example/template.svg)
+![](examples/static/cook_example/template.svg)
 
 This flow can be built and executed as such:
 ```go
