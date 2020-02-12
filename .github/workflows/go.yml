@@ -38,6 +38,20 @@ jobs:
       
     - name: Test  
       run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+    - name: Run Samples
+      run: |
+        shopt -s globstar
+        for i in examples/**/main.go; do
+          echo "\nRunning $i\n"
+          go build -o binoutput github.com/saantiaguilera/go-pipeline/$(dirname $i)
+          ./binoutput
+          if [ $? -ne 0 ]; then
+            rm binoutput
+            exit 1
+          fi
+          rm binoutput
+        done
     
     - name: Upload coverage to Codecov  
       uses: codecov/codecov-action@v1
