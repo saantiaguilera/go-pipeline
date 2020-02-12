@@ -10,13 +10,13 @@
 [![GoDoc](https://godoc.org/github.com/saantiaguilera/go-pipeline?status.svg)](https://godoc.org/github.com/saantiaguilera/go-pipeline)
 [![Release](https://img.shields.io/github/release/saantiaguilera/go-pipeline.svg?style=flat-square)](https://github.com/saantiaguilera/go-pipeline/releases)
 
-Pipeline is a GPL3-licensed Go package for building, executing and representing pipelines.
+Pipeline is a GPL3-licensed Go package for building, executing and representing pipelines (aka workflows / templates).
 
 ## Getting started
 
 - API documentation and examples are available via [godoc](https://godoc.org/github.com/saantiaguilera/go-pipeline).
 - The [examples](./examples) directory contains more elaborate example applications.
-- The package is highly decoupled and flexible so no mocks are needed for testing. You can create your own ones however you prefer to.
+- No specific mocks are needed for testing, every element is completely decoupled and atomic. You can create your own ones however you deem fit.
 
 ## API stability
 
@@ -25,31 +25,33 @@ You can import a version with a guaranteed stable API via http://gopkg.in/saanti
 
 ## Example
 
-_The following code and representation can be found under the [examples directory](examples/static/cook_example/) if you want to play with it._
+_The following graph creation, execution and representation can be found under the [examples](examples/static/cook_example/) directory._
 
-Imagine we are 3 persons making a dish. We have to:
-1. Put the eggs to boil. When done, cut them.
-2. Wash the carrots. Cut them.
-3. Start the oven. If the meat is too big, cut it. Put the meat in the oven.
-4. Make a salad with the cut eggs and carrots
-5. Serve
+Imagine we are making a dish, we need to:
+1. Put the eggs to boil and cut them.
+2. Wash the carrots and cut them.
+3. Make a salad with the cut eggs and carrots.
+4. Start the oven. 
+5. If the meat is too big, cut it. 
+6. Put the meat in the oven.
+7. Serve when the meat and the salad are done.
 
-The following can be represented as such (using the `pipeline.DrawableDiagram` API)
+This workflow is represented as such
 
 ![](examples/static/cook_example/template.svg)
 
-This flow can be built and executed as such:
+This workflow can be built and executed as such.
 ```go
 // Complete stage. Its sequential because we can't serve
 // before all the others are done. 
 graph := pipeline.CreateSequentialGroup(
-    // Concurrent stage, given we are 3, we can do the salad / meat separately
+    // Concurrent stage, given we can do the salad / meat separately.
     pipeline.CreateConcurrentGroup(
-        // This will be the salad flow. It can be done concurrently with the meat
+        // This will be the salad flow.
         pipeline.CreateSequentialGroup( 
-            // Eggs and carrots can be operated concurrently too
+            // Eggs and carrots can be operated concurrently too.
             pipeline.CreateConcurrentGroup(
-                // Sequential stage for the eggs flow
+                // Sequential stage for the eggs flow.
                 pipeline.CreateSequentialStage(
                     CreateBoilEggsStep(),
                     CreateCutEggsStep(),
@@ -60,7 +62,7 @@ graph := pipeline.CreateSequentialGroup(
                     CreateCutCarrotsStep(),
                 ),
             ),
-            // This is sequential. When carrots and eggs are done, this will run
+            // This is sequential. When carrots and eggs are done, this will run.
             pipeline.CreateSequentialStage(
                 CreateMakeSaladStep(),
             ),
@@ -86,7 +88,7 @@ graph := pipeline.CreateSequentialGroup(
             ),
         ),
     ),
-    // When everything is done. Serve
+    // When everything is done. Serve.
     pipeline.CreateSequentialStage(
         CreateServeStep(),
     ),
@@ -95,3 +97,4 @@ graph := pipeline.CreateSequentialGroup(
 pipe := pipeline.CreatePipeline(CreateYourExecutor())
 pipe.Run(graph, CreateYourInputContext())
 ```
+_Note that, for showing purposes, this is all in a single function. You can easily decouple this into more atomic ones that take care of specific responsibilities (eg. making the salad)._
