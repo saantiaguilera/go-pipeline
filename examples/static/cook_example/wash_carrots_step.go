@@ -20,6 +20,6 @@ func (s *washCarrotsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createWashCarrotsStep() pipeline.Step {
+func NewWashCarrotsStep() pipeline.Step {
 	return &washCarrotsStep{}
 }

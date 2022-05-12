@@ -4,45 +4,45 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestConcurrentGroup_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var stages []pipeline.Stage
+	var stages []pipeline.Stage[int]
 	for i := 0; i < 100; i++ {
-		stages = append(stages, createStage(i, &arr))
+		stages = append(stages, NewStage(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
+	stage := pipeline.NewConcurrentGroup(stages...)
 
-	stage := pipeline.CreateConcurrentGroup(stages...)
-
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, expectedArr, *arr)
 	assert.Equal(t, len(expectedArr), len(*arr))
 	for _, stage := range stages {
-		stage.(*mockStage).AssertExpectations(t)
+		stage.(*mockStage[int]).AssertExpectations(t)
 	}
 }
 
 func TestConcurrentGroup_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *testing.T) {
 	expectedErr := errors.New("error")
 	var times count32
-	innerStage := new(mockStage)
-	innerStage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
+	innerStage := new(mockStage[int])
+	innerStage.On("Run", SimpleExecutor[int]{}, 1).Run(func(args mock.Arguments) {
 		times.increment()
 	}).Return(expectedErr).Times(10)
-	stage := pipeline.CreateConcurrentGroup(
+	stage := pipeline.NewConcurrentGroup[int](
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 	)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, count32(10), times)
@@ -51,7 +51,7 @@ func TestConcurrentGroup_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 
 func TestConcurrentGroup_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApplied(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
-	innerStage := new(mockStage)
+	innerStage := new(mockStage[int])
 	var diagrams []pipeline.DrawDiagram
 
 	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj []pipeline.DrawDiagram) bool {
@@ -59,7 +59,7 @@ func TestConcurrentGroup_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApp
 		return true
 	})).Once()
 
-	stage := pipeline.CreateConcurrentGroup(
+	stage := pipeline.NewConcurrentGroup[int](
 		innerStage, innerStage, innerStage, innerStage, innerStage, innerStage,
 	)
 
@@ -72,7 +72,7 @@ func TestConcurrentGroup_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApp
 
 func TestConcurrentGroup_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsDrawInnerStages(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
-	innerStage := new(mockStage)
+	innerStage := new(mockStage[int])
 
 	innerStage.On("Draw", mockGraphDiagram).Return(nil).Times(5)
 	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj interface{}) bool {
@@ -84,7 +84,7 @@ func TestConcurrentGroup_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsDrawIn
 		}
 	})
 
-	stage := pipeline.CreateConcurrentGroup(
+	stage := pipeline.NewConcurrentGroup[int](
 		innerStage, innerStage, innerStage, innerStage, innerStage,
 	)
 

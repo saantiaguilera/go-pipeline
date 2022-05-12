@@ -19,6 +19,6 @@ func (s *turnOnOvenStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createTurnOnOvenStep() pipeline.Step {
+func NewTurnOnOvenStep() pipeline.Step {
 	return &turnOnOvenStep{}
 }

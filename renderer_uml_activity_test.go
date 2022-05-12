@@ -28,14 +28,14 @@ func (m *mockWriteCloser) Close() error {
 	return args.Error(0)
 }
 
-func TestRenderer_GivenARenderer_WhenRenderingRaw_ThenFileWithRawContentsIsCreated(t *testing.T) {
+func TestRenderer_GivenARenderer_WhenRenderingRaw_ThenFileWithRawContentsIsNewd(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
 	mockGraphDiagram.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(len("content string"), nil)
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type: pipeline.UMLFormatRaw,
 	})
 	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
@@ -54,7 +54,7 @@ func TestRenderer_GivenARenderer_WhenFailingRenderingRaw_ThenErrorIsReturned(t *
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(0, expectedErr)
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type: pipeline.UMLFormatRaw,
 	})
 	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
@@ -79,7 +79,7 @@ func TestRenderer_GivenARenderer_WhenRenderingWithoutSpecifyingType_ThenSvgIsUse
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		BaseURL: ts.URL,
 	})
 	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
@@ -102,7 +102,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreDeflat
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
@@ -125,7 +125,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreSentTo
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
@@ -142,7 +142,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpIoErro
 
 	mockWriteCloser := new(mockWriteCloser)
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: "this isn't an url",
 	})
@@ -168,14 +168,14 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpRespon
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
 	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
 
 	assert.NotNil(t, err)
-	assert.Equal(t, fmt.Errorf("status code %d while trying to create the graph through %s%s", 400, ts.URL, usedUrl), err)
+	assert.Equal(t, fmt.Errorf("status code %d while trying to New the graph through %s%s", 400, ts.URL, usedUrl), err)
 	mockGraphDiagram.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
@@ -194,7 +194,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesIoError(t 
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
@@ -220,7 +220,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesWriterClos
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})

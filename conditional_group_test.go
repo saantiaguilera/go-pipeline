@@ -4,20 +4,20 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/saantiaguilera/go-pipeline"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConditionalGroup_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
-	falseStage := new(mockStage)
-	falseStage.On("Run", SimpleExecutor{}, &mockContext{}).Return(nil).Once()
-	trueStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
+	falseStage.On("Run", SimpleExecutor[interface{}]{}, 1).Return(nil).Once()
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(nil, trueStage, falseStage)
+	stage := pipeline.NewConditionalGroup[interface{}](nil, trueStage, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	falseStage.AssertExpectations(t)
@@ -25,15 +25,15 @@ func TestConditionalGroup_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 }
 
 func TestConditionalGroup_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
-	falseStage := new(mockStage)
-	trueStage := new(mockStage)
-	trueStage.On("Run", SimpleExecutor{}, &mockContext{}).Return(nil).Once()
+	falseStage := new(mockStage[interface{}])
+	trueStage := new(mockStage[interface{}])
+	trueStage.On("Run", SimpleExecutor[interface{}]{}, 1).Return(nil).Once()
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), trueStage, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	falseStage.AssertExpectations(t)
@@ -41,15 +41,15 @@ func TestConditionalGroup_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 }
 
 func TestConditionalGroup_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
-	falseStage := new(mockStage)
-	falseStage.On("Run", SimpleExecutor{}, &mockContext{}).Return(nil).Once()
-	trueStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
+	falseStage.On("Run", SimpleExecutor[interface{}]{}, 1).Return(nil).Once()
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return false
 	}), trueStage, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	falseStage.AssertExpectations(t)
@@ -57,26 +57,26 @@ func TestConditionalGroup_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 }
 
 func TestConditionalGroup_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
-	falseStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), nil, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	falseStage.AssertExpectations(t)
 }
 
 func TestConditionalGroup_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
-	trueStage := new(mockStage)
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return false
 	}), trueStage, nil)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	trueStage.AssertExpectations(t)
@@ -85,15 +85,15 @@ func TestConditionalGroup_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *
 func TestConditionalGroup_GivenStatementTrueWithTrueError_WhenRun_TrueErrorReturned(t *testing.T) {
 	trueErr := errors.New("error")
 
-	falseStage := new(mockStage)
-	trueStage := new(mockStage)
-	trueStage.On("Run", SimpleExecutor{}, &mockContext{}).Return(trueErr).Once()
+	falseStage := new(mockStage[interface{}])
+	trueStage := new(mockStage[interface{}])
+	trueStage.On("Run", SimpleExecutor[interface{}]{}, 1).Return(trueErr).Once()
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), trueStage, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, trueErr, err)
 	falseStage.AssertExpectations(t)
@@ -103,15 +103,15 @@ func TestConditionalGroup_GivenStatementTrueWithTrueError_WhenRun_TrueErrorRetur
 func TestConditionalGroup_GivenStatementFalseWithFalseError_WhenRun_FalseErrorReturned(t *testing.T) {
 	falseErr := errors.New("error")
 
-	falseStage := new(mockStage)
-	falseStage.On("Run", SimpleExecutor{}, &mockContext{}).Return(falseErr).Once()
-	trueStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
+	falseStage.On("Run", SimpleExecutor[interface{}]{}, 1).Return(falseErr).Once()
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return false
 	}), trueStage, falseStage)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, falseErr, err)
 	falseStage.AssertExpectations(t)
@@ -119,7 +119,7 @@ func TestConditionalGroup_GivenStatementFalseWithFalseError_WhenRun_FalseErrorRe
 }
 
 func TestConditionalGroup_GivenAGraphToDrawWithAnonymousStatement_WhenDrawn_ThenConditionGetsEmptyName(t *testing.T) {
-	statement := pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	statement := pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	})
 	mockGraphDiagram := new(mockGraphDiagram)
@@ -133,10 +133,10 @@ func TestConditionalGroup_GivenAGraphToDrawWithAnonymousStatement_WhenDrawn_Then
 		}),
 	)
 
-	falseStage := new(mockStage)
-	trueStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(statement, trueStage, falseStage)
+	stage := pipeline.NewConditionalGroup[interface{}](statement, trueStage, falseStage)
 
 	stage.Draw(mockGraphDiagram)
 
@@ -157,10 +157,10 @@ func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFun
 		}),
 	)
 
-	falseStage := new(mockStage)
-	trueStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
+	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateSimpleStatement("SomeFuncName", nil), trueStage, falseStage)
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewSimpleStatement[interface{}]("SomeFuncName", nil), trueStage, falseStage)
 
 	stage.Draw(mockGraphDiagram)
 
@@ -184,12 +184,12 @@ func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWith
 		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
 	})
 
-	falseStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
 	falseStage.On("Draw", mockGraphDiagram)
-	trueStage := new(mockStage)
+	trueStage := new(mockStage[interface{}])
 	trueStage.On("Draw", mockGraphDiagram)
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), trueStage, falseStage)
 
@@ -215,10 +215,10 @@ func TestConditionalGroup_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseB
 		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
 	})
 
-	trueStage := new(mockStage)
+	trueStage := new(mockStage[interface{}])
 	trueStage.On("Draw", mockGraphDiagram)
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), trueStage, nil)
 
@@ -243,10 +243,10 @@ func TestConditionalGroup_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBra
 		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
 	})
 
-	falseStage := new(mockStage)
+	falseStage := new(mockStage[interface{}])
 	falseStage.On("Draw", mockGraphDiagram)
 
-	stage := pipeline.CreateConditionalGroup(pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), nil, falseStage)
 

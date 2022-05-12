@@ -27,7 +27,7 @@ func (s *makeSaladStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createMakeSaladStep(eggsChan chan int, carrotsChan chan int, saladChan chan int) pipeline.Step {
+func NewMakeSaladStep(eggsChan chan int, carrotsChan chan int, saladChan chan int) pipeline.Step {
 	return &makeSaladStep{
 		Eggs:    eggsChan,
 		Carrots: carrotsChan,

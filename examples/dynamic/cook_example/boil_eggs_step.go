@@ -24,7 +24,7 @@ func (s *boilEggsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createBoilEggsStep(eggs int, eggsChan chan int) pipeline.Step {
+func NewBoilEggsStep(eggs int, eggsChan chan int) pipeline.Step {
 	return &boilEggsStep{
 		Eggs:   eggs,
 		Stream: eggsChan,

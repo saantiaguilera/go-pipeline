@@ -21,6 +21,6 @@ func (s *serveStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createServeStep() pipeline.Step {
+func NewServeStep() pipeline.Step {
 	return &serveStep{}
 }

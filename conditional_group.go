@@ -1,48 +1,48 @@
 package pipeline
 
-type conditionalGroup struct {
-	Statement Statement
-	True      Stage
-	False     Stage
+type ConditionalGroup[T any] struct {
+	statement *Statement[T]
+	trueCn    Stage[T]
+	falseCn   Stage[T]
 }
 
-func (c *conditionalGroup) Draw(graph GraphDiagram) {
+func (c *ConditionalGroup[T]) Draw(graph GraphDiagram) {
 	graph.AddDecision(
-		c.Statement.Name(),
+		c.statement.Name(),
 		func(graph GraphDiagram) {
-			if c.True != nil {
-				c.True.Draw(graph)
+			if c.trueCn != nil {
+				c.trueCn.Draw(graph)
 			}
 		},
 		func(graph GraphDiagram) {
-			if c.False != nil {
-				c.False.Draw(graph)
+			if c.falseCn != nil {
+				c.falseCn.Draw(graph)
 			}
 		},
 	)
 }
 
-func (c *conditionalGroup) Run(executor Executor, ctx Context) error {
-	if c.Statement != nil && c.Statement.Evaluate(ctx) {
-		if c.True != nil {
-			return c.True.Run(executor, ctx)
+func (c *ConditionalGroup[T]) Run(executor Executor[T], in T) error {
+	if c.statement != nil && c.statement.Evaluate(in) {
+		if c.trueCn != nil {
+			return c.trueCn.Run(executor, in)
 		}
 	} else {
-		if c.False != nil {
-			return c.False.Run(executor, ctx)
+		if c.falseCn != nil {
+			return c.falseCn.Run(executor, in)
 		}
 	}
 	return nil
 }
 
-// CreateConditionalGroup creates a conditional stage that will run a statement. If it holds true, then the "true" stage will be run.
+// NewConditionalGroup News a conditional stage that will run a statement. If it holds true, then the "true" stage will be run.
 // Else, the "false" one.
 // If a statement is nil, then it will be considered to hold false (thus, the "false" stage is called)
 // If one of the stages is nil and the statement is such, then nothing will happen.
-func CreateConditionalGroup(statement Statement, true Stage, false Stage) Stage {
-	return &conditionalGroup{
-		Statement: statement,
-		True:      true,
-		False:     false,
+func NewConditionalGroup[T any](statement *Statement[T], t, f Stage[T]) *ConditionalGroup[T] {
+	return &ConditionalGroup[T]{
+		statement: statement,
+		trueCn:    t,
+		falseCn:   f,
 	}
 }

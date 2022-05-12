@@ -23,11 +23,11 @@ func (s *cutMeatStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createCutMeatStep() pipeline.Step {
+func NewCutMeatStep() pipeline.Step {
 	return &cutMeatStep{}
 }
 
-func createMeatTooBigStatement() func(ctx pipeline.Context) bool {
+func NewMeatTooBigStatement() func(ctx pipeline.Context) bool {
 	return func(ctx pipeline.Context) bool {
 		meatSize, _ := ctx.GetInt(tagMeatSize)
 		ovenSize, _ := ctx.GetInt(tagOvenSize)

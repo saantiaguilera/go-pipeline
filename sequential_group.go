@@ -1,10 +1,10 @@
 package pipeline
 
-type sequentialGroup []Stage
+type sequentialGroup[T any] []Stage[T]
 
-func (s sequentialGroup) Run(executor Executor, ctx Context) error {
+func (s sequentialGroup[T]) Run(executor Executor[T], in T) error {
 	for _, stage := range s {
-		err := stage.Run(executor, ctx)
+		err := stage.Run(executor, in)
 
 		if err != nil {
 			return err
@@ -13,14 +13,14 @@ func (s sequentialGroup) Run(executor Executor, ctx Context) error {
 	return nil
 }
 
-func (s sequentialGroup) Draw(graph GraphDiagram) {
+func (s sequentialGroup[T]) Draw(graph GraphDiagram) {
 	for _, stage := range s {
 		stage.Draw(graph)
 	}
 }
 
-// CreateSequentialGroup creates a stage that will run each of stages sequentially. If one of them fails, the operation will abort immediately
-func CreateSequentialGroup(stages ...Stage) Stage {
-	var stage sequentialGroup = stages
+// NewSequentialGroup News a stage that will run each of stages sequentially. If one of them fails, the operation will abort immediately
+func NewSequentialGroup[T any](stages ...Stage[T]) Stage[T] {
+	var stage sequentialGroup[T] = stages
 	return &stage
 }

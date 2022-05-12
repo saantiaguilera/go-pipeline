@@ -7,49 +7,50 @@ import (
 	"os"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-type numberedStep struct {
+type numberedStep[T any] struct {
 	Number int
 }
 
-func (n *numberedStep) Name() string {
+func (n *numberedStep[T]) Name() string {
 	return fmt.Sprintf("Step %d", n.Number)
 }
 
-func (n *numberedStep) Run(ctx pipeline.Context) error {
+func (n *numberedStep[T]) Run(in T) error {
 	return nil // Do nothing
 }
 
-type stringedStep struct {
+type stringedStep[T any] struct {
 	Number string
 }
 
-func (n *stringedStep) Name() string {
+func (n *stringedStep[T]) Name() string {
 	return fmt.Sprintf("Step %s", n.Number)
 }
 
-func (n *stringedStep) Run(ctx pipeline.Context) error {
+func (n *stringedStep[T]) Run(in T) error {
 	return nil // Do nothing
 }
 
-type chanStep struct {
+type chanStep[T any] struct {
 	NumberChan chan int
 }
 
-func (n *chanStep) Name() string {
+func (n *chanStep[T]) Name() string {
 	return fmt.Sprintf("Step %d", <-n.NumberChan)
 }
 
-func (n *chanStep) Run(ctx pipeline.Context) error {
+func (n *chanStep[T]) Run(in interface{}) error {
 	return nil // Do nothing
 }
 
-func createNumberedStep(number **int) pipeline.Step {
+func NewNumberedStep(number **int) pipeline.Step[interface{}] {
 	v := rand.Intn(4)
 
 	current := **number
@@ -59,18 +60,18 @@ func createNumberedStep(number **int) pipeline.Step {
 	switch v {
 	// 50% chance of variable assignment steps
 	case 0:
-		return &numberedStep{
+		return &numberedStep[interface{}]{
 			Number: current,
 		}
 	case 1:
-		return &stringedStep{
+		return &stringedStep[interface{}]{
 			Number: fmt.Sprintf("%d", current),
 		}
 	// We give 50% chances to channels, as it's probably the most used way to pass data around
 	case 2, 3:
 		c := make(chan int, 1)
 		c <- current
-		return &chanStep{
+		return &chanStep[interface{}]{
 			NumberChan: c,
 		}
 	}
@@ -78,292 +79,292 @@ func createNumberedStep(number **int) pipeline.Step {
 	panic("unexpected error")
 }
 
-func createImmenseGraph() pipeline.Stage {
+func NewImmenseGraph() pipeline.Stage[interface{}] {
 	n := 0
 	posN := &n
-	return pipeline.CreateSequentialGroup(
-		pipeline.CreateSequentialStage(
-			createNumberedStep(&posN),
-			createNumberedStep(&posN),
+	return pipeline.NewSequentialGroup[interface{}](
+		pipeline.NewSequentialStage(
+			NewNumberedStep(&posN),
+			NewNumberedStep(&posN),
 		),
-		pipeline.CreateConditionalGroup(
-			pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+		pipeline.NewConditionalGroup[interface{}](
+			pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 				return true
 			}),
-			pipeline.CreateConcurrentGroup(
-				pipeline.CreateSequentialGroup(
-					pipeline.CreateSequentialStage(
-						createNumberedStep(&posN),
+			pipeline.NewConcurrentGroup(
+				pipeline.NewSequentialGroup[interface{}](
+					pipeline.NewSequentialStage(
+						NewNumberedStep(&posN),
 					),
-					pipeline.CreateConcurrentGroup(
-						pipeline.CreateSequentialGroup(
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+					pipeline.NewConcurrentGroup(
+						pipeline.NewSequentialGroup[interface{}](
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateConditionalStage(
-								pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalStage(
+								pipeline.NewAnonymousStatement(func(in interface{}) bool {
 									return true
 								}),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalGroup[interface{}](
+								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.CreateSequentialStage(
-									createNumberedStep(&posN),
+								pipeline.NewSequentialStage(
+									NewNumberedStep(&posN),
 								),
-								pipeline.CreateConditionalStage(
-									pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+								pipeline.NewConditionalStage(
+									pipeline.NewAnonymousStatement(func(in interface{}) bool {
 										return true
 									}),
-									createNumberedStep(&posN),
+									NewNumberedStep(&posN),
 									nil,
 								),
 							),
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
 						),
-						pipeline.CreateSequentialGroup(
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+						pipeline.NewSequentialGroup[interface{}](
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateConditionalStage(
-								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalStage(
+								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 									return false
 								}),
 								nil,
-								createNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
 						),
-						pipeline.CreateSequentialGroup(
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+						pipeline.NewSequentialGroup[interface{}](
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateConditionalStage(
-								pipeline.CreateAnonymousStatement(func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalStage(
+								pipeline.NewAnonymousStatement(func(in interface{}) bool {
 									return true
 								}),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
 						),
 					),
 				),
-				pipeline.CreateSequentialGroup(
-					pipeline.CreateSequentialStage(
-						createNumberedStep(&posN),
+				pipeline.NewSequentialGroup[interface{}](
+					pipeline.NewSequentialStage(
+						NewNumberedStep(&posN),
 					),
-					pipeline.CreateConcurrentGroup(
-						pipeline.CreateSequentialStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+					pipeline.NewConcurrentGroup[interface{}](
+						pipeline.NewSequentialStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateSequentialStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+						pipeline.NewSequentialStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateConditionalStage(
-							pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+						pipeline.NewConditionalStage(
+							pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 								return true
 							}),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateSequentialGroup(
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+						pipeline.NewSequentialGroup[interface{}](
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalGroup[interface{}](
+								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 									return true // Closed
 								}),
-								pipeline.CreateSequentialGroup(
-									pipeline.CreateSequentialStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+								pipeline.NewSequentialGroup[interface{}](
+									pipeline.NewSequentialStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateConcurrentStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+									pipeline.NewConcurrentStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateSequentialStage(
-										createNumberedStep(&posN),
+									pipeline.NewSequentialStage(
+										NewNumberedStep(&posN),
 									),
 								),
-								pipeline.CreateSequentialStage(
-									createNumberedStep(&posN),
-									createNumberedStep(&posN),
+								pipeline.NewSequentialStage(
+									NewNumberedStep(&posN),
+									NewNumberedStep(&posN),
 								),
 							),
 						),
 					),
-					pipeline.CreateSequentialStage(
-						createNumberedStep(&posN),
-						createNumberedStep(&posN),
-						createNumberedStep(&posN),
+					pipeline.NewSequentialStage(
+						NewNumberedStep(&posN),
+						NewNumberedStep(&posN),
+						NewNumberedStep(&posN),
 					),
-					pipeline.CreateConcurrentGroup(
-						pipeline.CreateConcurrentStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+					pipeline.NewConcurrentGroup[interface{}](
+						pipeline.NewConcurrentStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateConcurrentStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+						pipeline.NewConcurrentStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateConcurrentStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+						pipeline.NewConcurrentStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.CreateSequentialStage(
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
-							createNumberedStep(&posN),
+						pipeline.NewSequentialStage(
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
 					),
-					pipeline.CreateSequentialStage(
-						createNumberedStep(&posN),
+					pipeline.NewSequentialStage(
+						NewNumberedStep(&posN),
 					),
 				),
-				pipeline.CreateSequentialGroup(
-					pipeline.CreateConditionalGroup(
-						pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+				pipeline.NewSequentialGroup[interface{}](
+					pipeline.NewConditionalGroup[interface{}](
+						pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 							return true
 						}),
-						pipeline.CreateConcurrentGroup(
-							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+						pipeline.NewConcurrentGroup[interface{}](
+							pipeline.NewConditionalGroup[interface{}](
+								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.CreateSequentialGroup(
-									pipeline.CreateSequentialStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+								pipeline.NewSequentialGroup[interface{}](
+									pipeline.NewSequentialStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateConcurrentStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+									pipeline.NewConcurrentStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateSequentialStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+									pipeline.NewSequentialStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
 								),
-								pipeline.CreateSequentialStage(
-									createNumberedStep(&posN),
+								pipeline.NewSequentialStage(
+									NewNumberedStep(&posN),
 								),
 							),
-							pipeline.CreateConcurrentStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+							pipeline.NewConcurrentStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
 						),
-						pipeline.CreateConditionalGroup(
-							pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+						pipeline.NewConditionalGroup[interface{}](
+							pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 								return true
 							}),
-							pipeline.CreateConditionalGroup(
-								pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+							pipeline.NewConditionalGroup[interface{}](
+								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.CreateSequentialGroup(
-									pipeline.CreateSequentialStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+								pipeline.NewSequentialGroup[interface{}](
+									pipeline.NewSequentialStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateConcurrentStage(
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
-										createNumberedStep(&posN),
+									pipeline.NewConcurrentStage(
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
+										NewNumberedStep(&posN),
 									),
-									pipeline.CreateConditionalGroup(
-										pipeline.CreateSimpleStatement("some name", func(ctx pipeline.Context) bool {
+									pipeline.NewConditionalGroup[interface{}](
+										pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
 											return true
 										}),
-										pipeline.CreateSequentialGroup(
-											pipeline.CreateSequentialStage(
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
+										pipeline.NewSequentialGroup[interface{}](
+											pipeline.NewSequentialStage(
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
 											),
-											pipeline.CreateConcurrentStage(
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
+											pipeline.NewConcurrentStage(
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
 											),
-											pipeline.CreateSequentialStage(
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
-												createNumberedStep(&posN),
+											pipeline.NewSequentialStage(
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
+												NewNumberedStep(&posN),
 											),
 										),
-										pipeline.CreateSequentialStage(
-											createNumberedStep(&posN),
+										pipeline.NewSequentialStage(
+											NewNumberedStep(&posN),
 										),
 									),
 								),
-								pipeline.CreateSequentialStage(
-									createNumberedStep(&posN),
-									createNumberedStep(&posN),
+								pipeline.NewSequentialStage(
+									NewNumberedStep(&posN),
+									NewNumberedStep(&posN),
 								),
 							),
-							pipeline.CreateSequentialStage(
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
-								createNumberedStep(&posN),
+							pipeline.NewSequentialStage(
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
 							),
 						),
 					),
 				),
 			),
-			pipeline.CreateSequentialStage(
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
-				createNumberedStep(&posN),
+			pipeline.NewSequentialStage(
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
+				NewNumberedStep(&posN),
 			),
 		),
 	)
@@ -371,13 +372,13 @@ func createImmenseGraph() pipeline.Stage {
 
 func Test_GraphRendering(t *testing.T) {
 	if *render {
-		diagram := pipeline.CreateUMLActivityGraphDiagram()
-		renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		diagram := pipeline.NewUMLActivityGraphDiagram()
+		renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})
 		file, _ := os.Create("pipeline_benchmark_test.svg")
 
-		createImmenseGraph().Draw(diagram)
+		NewImmenseGraph().Draw(diagram)
 
 		err := renderer.Render(diagram, file)
 
@@ -394,14 +395,13 @@ func Test_GraphRendering(t *testing.T) {
 // Output: BenchmarkPipeline_Run-4   	   46436	     26635 ns/op (0.026ms)
 // Given this graph magnitude, the cost of traversing it is negligible in comparison to a step operation.
 func BenchmarkPipeline_Run(b *testing.B) {
-	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	graph := createImmenseGraph()
-	ctx := pipeline.CreateContext()
+	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
+	graph := NewImmenseGraph()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StartTimer()
-		err := pipe.Run(graph, ctx)
+		err := pipe.Run(graph, 1)
 		b.StopTimer()
 
 		if err != nil {

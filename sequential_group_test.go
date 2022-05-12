@@ -5,45 +5,46 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestSequentialGroup_GivenStagesWithoutErrors_WhenRun_ThenAllStagesAreRunSequentially(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var stages []pipeline.Stage
+	var stages []pipeline.Stage[int]
 	for i := 0; i < 100; i++ {
-		stages = append(stages, createStage(i, &arr))
+		stages = append(stages, NewStage(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := pipeline.CreateSequentialGroup(stages...)
+	stage := pipeline.NewSequentialGroup(stages...)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedArr, *arr)
 	for _, s := range stages {
-		s.(*mockStage).AssertExpectations(t)
+		s.(*mockStage[int]).AssertExpectations(t)
 	}
 }
 
 func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterError(t *testing.T) {
 	expectedErr := errors.New("error")
 	time := ""
-	mockStage := new(mockStage)
-	mockStage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
+	mockStage := new(mockStage[interface{}])
+	mockStage.On("Run", SimpleExecutor[interface{}]{}, 1).Run(func(args mock.Arguments) {
 		time += strconv.Itoa(len(time))
 	}).Return(expectedErr).Once()
 
-	initStage := pipeline.CreateSequentialGroup(
+	initStage := pipeline.NewSequentialGroup[interface{}](
 		mockStage, mockStage, mockStage, mockStage, mockStage,
 		mockStage, mockStage, mockStage, mockStage, mockStage,
 	)
 
-	err := initStage.Run(SimpleExecutor{}, &mockContext{})
+	err := initStage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, "0", time)
@@ -53,10 +54,10 @@ func TestSequentialGroup_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErr
 func TestSequentialGroup_GivenAGraphToDraw_WhenDrawn_ThenStagesAreDrawn(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
 
-	mockStage := new(mockStage)
+	mockStage := new(mockStage[interface{}])
 	mockStage.On("Draw", mockGraphDiagram).Times(6)
 
-	initStage := pipeline.CreateSequentialGroup(
+	initStage := pipeline.NewSequentialGroup[interface{}](
 		mockStage, mockStage, mockStage, mockStage, mockStage, mockStage,
 	)
 

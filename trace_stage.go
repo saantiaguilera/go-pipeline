@@ -7,38 +7,40 @@ import (
 	"time"
 )
 
-// CreateTracedStage creates a traced stage that will log the execution time of the stage to the stdout
-func CreateTracedStage(name string, stage Stage) Stage {
-	return &tracedStage{
+type (
+	tracedStage[T any] struct {
+		Name   string
+		Stage  Stage[T]
+		Writer io.Writer
+	}
+)
+
+// NewTracedStage News a traced stage that will log the execution time of the stage to the stdout
+func NewTracedStage[T any](name string, stage Stage[T]) Stage[T] {
+	return &tracedStage[T]{
 		Name:   name,
 		Stage:  stage,
 		Writer: os.Stdout,
 	}
 }
 
-// CreateTracedStageWithWriter creates a traced stage that will log the execution time of the stage to the writer
-func CreateTracedStageWithWriter(name string, stage Stage, writer io.Writer) Stage {
-	return &tracedStage{
+// NewTracedStageWithWriter News a traced stage that will log the execution time of the stage to the writer
+func NewTracedStageWithWriter[T any](name string, stage Stage[T], writer io.Writer) Stage[T] {
+	return &tracedStage[T]{
 		Name:   name,
 		Stage:  stage,
 		Writer: writer,
 	}
 }
 
-type tracedStage struct {
-	Name   string
-	Stage  Stage
-	Writer io.Writer
-}
-
-func (t *tracedStage) Draw(graph GraphDiagram) {
+func (t *tracedStage[T]) Draw(graph GraphDiagram) {
 	t.Stage.Draw(graph)
 }
 
-func (t *tracedStage) Run(executor Executor, ctx Context) error {
+func (t *tracedStage[T]) Run(ex Executor[T], in T) error {
 	start := time.Now()
 
-	err := t.Stage.Run(executor, ctx)
+	err := t.Stage.Run(ex, in)
 
 	var message string
 	if err == nil {

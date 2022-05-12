@@ -25,7 +25,7 @@ func (s *cutEggsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createCutEggsStep(eggsChan chan int) pipeline.Step {
+func NewCutEggsStep(eggsChan chan int) pipeline.Step {
 	return &cutEggsStep{
 		Stream: eggsChan,
 	}

@@ -8,13 +8,13 @@ type DrawableDiagram interface {
 	Draw(graph GraphDiagram)
 }
 
-// GraphDiagram interface allowing to create a representation of a graph
+// GraphDiagram interface allowing to New a representation of a graph
 type GraphDiagram interface {
 	// AddConcurrency branching as many times as needed (each branch is a concurrent/fork 'node')
 	AddConcurrency(branches ...DrawDiagram)
 	// AddDecision from a given statement, allowing inner graphs for each branch of the decision
 	AddDecision(statement string, yes DrawDiagram, no DrawDiagram)
-	// Create an action entry
+	// New an action entry
 	AddActivity(label string)
 
 	// String representation of the graph

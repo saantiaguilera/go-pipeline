@@ -1,48 +1,48 @@
 package pipeline
 
-type conditionalStage struct {
-	Statement Statement
-	True      Step
-	False     Step
+type ConditionalStage[T any] struct {
+	statement *Statement[T]
+	trueCn    Step[T]
+	falseCn   Step[T]
 }
 
-func (c *conditionalStage) Draw(graph GraphDiagram) {
+func (c *ConditionalStage[T]) Draw(graph GraphDiagram) {
 	graph.AddDecision(
-		c.Statement.Name(),
+		c.statement.Name(),
 		func(graph GraphDiagram) {
-			if c.True != nil {
-				graph.AddActivity(c.True.Name())
+			if c.trueCn != nil {
+				graph.AddActivity(c.trueCn.Name())
 			}
 		},
 		func(graph GraphDiagram) {
-			if c.False != nil {
-				graph.AddActivity(c.False.Name())
+			if c.falseCn != nil {
+				graph.AddActivity(c.falseCn.Name())
 			}
 		},
 	)
 }
 
-func (c *conditionalStage) Run(executor Executor, ctx Context) error {
-	if c.Statement != nil && c.Statement.Evaluate(ctx) {
-		if c.True != nil {
-			return executor.Run(c.True, ctx)
+func (c *ConditionalStage[T]) Run(executor Executor[T], in T) error {
+	if c.statement != nil && c.statement.Evaluate(in) {
+		if c.trueCn != nil {
+			return executor.Run(c.trueCn, in)
 		}
 	} else {
-		if c.False != nil {
-			return executor.Run(c.False, ctx)
+		if c.falseCn != nil {
+			return executor.Run(c.falseCn, in)
 		}
 	}
 	return nil
 }
 
-// CreateConditionalStage creates a conditional stage that will run a statement. If it holds true, then the "true" step will be run.
+// NewConditionalStage News a conditional stage that will run a statement. If it holds true, then the "true" step will be run.
 // Else, the "false" step will be called.
 // If a statement is nil, then it will be considered to hold false (thus, the "false" step is called)
 // If one of the steps is nil and the statement is such, then nothing will happen.
-func CreateConditionalStage(statement Statement, true Step, false Step) Stage {
-	return &conditionalStage{
-		Statement: statement,
-		True:      true,
-		False:     false,
+func NewConditionalStage[T any](statement *Statement[T], t, f Step[T]) *ConditionalStage[T] {
+	return &ConditionalStage[T]{
+		statement: statement,
+		trueCn:    t,
+		falseCn:   f,
 	}
 }

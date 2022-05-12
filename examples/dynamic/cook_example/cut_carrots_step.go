@@ -25,7 +25,7 @@ func (s *cutCarrotsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createCutCarrotsStep(carrotsChan chan int) pipeline.Step {
+func NewCutCarrotsStep(carrotsChan chan int) pipeline.Step {
 	return &cutCarrotsStep{
 		Stream: carrotsChan,
 	}

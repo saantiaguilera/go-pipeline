@@ -10,7 +10,7 @@ import (
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-// Graph creates a dynamic workflow for this sample. It's all in a single func completely coupled for showing purposes
+// Graph News a dynamic workflow for this sample. It's all in a single func completely coupled for showing purposes
 // you should probably decouple this into more atomic ones (eg. a func for making the salad that returns a Stage)
 func Graph(numberOfCarrots, numberOfEggs, meatSize, ovenSize int) pipeline.Stage {
 	// Channels as a mean for communicating input / output.
@@ -22,56 +22,56 @@ func Graph(numberOfCarrots, numberOfEggs, meatSize, ovenSize int) pipeline.Stage
 
 	// Complete stage. Its sequential because we can't serve
 	// before all the others are done.
-	graph := pipeline.CreateSequentialGroup(
+	graph := pipeline.NewSequentialGroup(
 		// Concurrent stage, given we are 3, we can do the salad / meat separately
-		pipeline.CreateConcurrentGroup(
+		pipeline.NewConcurrentGroup(
 			// This will be the salad flow. It can be done concurrently with the meat
-			pipeline.CreateSequentialGroup(
+			pipeline.NewSequentialGroup(
 				// Eggs and carrots can be operated concurrently too
-				pipeline.CreateConcurrentGroup(
+				pipeline.NewConcurrentGroup(
 					// Sequential stage for the eggs flow
-					pipeline.CreateSequentialStage(
-						createBoilEggsStep(numberOfEggs, eggsChan),
-						createCutEggsStep(eggsChan),
+					pipeline.NewSequentialStage(
+						NewBoilEggsStep(numberOfEggs, eggsChan),
+						NewCutEggsStep(eggsChan),
 					),
 					// Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
-					pipeline.CreateSequentialStage(
-						createWashCarrotsStep(numberOfCarrots, carrotsChan),
-						createCutCarrotsStep(carrotsChan),
+					pipeline.NewSequentialStage(
+						NewWashCarrotsStep(numberOfCarrots, carrotsChan),
+						NewCutCarrotsStep(carrotsChan),
 					),
 				),
 				// This is sequential. When carrots and eggs are done, this will run
-				pipeline.CreateSequentialStage(
-					createMakeSaladStep(eggsChan, carrotsChan, saladChan),
+				pipeline.NewSequentialStage(
+					NewMakeSaladStep(eggsChan, carrotsChan, saladChan),
 				),
 			),
 			// Another sequential stage for the meat (concurrently with salad)
-			pipeline.CreateSequentialGroup(
+			pipeline.NewSequentialGroup(
 				// If we end up cutting the meat, we can optimize it with the oven operation
-				pipeline.CreateConcurrentGroup(
+				pipeline.NewConcurrentGroup(
 					// Conditional stage, the meat might be too big
-					pipeline.CreateConditionalStage(
-						pipeline.CreateSimpleStatement("is_meat_too_big", createMeatTooBigStatement(meatSize, ovenSize)),
+					pipeline.NewConditionalStage(
+						pipeline.NewSimpleStatement("is_meat_too_big", NewMeatTooBigStatement(meatSize, ovenSize)),
 						// True:
-						createCutMeatStep(meatSize, ovenSize, meatChan),
+						NewCutMeatStep(meatSize, ovenSize, meatChan),
 						// False:
-						pipeline.CreateSimpleStep("leave_meat_as_it_is", func(ctx pipeline.Context) error {
+						pipeline.NewSimpleStep("leave_meat_as_it_is", func(ctx pipeline.Context) error {
 							meatChan <- meatSize // Simply pass the meat size
 							return nil
 						}),
 					),
-					pipeline.CreateSequentialStage(
-						createTurnOnOvenStep(),
+					pipeline.NewSequentialStage(
+						NewTurnOnOvenStep(),
 					),
 				),
-				pipeline.CreateSequentialStage(
-					createPutMeatInOvenStep(meatChan),
+				pipeline.NewSequentialStage(
+					NewPutMeatInOvenStep(meatChan),
 				),
 			),
 		),
 		// When everything is done. Serve
-		pipeline.CreateSequentialStage(
-			createServeStep(meatChan, saladChan),
+		pipeline.NewSequentialStage(
+			NewServeStep(meatChan, saladChan),
 		),
 	)
 
@@ -92,11 +92,11 @@ func (t *sampleExecutor) Run(cmd pipeline.Runnable, ctx pipeline.Context) error 
 // RunGraphRendering represents the graph in UML Activity and renders it as an SVG file (template.svg)
 func RunGraphRendering() {
 	if *render {
-		diagram := pipeline.CreateUMLActivityGraphDiagram()
-		renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		diagram := pipeline.NewUMLActivityGraphDiagram()
+		renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})
-		file, _ := os.Create("template.svg")
+		file, _ := os.New("template.svg")
 
 		Graph(0, 0, 0, 0).Draw(diagram)
 
@@ -121,14 +121,14 @@ func RunGraphRendering() {
 // Making salad with 25 eggs and 40 carrots
 // Serving 65 of salad and 500 of meat
 func RunPipeline() {
-	// Create a pipeline with our own traced executor (no circuit breakers, nothing). Also a graph, its stateless
+	// New a pipeline with our own traced executor (no circuit breakers, nothing). Also a graph, its stateless
 	// so it can be re-run as many times as we like
-	pipe := pipeline.CreatePipeline(&sampleExecutor{})
+	pipe := pipeline.NewPipeline(&sampleExecutor{})
 	graph := Graph(8, 5, 600, 500)
 
 	// Initial context input data.
 	// Since this is dynamic, we can place stuff that is completely agnostic to the graph here.
-	ctx := pipeline.CreateContext()
+	ctx := pipeline.NewContext()
 
 	// Run and assert.
 	err := pipe.Run(graph, ctx)

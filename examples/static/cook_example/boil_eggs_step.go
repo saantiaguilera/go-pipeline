@@ -20,6 +20,6 @@ func (s *boilEggsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createBoilEggsStep() pipeline.Step {
+func NewBoilEggsStep() pipeline.Step {
 	return &boilEggsStep{}
 }

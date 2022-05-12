@@ -41,7 +41,7 @@ else
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-// Graph creates a static workflow for this sample. It's all in a single func completely coupled for showing purposes
+// Graph News a static workflow for this sample. It's all in a single func completely coupled for showing purposes
 // you should probably decouple this into more atomic ones (eg. a func for calculating sizes that returns a Stage)
 func Graph() pipeline.Stage {
 	widthStep := &getWidthStep{}
@@ -69,46 +69,46 @@ func Graph() pipeline.Stage {
 	paintSurfaceStep := &paintSurfaceStep{}
 	paintVolumeStep := &paintVolumeStep{}
 
-	return pipeline.CreateSequentialGroup(
-		pipeline.CreateTracedStage("measurement_stage", pipeline.CreateConcurrentStage(
+	return pipeline.NewSequentialGroup(
+		pipeline.NewTracedStage("measurement_stage", pipeline.NewConcurrentStage(
 			widthStep,
 			heightStep,
 			depthStep,
 		)),
-		pipeline.CreateConcurrentStage(
+		pipeline.NewConcurrentStage(
 			calculateVolumeStep,
 			calculateSurfaceStep,
 		),
-		pipeline.CreateConcurrentGroup(
-			pipeline.CreateSequentialStage(
+		pipeline.NewConcurrentGroup(
+			pipeline.NewSequentialStage(
 				calculatePriceToPaintSurfaceStep,
 				recordPriceSurfaceStep,
 			),
-			pipeline.CreateSequentialStage(
+			pipeline.NewSequentialStage(
 				calculatePriceToPaintVolumeStep,
 				recordPriceVolumeStep,
 			),
 		),
-		pipeline.CreateSequentialStage(
+		pipeline.NewSequentialStage(
 			evaluateStep,
 		),
-		pipeline.CreateConditionalGroup(
-			pipeline.CreateSimpleStatement("should_paint", func(ctx pipeline.Context) bool {
+		pipeline.NewConditionalGroup(
+			pipeline.NewSimpleStatement("should_paint", func(ctx pipeline.Context) bool {
 				volumePrice, _ := ctx.GetFloat64(tagVolumePrice)
 				surfacePrice, _ := ctx.GetFloat64(tagSurfacePrice)
 				return volumePrice+surfacePrice < 100000
 			}),
-			pipeline.CreateSequentialGroup(
-				pipeline.CreateConcurrentStage(
+			pipeline.NewSequentialGroup(
+				pipeline.NewConcurrentStage(
 					acceptSurfacePaintingStep,
 					acceptVolumePaintingStep,
 				),
-				pipeline.CreateConcurrentStage(
-					pipeline.CreateTracedStep(paintSurfaceStep),
-					pipeline.CreateTracedStep(paintVolumeStep),
+				pipeline.NewConcurrentStage(
+					pipeline.NewTracedStep(paintSurfaceStep),
+					pipeline.NewTracedStep(paintVolumeStep),
 				),
 			),
-			pipeline.CreateSequentialStage(),
+			pipeline.NewSequentialStage(),
 		),
 	)
 }
@@ -125,11 +125,11 @@ func (t *sampleExecutor) Run(cmd pipeline.Runnable, ctx pipeline.Context) error 
 // RunGraphRendering represents the graph in UML Activity and renders it as an SVG file (template.svg)
 func RunGraphRendering() {
 	if *render {
-		diagram := pipeline.CreateUMLActivityGraphDiagram()
-		renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+		diagram := pipeline.NewUMLActivityGraphDiagram()
+		renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})
-		file, _ := os.Create("template.svg")
+		file, _ := os.New("template.svg")
 
 		Graph().Draw(diagram)
 
@@ -143,12 +143,12 @@ func RunGraphRendering() {
 
 // RunPipeline runs the provided pipeline.
 func RunPipeline() {
-	// Create initial data, this can be created once and reused multiple times
-	pipe := pipeline.CreatePipeline(&sampleExecutor{})
+	// New initial data, this can be Newd once and reused multiple times
+	pipe := pipeline.NewPipeline(&sampleExecutor{})
 	graph := Graph()
 
-	// Create context to be used on a single graph evaluation. Feed inputs for the starting steps here.
-	ctx := pipeline.CreateContext()
+	// New context to be used on a single graph evaluation. Feed inputs for the starting steps here.
+	ctx := pipeline.NewContext()
 
 	// Evaluate graph and assert errors.
 	err := pipe.Run(graph, ctx)

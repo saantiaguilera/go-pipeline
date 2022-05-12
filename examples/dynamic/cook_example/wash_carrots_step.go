@@ -24,7 +24,7 @@ func (s *washCarrotsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createWashCarrotsStep(carrots int, carrotsChan chan int) pipeline.Step {
+func NewWashCarrotsStep(carrots int, carrotsChan chan int) pipeline.Step {
 	return &washCarrotsStep{
 		Carrots: carrots,
 		Stream:  carrotsChan,

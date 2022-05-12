@@ -2,7 +2,7 @@
 Package pipeline is a pure Go client library for building and executing pipelines in a declarative way.
 It includes a high level API to easily build, execute and draw graphs of a desired structure.
 
-If the defined implementations of the API are insufficient, one can create their own implementations adding new behaviours,
+If the defined implementations of the API are insufficient, one can New their own implementations adding new behaviours,
 such as circuit-breakers, panic recovers, APM decorators, custom stages, custom steps, etc.
 
 Supported structure
@@ -18,36 +18,36 @@ Step
 
 A step is a single unit of work. It's an alias for Runnable
 
-	type createUserStep struct {
+	type NewUserStep struct {
 		Service      user.Service
 	}
 
-	func (s *createUserStep) Name() string {
-		return "create_user_step"
+	func (s *NewUserStep) Name() string {
+		return "New_user_step"
 	}
 
-	func (s *createUserStep) Run(ctx pipeline.Context) error {
+	func (s *NewUserStep) Run(ctx pipeline.Context) error {
 		user, exists := ctx.Get(TagUser)
 		if !exists {
 			return errors.New("no user in current context to save")
 		}
 
-		userId, err := s.Service.Create(user)
+		userId, err := s.Service.New(user)
 		if err == nil {
 			ctx.Set(TagUserId, userId)
 		}
 		return err
 	}
 
-	func CreateUserStep(service user.Service) pipeline.Step {
-		return &createUserStep{
+	func NewUserStep(service user.Service) pipeline.Step {
+		return &NewUserStep{
 			Service:      service,
 		}
 	}
 
-If your step is completely stateless, you can create an immutable instance through CreateSimpleStep
+If your step is completely stateless, you can New an immutable instance through NewSimpleStep
 
-    step := pipeline.CreateSimpleStep("step_name", func(ctx pipeline.Context) error {
+    step := pipeline.NewSimpleStep("step_name", func(ctx pipeline.Context) error {
         // Do stuff.
     })
 
@@ -55,41 +55,41 @@ Stage
 
 A stage contains a collection of steps. The collection will be executed according to the stage implementation (eg. concurrently, sequentially, condition-based, etc).
 
-To create one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
+To New one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
 
-	stage := pipeline.CreateSequentialStage(
-		user.CreateGetAuthenticatedUserStep(jwtTokenHandler),
-		user.CreateUserStep(userService),
+	stage := pipeline.NewSequentialStage(
+		user.NewGetAuthenticatedUserStep(jwtTokenHandler),
+		user.NewUserStep(userService),
 	)
 
-Since a stage is nothing more than an interface, you can create your own custom implementations abiding that contract.
+Since a stage is nothing more than an interface, you can New your own custom implementations abiding that contract.
 
 Stage group
 
 A stage group is a collection of stages. It's also a Stage itself, thus a group can be used in the same scope as a stage.
 
-	stage := pipeline.CreateSequentialGroup(
-		pipeline.CreateConcurrentGroup(
-			pipeline.CreateSequentialStage(
-				CreateBoilEggsStep(),
-				CreateCutEggsStep(),
+	stage := pipeline.NewSequentialGroup(
+		pipeline.NewConcurrentGroup(
+			pipeline.NewSequentialStage(
+				NewBoilEggsStep(),
+				NewCutEggsStep(),
 			),
-			pipeline.CreateSequentialStage(
-				CreateWashCarrotsStep(),
-				CreateCutCarrotsStep(),
+			pipeline.NewSequentialStage(
+				NewWashCarrotsStep(),
+				NewCutCarrotsStep(),
 			),
 		),
-		pipeline.CreateSequentialStage(
-			CreateMakeSaladStep(),
+		pipeline.NewSequentialStage(
+			NewMakeSaladStep(),
 		),
 	)
 
-Again, as long as you abide the Stage contract, you can create your own ones.
+Again, as long as you abide the Stage contract, you can New your own ones.
 
 Defined structures
 
 We already implement out of the box some structures that are pretty much mandatory. You can make your own custom
-implementation to create behaviours we are not currently defining. The provided ones are:
+implementation to New behaviours we are not currently defining. The provided ones are:
 
 - Concurrent: Run stages or steps concurrently
 
@@ -115,13 +115,13 @@ This is useful if we want to add global step hooks / circuit-breakers / tracers 
 
 Drawing
 
-The package comes with a handy drawing API for representing the created graphs.
+The package comes with a handy drawing API for representing the Newd graphs.
 
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
-	renderer := pipeline.CreateUMLActivityRenderer(pipeline.UMLOptions{
+	diagram := pipeline.NewUMLActivityGraphDiagram()
+	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 		Type: pipeline.UMLFormatSVG,
 	})
-	file, _ := os.Create("outputFile.svg")
+	file, _ := os.New("outputFile.svg")
 
 	yourStage.Draw(diagram)
 
@@ -129,26 +129,17 @@ The package comes with a handy drawing API for representing the created graphs.
 */
 package pipeline
 
-// Pipeline contract for running a graph/template.
-type Pipeline interface {
-	// Run a stage graph with a starting context. Consider inflating the context with useful data that will work as
-	// input for the steps.
-	// This method is blocking until the stage finishes.
-	// Returns an error denoting that the stage couldn't complete (and its reason)
-	Run(stage Stage, ctx Context) error
+type Client[T any] struct {
+	ex Executor[T]
 }
 
-type pipeline struct {
-	Executor Executor
+func (c *Client[T]) Run(stage Stage[T], in T) error {
+	return stage.Run(c.ex, in)
 }
 
-func (p *pipeline) Run(stage Stage, ctx Context) error {
-	return stage.Run(p.Executor, ctx)
-}
-
-// CreatePipeline creates a pipeline with a given executor
-func CreatePipeline(executor Executor) Pipeline {
-	return &pipeline{
-		Executor: executor,
+// NewClient creates a pipeline client with a given executor
+func NewClient[T any](ex Executor[T]) *Client[T] {
+	return &Client[T]{
+		ex: ex,
 	}
 }

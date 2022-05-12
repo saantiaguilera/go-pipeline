@@ -8,7 +8,7 @@ import (
 )
 
 func TestUMLGraphDiagram_GivenAGraph_WhenAddingEmptyConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddConcurrency(
 		func(graph pipeline.GraphDiagram) {
 		},
@@ -25,7 +25,7 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingEmptyConcurrentCases_ThenPlantUML
 }
 
 func TestUMLGraphDiagram_GivenAGraph_WhenAddingConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddConcurrency(
 		func(graph pipeline.GraphDiagram) {
 			graph.AddActivity("1")
@@ -45,7 +45,7 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingConcurrentCases_ThenPlantUMLForks
 }
 
 func TestUMLGraphDiagram_GivenAGraph_WhenAddingZeroConcurrentCases_ThenNothingHappens(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddConcurrency()
 
 	content := diagram.String()
@@ -55,7 +55,7 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingZeroConcurrentCases_ThenNothingHa
 }
 
 func TestUMLGraphDiagram_GivenAGraph_WhenAddingActivities_ThenPlantUMLActivitiesAreAdded(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddActivity("1")
 	diagram.AddActivity("1 2")
 	diagram.AddActivity("1 2 3")
@@ -69,7 +69,7 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingActivities_ThenPlantUMLActivities
 }
 
 func TestUMLGraphDiagram_GivenAGraph_WhenAddingADecision_ThenPlantUMLChoiceIsAdded(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddDecision("is this a test?", func(graph pipeline.GraphDiagram) {
 		graph.AddActivity("yes, this is a test")
 	}, func(graph pipeline.GraphDiagram) {
@@ -83,7 +83,7 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingADecision_ThenPlantUMLChoiceIsAdd
 }
 
 func TestUMLGraphDiagram_GivenAGraph_WhenStringRepresentationIsAsked_ThenCompletePlantUMLIsRepresented(t *testing.T) {
-	diagram := pipeline.CreateUMLActivityGraphDiagram()
+	diagram := pipeline.NewUMLActivityGraphDiagram()
 	diagram.AddActivity("beginning")
 	diagram.AddConcurrency(func(graph pipeline.GraphDiagram) {
 		graph.AddActivity("branch 1")

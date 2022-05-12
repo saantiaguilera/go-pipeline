@@ -23,6 +23,6 @@ func (s *makeSaladStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createMakeSaladStep() pipeline.Step {
+func NewMakeSaladStep() pipeline.Step {
 	return &makeSaladStep{}
 }

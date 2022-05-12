@@ -4,13 +4,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestSimpleStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.T) {
 	expectedName := "test_name"
-	step := pipeline.CreateSimpleStep(expectedName, nil)
+	step := pipeline.NewSimpleStep[interface{}](expectedName, nil)
 
 	name := step.Name()
 
@@ -19,25 +20,25 @@ func TestSimpleStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.
 
 func TestSimpleStep_GivenARunFunc_WhenRunning_ThenItsCalled(t *testing.T) {
 	called := false
-	run := func(ctx pipeline.Context) error {
+	run := func(int) error {
 		called = true
 		return nil
 	}
-	step := pipeline.CreateSimpleStep("", run)
+	step := pipeline.NewSimpleStep("", run)
 
-	_ = step.Run(nil)
+	_ = step.Run(1)
 
 	assert.True(t, called)
 }
 
 func TestSimpleStep_GivenARunFuncThatErrors_WhenRunning_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	run := func(ctx pipeline.Context) error {
+	run := func(int) error {
 		return expectedErr
 	}
-	step := pipeline.CreateSimpleStep("", run)
+	step := pipeline.NewSimpleStep("", run)
 
-	err := step.Run(nil)
+	err := step.Run(1)
 
 	assert.Equal(t, expectedErr, err)
 }

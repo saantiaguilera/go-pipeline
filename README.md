@@ -16,7 +16,7 @@ Pipeline is a GPL3-licensed Go package for building, executing and representing 
 
 - API documentation and examples are available via [godoc](https://godoc.org/github.com/saantiaguilera/go-pipeline).
 - The [examples](./examples) directory contains more elaborate example applications.
-- No specific mocks are needed for testing, every element is completely decoupled and atomic. You can create your own ones however you deem fit.
+- No specific mocks are needed for testing, every element is completely decoupled and atomic. You can New your own ones however you deem fit.
 
 ## API stability
 
@@ -44,57 +44,57 @@ This workflow can be built and executed as such.
 ```go
 // Complete stage. Its sequential because we can't serve
 // before all the others are done. 
-graph := pipeline.CreateSequentialGroup(
+graph := pipeline.NewSequentialGroup(
     // Concurrent stage, given we can do the salad / meat separately.
-    pipeline.CreateConcurrentGroup(
+    pipeline.NewConcurrentGroup(
         // This will be the salad flow.
-        pipeline.CreateSequentialGroup( 
+        pipeline.NewSequentialGroup( 
             // Eggs and carrots can be operated concurrently too.
-            pipeline.CreateConcurrentGroup(
+            pipeline.NewConcurrentGroup(
                 // Sequential stage for the eggs flow.
-                pipeline.CreateSequentialStage(
-                    CreateBoilEggsStep(),
-                    CreateCutEggsStep(),
+                pipeline.NewSequentialStage(
+                    NewBoilEggsStep(),
+                    NewCutEggsStep(),
                 ),
                 // Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
-                pipeline.CreateSequentialStage(
-                    CreateWashCarrotsStep(),
-                    CreateCutCarrotsStep(),
+                pipeline.NewSequentialStage(
+                    NewWashCarrotsStep(),
+                    NewCutCarrotsStep(),
                 ),
             ),
             // This is sequential. When carrots and eggs are done, this will run.
-            pipeline.CreateSequentialStage(
-                CreateMakeSaladStep(),
+            pipeline.NewSequentialStage(
+                NewMakeSaladStep(),
             ),
         ),
         // Another sequential stage for the meat (concurrently with salad)
-        pipeline.CreateSequentialGroup(
+        pipeline.NewSequentialGroup(
             // If we end up cutting the meat, we can optimize it with the oven operation
-            pipeline.CreateConcurrentGroup(
+            pipeline.NewConcurrentGroup(
                 // Conditional stage, the meat might be too big
-                pipeline.CreateConditionalStage(
-                    pipeline.CreateSimpleStatement("is_meat_too_big", IsMeatTooBigForTheOven),
+                pipeline.NewConditionalStage(
+                    pipeline.NewSimpleStatement("is_meat_too_big", IsMeatTooBigForTheOven),
                     // True:
-                    CreateCutMeatStep(),
+                    NewCutMeatStep(),
                     // False:
                     nil,
                 ),
-                pipeline.CreateSequentialStage(
-                    CreateTurnOvenOnStep(),
+                pipeline.NewSequentialStage(
+                    NewTurnOvenOnStep(),
                 ),
             ),
-            pipeline.CreateSequentialStage(
-                CreatePutMeatInOvenStep(),
+            pipeline.NewSequentialStage(
+                NewPutMeatInOvenStep(),
             ),
         ),
     ),
     // When everything is done. Serve.
-    pipeline.CreateSequentialStage(
-        CreateServeStep(),
+    pipeline.NewSequentialStage(
+        NewServeStep(),
     ),
 )
 
-pipe := pipeline.CreatePipeline(CreateYourExecutor())
-pipe.Run(graph, CreateYourInputContext())
+pipe := pipeline.NewPipeline(NewYourExecutor())
+pipe.Run(graph, NewYourInputContext())
 ```
 _Note that, for showing purposes, this is all in a single function. You can easily decouple this into more atomic ones that take care of specific responsibilities (eg. making the salad)._

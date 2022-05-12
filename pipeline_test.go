@@ -6,59 +6,51 @@ import (
 	"testing"
 	"time"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
-type mockPipeline struct {
+type mockStep[T any] struct {
 	mock.Mock
 }
 
-func (m mockPipeline) Run(stage pipeline.Stage, ctx pipeline.Context) error {
-	args := m.Called(stage, ctx)
-	return args.Error(0)
-}
-
-type mockStep struct {
-	mock.Mock
-}
-
-func (m *mockStep) Name() string {
+func (m *mockStep[T]) Name() string {
 	args := m.Called()
 	return args.String(0)
 }
 
-func (m *mockStep) Run(ctx pipeline.Context) error {
-	args := m.Called(ctx)
+func (m *mockStep[T]) Run(in T) error {
+	args := m.Called(in)
 	return args.Error(0)
 }
 
-type mockStage struct {
+type mockStage[T any] struct {
 	mock.Mock
 }
 
-func (m *mockStage) Draw(graph pipeline.GraphDiagram) {
+func (m *mockStage[T]) Draw(graph pipeline.GraphDiagram) {
 	_ = m.Called(graph)
 }
 
-func (m *mockStage) Run(executor pipeline.Executor, ctx pipeline.Context) error {
+func (m *mockStage[T]) Run(executor pipeline.Executor[T], ctx T) error {
 	args := m.Called(executor, ctx)
 
 	return args.Error(0)
 }
 
-type SimpleExecutor struct{}
+type SimpleExecutor[T any] struct{}
 
-func (s SimpleExecutor) Run(runnable pipeline.Runnable, ctx pipeline.Context) error {
-	return runnable.Run(ctx)
+func (s SimpleExecutor[T]) Run(runnable pipeline.Step[T], in T) error {
+	return runnable.Run(in)
 }
 
 var stepMux = sync.Mutex{}
 
-func createStep(data int, arr **[]int) pipeline.Step {
-	step := new(mockStep)
-	step.On("Run", &mockContext{}).Run(func(args mock.Arguments) {
+func NewStep(data int, arr **[]int) pipeline.Step[int] {
+	step := new(mockStep[int])
+	step.On("Run", 1).Run(func(args mock.Arguments) {
 		stepMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
@@ -71,9 +63,9 @@ func createStep(data int, arr **[]int) pipeline.Step {
 
 var stageMux = sync.Mutex{}
 
-func createStage(data int, arr **[]int) pipeline.Stage {
-	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}, &mockContext{}).Run(func(args mock.Arguments) {
+func NewStage(data int, arr **[]int) pipeline.Stage[int] {
+	stage := new(mockStage[int])
+	stage.On("Run", SimpleExecutor[int]{}, 1).Run(func(args mock.Arguments) {
 		stageMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
@@ -86,32 +78,29 @@ func createStage(data int, arr **[]int) pipeline.Stage {
 
 func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRan(t *testing.T) {
 	expectedErr := errors.New("error")
-	pipe := pipeline.CreatePipeline(SimpleExecutor{})
+	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
 
-	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}, mock.Anything).Return(expectedErr).Once()
+	stage := new(mockStage[interface{}])
+	stage.On("Run", SimpleExecutor[interface{}]{}, mock.Anything).Return(expectedErr).Once()
 
-	err := pipe.Run(stage, &mockContext{})
+	err := pipe.Run(stage, 1)
 
 	assert.Equal(t, expectedErr, err)
 	stage.AssertExpectations(t)
 }
 
 func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRanWithTheSameContext(t *testing.T) {
-	var tag pipeline.Tag = "tag"
 	expectedErr := errors.New("error")
-	pipe := pipeline.CreatePipeline(SimpleExecutor{})
-	ctx := new(mockContext)
-	ctx.On("Set", tag, "value").Once()
-
-	stage := new(mockStage)
-	stage.On("Run", SimpleExecutor{}, ctx).Run(func(args mock.Arguments) {
-		args.Get(1).(pipeline.Context).Set(tag, "value")
+	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
+	v := 1
+	stage := new(mockStage[interface{}])
+	stage.On("Run", SimpleExecutor[interface{}]{}, mock.Anything).Run(func(args mock.Arguments) {
+		*args.Get(1).(*int) = 2
 	}).Return(expectedErr).Once()
 
-	err := pipe.Run(stage, ctx)
+	err := pipe.Run(stage, &v)
 
 	assert.Equal(t, expectedErr, err)
-	ctx.AssertExpectations(t)
+	assert.Equal(t, 2, v)
 	stage.AssertExpectations(t)
 }

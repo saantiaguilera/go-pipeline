@@ -25,7 +25,7 @@ func (s *cutMeatStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step {
+func NewCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step {
 	return &cutMeatStep{
 		MeatSize: meatSize,
 		OvenSize: ovenSize,
@@ -33,7 +33,7 @@ func createCutMeatStep(meatSize, ovenSize int, meatChan chan int) pipeline.Step 
 	}
 }
 
-func createMeatTooBigStatement(meatSize, ovenSize int) func(ctx pipeline.Context) bool {
+func NewMeatTooBigStatement(meatSize, ovenSize int) func(ctx pipeline.Context) bool {
 	s := &meatTooBig{
 		MeatSize: meatSize,
 		OvenSize: ovenSize,

@@ -6,18 +6,19 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestTrace_GivenAStepToTrace_WhenRun_ThenOutputsInnerStepErr(t *testing.T) {
-	mockStep := new(mockStep)
+	mockStep := new(mockStep[interface{}])
 	mockStep.On("Name").Return("test name")
 	mockStep.On("Run", mock.Anything).Return(errors.New("some error"))
-	step := pipeline.CreateTracedStep(mockStep)
+	step := pipeline.NewTracedStep[interface{}](mockStep)
 
-	err := SimpleExecutor{}.Run(step, &mockContext{})
+	err := SimpleExecutor[interface{}]{}.Run(step, 1)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "some error", err.Error())
@@ -25,14 +26,14 @@ func TestTrace_GivenAStepToTrace_WhenRun_ThenOutputsInnerStepErr(t *testing.T) {
 }
 
 func TestTrace_GivenAStepToTrace_WhenRunFailing_ThenSpecificFormatIsUsed(t *testing.T) {
-	mockStep := new(mockStep)
+	mockStep := new(mockStep[interface{}])
 	mockStep.On("Name").Return("test name")
 	mockStep.On("Run", mock.Anything).Return(errors.New("some error"))
 	writer := bytes.NewBufferString("")
-	step := pipeline.CreateTracedStepWithWriter(mockStep, writer)
+	step := pipeline.NewTracedStepWithWriter[interface{}](mockStep, writer)
 	validator := regexp.MustCompile(`^\[STEP] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Failure: some error\n$`)
 
-	_ = SimpleExecutor{}.Run(step, &mockContext{})
+	_ = SimpleExecutor[interface{}]{}.Run(step, 1)
 
 	output := writer.Bytes()
 
@@ -41,14 +42,14 @@ func TestTrace_GivenAStepToTrace_WhenRunFailing_ThenSpecificFormatIsUsed(t *test
 }
 
 func TestTrace_GivenAStepToTrace_WhenRunSuccessfully_ThenSpecificFormatIsUsed(t *testing.T) {
-	mockStep := new(mockStep)
+	mockStep := new(mockStep[interface{}])
 	mockStep.On("Name").Return("test name")
 	mockStep.On("Run", mock.Anything).Return(nil)
 	writer := bytes.NewBufferString("")
-	step := pipeline.CreateTracedStepWithWriter(mockStep, writer)
+	step := pipeline.NewTracedStepWithWriter[interface{}](mockStep, writer)
 	validator := regexp.MustCompile(`^\[STEP] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Success\n$`)
 
-	_ = SimpleExecutor{}.Run(step, &mockContext{})
+	_ = SimpleExecutor[interface{}]{}.Run(step, 1)
 
 	output := writer.Bytes()
 

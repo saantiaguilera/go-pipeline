@@ -24,7 +24,7 @@ func (s *serveStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createServeStep(meatChan chan int, saladChan chan int) pipeline.Step {
+func NewServeStep(meatChan chan int, saladChan chan int) pipeline.Step {
 	return &serveStep{
 		Meat:  meatChan,
 		Salad: saladChan,

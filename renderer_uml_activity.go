@@ -16,13 +16,13 @@ const (
 )
 
 const (
-	// UMLFormatPNG OutputFormat for graph renderings (a UMLFormatPNG image will be created)
+	// UMLFormatPNG OutputFormat for graph renderings (a UMLFormatPNG image will be Newd)
 	UMLFormatPNG UMLOutputFormat = "png"
-	// UMLFormatSVG OutputFormat for graph renderings (an UMLFormatSVG image will be created)
+	// UMLFormatSVG OutputFormat for graph renderings (an UMLFormatSVG image will be Newd)
 	UMLFormatSVG UMLOutputFormat = "svg"
-	// UMLFormatRaw OutputFormat for graph renderings (a file with the raw contents will be created)
+	// UMLFormatRaw OutputFormat for graph renderings (a file with the raw contents will be Newd)
 	UMLFormatRaw UMLOutputFormat = "raw"
-	// UMLFormatTXT OutputFormat for graph renderings (an ASCII Art will be created)
+	// UMLFormatTXT OutputFormat for graph renderings (an ASCII Art will be Newd)
 	UMLFormatTXT UMLOutputFormat = "txt"
 )
 
@@ -37,8 +37,8 @@ type UMLOptions struct {
 	BaseURL string
 }
 
-// CreateUMLActivityRenderer creates a  UML Activity renderer for drawing graphs as specified
-func CreateUMLActivityRenderer(options UMLOptions) DiagramRenderer {
+// NewUMLActivityRenderer News a  UML Activity renderer for drawing graphs as specified
+func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
 	if len(options.Type) == 0 {
 		options.Type = UMLFormatSVG
 	}
@@ -78,7 +78,7 @@ func (u *umlDrawer) renderUml(content []byte, output io.WriteCloser) error {
 		return err
 	}
 	if response.StatusCode != 200 {
-		return fmt.Errorf("status code %d while trying to create the graph through %s", response.StatusCode, url)
+		return fmt.Errorf("status code %d while trying to New the graph through %s", response.StatusCode, url)
 	}
 
 	_, err = io.Copy(output, response.Body)
@@ -110,7 +110,7 @@ func (u *umlDrawer) base64Encode(input []byte) string {
 			buffer.WriteByte(mapper[b])
 		}
 	}
-	return string(buffer.Bytes())
+	return buffer.String()
 }
 
 // Deflate compression algorithm

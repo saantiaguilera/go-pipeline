@@ -5,29 +5,30 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestConcurrentStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var steps []pipeline.Step
+	var steps []pipeline.Step[int]
 	for i := 0; i < 100; i++ {
-		steps = append(steps, createStep(i, &arr))
+		steps = append(steps, NewStep(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := pipeline.CreateConcurrentStage(steps...)
+	stage := pipeline.NewConcurrentStage(steps...)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, expectedArr, *arr)
 	assert.Equal(t, len(expectedArr), len(*arr))
 	for _, step := range steps {
-		step.(*mockStep).AssertExpectations(t)
+		step.(*mockStep[int]).AssertExpectations(t)
 	}
 }
 
@@ -37,23 +38,19 @@ func (c *count32) increment() int32 {
 	return atomic.AddInt32((*int32)(c), 1)
 }
 
-func (c *count32) get() int32 {
-	return atomic.LoadInt32((*int32)(c))
-}
-
 func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *testing.T) {
 	expectedErr := errors.New("error")
 	var times count32
-	step := new(mockStep)
-	step.On("Run", &mockContext{}).Run(func(args mock.Arguments) {
+	step := new(mockStep[int])
+	step.On("Run", 1).Run(func(args mock.Arguments) {
 		times.increment()
 	}).Return(expectedErr).Times(10)
-	stage := pipeline.CreateConcurrentStage(
+	stage := pipeline.NewConcurrentStage[int](
 		step, step, step, step, step,
 		step, step, step, step, step,
 	)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, count32(10), times)
@@ -62,7 +59,7 @@ func TestConcurrentStage_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *test
 
 func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApplied(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
-	innerStep := new(mockStep)
+	innerStep := new(mockStep[int])
 	var diagrams []pipeline.DrawDiagram
 
 	innerStep.On("Name").Return("testname").Times(6)
@@ -71,7 +68,7 @@ func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApp
 		return true
 	})).Once()
 
-	stage := pipeline.CreateConcurrentStage(
+	stage := pipeline.NewConcurrentStage[int](
 		innerStep, innerStep, innerStep, innerStep, innerStep, innerStep,
 	)
 
@@ -84,7 +81,7 @@ func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApp
 
 func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentStepsAreAddedAsActionsByTheirNames(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
-	innerStep := new(mockStep)
+	innerStep := new(mockStep[int])
 
 	innerStep.On("Name").Return("testname").Times(5)
 	mockGraphDiagram.On("AddActivity", "testname").Times(5)
@@ -97,7 +94,7 @@ func TestConcurrentStage_GivenAGraphToDraw_WhenDrawn_ThenConcurrentStepsAreAdded
 		}
 	})
 
-	stage := pipeline.CreateConcurrentStage(
+	stage := pipeline.NewConcurrentStage[int](
 		innerStep, innerStep, innerStep, innerStep, innerStep,
 	)
 

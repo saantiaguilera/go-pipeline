@@ -1,36 +1,35 @@
 package pipeline
 
-type concurrentGroup []Stage
+type ConcurrentGroup[T any] []Stage[T]
 
-func (s concurrentGroup) createStageGraphActivity(drawable DrawableDiagram) DrawDiagram {
+func (s ConcurrentGroup[T]) NewStageGraphActivity(drawable DrawableDiagram) DrawDiagram {
 	return func(graph GraphDiagram) {
 		drawable.Draw(graph)
 	}
 }
 
-func (s concurrentGroup) Draw(graph GraphDiagram) {
+func (s ConcurrentGroup[T]) Draw(graph GraphDiagram) {
 	if len(s) > 0 {
 		var forkStages []DrawDiagram
 		for _, stage := range s {
-			forkStages = append(forkStages, s.createStageGraphActivity(stage))
+			forkStages = append(forkStages, s.NewStageGraphActivity(stage))
 		}
 
 		graph.AddConcurrency(forkStages...)
 	}
 }
 
-func (s concurrentGroup) Run(executor Executor, ctx Context) error {
+func (s ConcurrentGroup[T]) Run(executor Executor[T], in T) error {
 	return spawnAsync(len(s), func(index int) error {
-		return s[index].Run(executor, ctx)
+		return s[index].Run(executor, in)
 	})
 }
 
-// CreateConcurrentGroup creates a stage that will run each of the stages concurrently.
+// NewConcurrentGroup News a stage that will run each of the stages concurrently.
 // The stage will wait for all of the stages to finish before returning.
 //
 // If one of them fails, the stage will wait until everyone finishes and after that return the error.
 // If more than one fails, then the error will be the one delivered by the last failure.
-func CreateConcurrentGroup(stages ...Stage) Stage {
-	var stage concurrentGroup = stages
-	return &stage
+func NewConcurrentGroup[T any](stages ...Stage[T]) ConcurrentGroup[T] {
+	return stages
 }

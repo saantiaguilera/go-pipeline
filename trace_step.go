@@ -7,35 +7,37 @@ import (
 	"time"
 )
 
-// CreateTracedStep creates a traced step that will log the execution time of the stage to the stdout
-func CreateTracedStep(step Step) Step {
-	return &tracedStep{
+type (
+	tracedStep[T any] struct {
+		Step   Step[T]
+		Writer io.Writer
+	}
+)
+
+// NewTracedStep News a traced step that will log the execution time of the stage to the stdout
+func NewTracedStep[T any](step Step[T]) Step[T] {
+	return &tracedStep[T]{
 		Step:   step,
 		Writer: os.Stdout,
 	}
 }
 
-// CreateTracedStepWithWriter creates a traced step that will log the execution time of the stage to the writer
-func CreateTracedStepWithWriter(step Step, writer io.Writer) Step {
-	return &tracedStep{
+// NewTracedStepWithWriter News a traced step that will log the execution time of the stage to the writer
+func NewTracedStepWithWriter[T any](step Step[T], writer io.Writer) Step[T] {
+	return &tracedStep[T]{
 		Step:   step,
 		Writer: writer,
 	}
 }
 
-type tracedStep struct {
-	Step   Step
-	Writer io.Writer
-}
-
-func (t *tracedStep) Name() string {
+func (t *tracedStep[T]) Name() string {
 	return t.Step.Name()
 }
 
-func (t *tracedStep) Run(ctx Context) error {
+func (t *tracedStep[T]) Run(in T) error {
 	start := time.Now()
 
-	err := t.Step.Run(ctx)
+	err := t.Step.Run(in)
 
 	var message string
 	if err == nil {

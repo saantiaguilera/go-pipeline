@@ -23,6 +23,6 @@ func (s *cutCarrotsStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createCutCarrotsStep() pipeline.Step {
+func NewCutCarrotsStep() pipeline.Step {
 	return &cutCarrotsStep{}
 }

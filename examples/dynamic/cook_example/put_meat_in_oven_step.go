@@ -24,7 +24,7 @@ func (s *putMeatInTheOvenStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createPutMeatInOvenStep(meatChan chan int) pipeline.Step {
+func NewPutMeatInOvenStep(meatChan chan int) pipeline.Step {
 	return &putMeatInTheOvenStep{
 		Meat: meatChan,
 	}

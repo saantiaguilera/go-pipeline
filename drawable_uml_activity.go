@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// CreateUMLActivityGraphDiagram creates an UML Activity graph diagram that represents one
-func CreateUMLActivityGraphDiagram() GraphDiagram {
+// NewUMLActivityGraphDiagram News an UML Activity graph diagram that represents one
+func NewUMLActivityGraphDiagram() GraphDiagram {
 	return &umlGraph{}
 }
 
@@ -48,7 +48,7 @@ func (p *umlGraph) AddActivity(label string) {
 func (p *umlGraph) String() string {
 	var sb strings.Builder
 
-	// Create
+	// New
 	sb.WriteString("@startuml\n")
 	sb.WriteString("start\n")
 

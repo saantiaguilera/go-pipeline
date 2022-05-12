@@ -5,44 +5,45 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 func TestSequentialStage_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunSequentially(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
-	var steps []pipeline.Step
+	var steps []pipeline.Step[int]
 	for i := 0; i < 100; i++ {
-		steps = append(steps, createStep(i, &arr))
+		steps = append(steps, NewStep(i, &arr))
 		expectedArr = append(expectedArr, i)
 	}
 
-	stage := pipeline.CreateSequentialStage(steps...)
+	stage := pipeline.NewSequentialStage(steps...)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedArr, *arr)
 	for _, step := range steps {
-		step.(*mockStep).AssertExpectations(t)
+		step.(*mockStep[int]).AssertExpectations(t)
 	}
 }
 
 func TestSequentialStage_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterError(t *testing.T) {
 	expectedErr := errors.New("error")
 	time := ""
-	step := new(mockStep)
-	step.On("Run", &mockContext{}).Run(func(args mock.Arguments) {
+	step := new(mockStep[interface{}])
+	step.On("Run", 1).Run(func(args mock.Arguments) {
 		time += strconv.Itoa(len(time))
 	}).Return(expectedErr).Once()
-	stage := pipeline.CreateSequentialStage(
+	stage := pipeline.NewSequentialStage[interface{}](
 		step, step, step, step, step,
 		step, step, step, step, step,
 	)
 
-	err := stage.Run(SimpleExecutor{}, &mockContext{})
+	err := stage.Run(SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, "0", time)
@@ -53,10 +54,10 @@ func TestSequentialStage_GivenAGraphToDraw_WhenDrawn_ThenStepsAreAddedAsActiviti
 	mockGraphDiagram := new(mockGraphDiagram)
 	mockGraphDiagram.On("AddActivity", "mock stage name").Times(6)
 
-	mockStep := new(mockStep)
+	mockStep := new(mockStep[interface{}])
 	mockStep.On("Name").Return("mock stage name").Times(6)
 
-	initStage := pipeline.CreateSequentialStage(
+	initStage := pipeline.NewSequentialStage[interface{}](
 		mockStep, mockStep, mockStep, mockStep, mockStep, mockStep,
 	)
 

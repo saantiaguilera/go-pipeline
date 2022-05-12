@@ -20,6 +20,6 @@ func (s *putMeatInTheOvenStep) Run(ctx pipeline.Context) error {
 	return nil
 }
 
-func createPutMeatInOvenStep() pipeline.Step {
+func NewPutMeatInOvenStep() pipeline.Step {
 	return &putMeatInTheOvenStep{}
 }
