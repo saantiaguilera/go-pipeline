@@ -3,7 +3,6 @@ package pipeline_test
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"testing"
 
@@ -14,109 +13,44 @@ import (
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-type numberedStep[T any] struct {
-	Number int
-}
-
-func (n *numberedStep[T]) Name() string {
-	return fmt.Sprintf("Step %d", n.Number)
-}
-
-func (n *numberedStep[T]) Run(in T) error {
-	return nil // Do nothing
-}
-
-type stringedStep[T any] struct {
-	Number string
-}
-
-func (n *stringedStep[T]) Name() string {
-	return fmt.Sprintf("Step %s", n.Number)
-}
-
-func (n *stringedStep[T]) Run(in T) error {
-	return nil // Do nothing
-}
-
-type chanStep[T any] struct {
-	NumberChan chan int
-}
-
-func (n *chanStep[T]) Name() string {
-	return fmt.Sprintf("Step %d", <-n.NumberChan)
-}
-
-func (n *chanStep[T]) Run(in interface{}) error {
-	return nil // Do nothing
-}
-
 func NewNumberedStep(number **int) pipeline.Step[interface{}] {
-	v := rand.Intn(4)
-
 	current := **number
 	next := current + 1
 	*number = &next
 
-	switch v {
-	// 50% chance of variable assignment steps
-	case 0:
-		return &numberedStep[interface{}]{
-			Number: current,
-		}
-	case 1:
-		return &stringedStep[interface{}]{
-			Number: fmt.Sprintf("%d", current),
-		}
-	// We give 50% chances to channels, as it's probably the most used way to pass data around
-	case 2, 3:
-		c := make(chan int, 1)
-		c <- current
-		return &chanStep[interface{}]{
-			NumberChan: c,
-		}
-	}
-
-	panic("unexpected error")
+	return pipeline.NewStep[interface{}](fmt.Sprintf("Step %d", current), nil)
 }
 
-func NewImmenseGraph() pipeline.Stage[interface{}] {
+func NewImmenseGraph() pipeline.Container[interface{}] {
 	n := 0
 	posN := &n
-	return pipeline.NewSequentialGroup[interface{}](
-		pipeline.NewSequentialStage(
-			NewNumberedStep(&posN),
-			NewNumberedStep(&posN),
-		),
-		pipeline.NewConditionalGroup[interface{}](
+	return pipeline.NewSequentialContainer[interface{}](
+		NewNumberedStep(&posN),
+		NewNumberedStep(&posN),
+		pipeline.NewConditionalContainer[interface{}](
 			pipeline.NewStatement("some name", func(in interface{}) bool {
 				return true
 			}),
-			pipeline.NewConcurrentGroup[interface{}](
-				pipeline.NewSequentialGroup[interface{}](
-					pipeline.NewSequentialStage(
-						NewNumberedStep(&posN),
-					),
-					pipeline.NewConcurrentGroup[interface{}](
-						pipeline.NewSequentialGroup[interface{}](
-							pipeline.NewSequentialStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConditionalStage(
+			pipeline.NewConcurrentContainer[interface{}](
+				pipeline.NewSequentialContainer[interface{}](
+					NewNumberedStep(&posN),
+					pipeline.NewConcurrentContainer[interface{}](
+						pipeline.NewSequentialContainer[interface{}](
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewAnonymousStatement(func(in interface{}) bool {
 									return true
 								}),
 								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
 							),
-							pipeline.NewConditionalGroup[interface{}](
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.NewSequentialStage(
-									NewNumberedStep(&posN),
-								),
-								pipeline.NewConditionalStage(
+								NewNumberedStep(&posN),
+								pipeline.NewConditionalContainer[interface{}](
 									pipeline.NewAnonymousStatement(func(in interface{}) bool {
 										return true
 									}),
@@ -124,22 +58,18 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 									nil,
 								),
 							),
-							pipeline.NewSequentialStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
 						),
-						pipeline.NewSequentialGroup[interface{}](
-							pipeline.NewSequentialStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConditionalStage(
+						pipeline.NewSequentialContainer[interface{}](
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return false
 								}),
@@ -147,12 +77,10 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 								NewNumberedStep(&posN),
 							),
 						),
-						pipeline.NewSequentialGroup[interface{}](
-							pipeline.NewSequentialStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConditionalStage(
+						pipeline.NewSequentialContainer[interface{}](
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewAnonymousStatement(func(in interface{}) bool {
 									return true
 								}),
@@ -162,182 +90,158 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 						),
 					),
 				),
-				pipeline.NewSequentialGroup[interface{}](
-					pipeline.NewSequentialStage(
-						NewNumberedStep(&posN),
-					),
-					pipeline.NewConcurrentGroup[interface{}](
-						pipeline.NewSequentialStage(
+				pipeline.NewSequentialContainer[interface{}](
+					NewNumberedStep(&posN),
+					pipeline.NewConcurrentContainer[interface{}](
+						pipeline.NewSequentialContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewSequentialStage(
+						pipeline.NewSequentialContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewConditionalStage(
+						pipeline.NewConditionalContainer[interface{}](
 							pipeline.NewStatement("some name", func(in interface{}) bool {
 								return true
 							}),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewSequentialGroup[interface{}](
-							pipeline.NewSequentialStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConditionalGroup[interface{}](
+						pipeline.NewSequentialContainer[interface{}](
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							NewNumberedStep(&posN),
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true // Closed
 								}),
-								pipeline.NewSequentialGroup[interface{}](
-									pipeline.NewSequentialStage(
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									pipeline.NewConcurrentStage(
+								pipeline.NewSequentialContainer[interface{}](
+									NewNumberedStep(&posN),
+									NewNumberedStep(&posN),
+									pipeline.NewConcurrentContainer[interface{}](
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 									),
-									pipeline.NewSequentialStage(
-										NewNumberedStep(&posN),
-									),
+									NewNumberedStep(&posN),
 								),
-								pipeline.NewSequentialStage(
+								pipeline.NewSequentialContainer[interface{}](
 									NewNumberedStep(&posN),
 									NewNumberedStep(&posN),
 								),
 							),
 						),
 					),
-					pipeline.NewSequentialStage(
-						NewNumberedStep(&posN),
-						NewNumberedStep(&posN),
-						NewNumberedStep(&posN),
-					),
-					pipeline.NewConcurrentGroup[interface{}](
-						pipeline.NewConcurrentStage(
+					NewNumberedStep(&posN),
+					NewNumberedStep(&posN),
+					NewNumberedStep(&posN),
+					pipeline.NewConcurrentContainer[interface{}](
+						pipeline.NewConcurrentContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewConcurrentStage(
+						pipeline.NewConcurrentContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewConcurrentStage(
+						pipeline.NewConcurrentContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
-						pipeline.NewSequentialStage(
+						pipeline.NewSequentialContainer[interface{}](
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 						),
 					),
-					pipeline.NewSequentialStage(
-						NewNumberedStep(&posN),
-					),
+					NewNumberedStep(&posN),
 				),
-				pipeline.NewSequentialGroup[interface{}](
-					pipeline.NewConditionalGroup[interface{}](
+				pipeline.NewSequentialContainer[interface{}](
+					pipeline.NewConditionalContainer[interface{}](
 						pipeline.NewStatement("some name", func(in interface{}) bool {
 							return true
 						}),
-						pipeline.NewConcurrentGroup[interface{}](
-							pipeline.NewConditionalGroup[interface{}](
+						pipeline.NewConcurrentContainer[interface{}](
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.NewSequentialGroup[interface{}](
-									pipeline.NewSequentialStage(
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									pipeline.NewConcurrentStage(
+								pipeline.NewSequentialContainer[interface{}](
+									NewNumberedStep(&posN),
+									NewNumberedStep(&posN),
+									pipeline.NewConcurrentContainer[interface{}](
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 									),
-									pipeline.NewSequentialStage(
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-								),
-								pipeline.NewSequentialStage(
+									NewNumberedStep(&posN),
 									NewNumberedStep(&posN),
 								),
-							),
-							pipeline.NewConcurrentStage(
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
 							),
-							pipeline.NewSequentialStage(
+							pipeline.NewConcurrentContainer[interface{}](
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+								NewNumberedStep(&posN),
+							),
+							pipeline.NewSequentialContainer[interface{}](
 								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
 							),
 						),
-						pipeline.NewConditionalGroup[interface{}](
+						pipeline.NewConditionalContainer[interface{}](
 							pipeline.NewStatement("some name", func(in interface{}) bool {
 								return true
 							}),
-							pipeline.NewConditionalGroup[interface{}](
+							pipeline.NewConditionalContainer[interface{}](
 								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
-								pipeline.NewSequentialGroup[interface{}](
-									pipeline.NewSequentialStage(
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									pipeline.NewConcurrentStage(
+								pipeline.NewSequentialContainer[interface{}](
+									NewNumberedStep(&posN),
+									NewNumberedStep(&posN),
+									pipeline.NewConcurrentContainer[interface{}](
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 										NewNumberedStep(&posN),
 									),
-									pipeline.NewConditionalGroup[interface{}](
+									pipeline.NewConditionalContainer[interface{}](
 										pipeline.NewStatement("some name", func(in interface{}) bool {
 											return true
 										}),
-										pipeline.NewSequentialGroup[interface{}](
-											pipeline.NewSequentialStage(
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-											),
-											pipeline.NewConcurrentStage(
+										pipeline.NewSequentialContainer[interface{}](
+											NewNumberedStep(&posN),
+											NewNumberedStep(&posN),
+											pipeline.NewConcurrentContainer[interface{}](
 												NewNumberedStep(&posN),
 												NewNumberedStep(&posN),
 												NewNumberedStep(&posN),
 												NewNumberedStep(&posN),
 												NewNumberedStep(&posN),
 											),
-											pipeline.NewSequentialStage(
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-											),
+											NewNumberedStep(&posN),
+											NewNumberedStep(&posN),
+											NewNumberedStep(&posN),
 										),
-										pipeline.NewSequentialStage(
+										pipeline.NewSequentialContainer[interface{}](
 											NewNumberedStep(&posN),
 										),
 									),
 								),
-								pipeline.NewSequentialStage(
+								pipeline.NewSequentialContainer[interface{}](
 									NewNumberedStep(&posN),
 									NewNumberedStep(&posN),
 								),
 							),
-							pipeline.NewSequentialStage(
+							pipeline.NewSequentialContainer[interface{}](
 								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
@@ -349,7 +253,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 					),
 				),
 			),
-			pipeline.NewSequentialStage(
+			pipeline.NewSequentialContainer[interface{}](
 				NewNumberedStep(&posN),
 				NewNumberedStep(&posN),
 				NewNumberedStep(&posN),

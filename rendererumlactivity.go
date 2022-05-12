@@ -41,7 +41,7 @@ type (
 	}
 )
 
-// NewUMLActivityRenderer News a  UML Activity renderer for drawing graphs as specified
+// NewUMLActivityRenderer creates  UML Activity renderer for drawing graphs as specified
 func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
 	if len(options.Type) == 0 {
 		options.Type = UMLFormatSVG
@@ -56,7 +56,7 @@ func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
 	}
 }
 
-// Render draws in UML activity the given stage, and writes it to the given file
+// Render draws in UML activity the given container, and writes it to the given file
 func (u *umlDrawer) Render(graphDiagram GraphDiagram, output io.WriteCloser) error {
 	content := graphDiagram.String()
 

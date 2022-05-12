@@ -12,95 +12,82 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-type mockStep[T any] struct {
-	mock.Mock
-}
+var (
+	stepMux      = sync.Mutex{}
+	containerMux = sync.Mutex{}
+)
 
-func (m *mockStep[T]) Name() string {
-	args := m.Called()
-	return args.String(0)
-}
+type (
+	mockContainer[T any] struct {
+		mock.Mock
+	}
 
-func (m *mockStep[T]) Run(in T) error {
-	args := m.Called(in)
-	return args.Error(0)
-}
+	SimpleExecutor[T any] struct{}
+)
 
-type mockStage[T any] struct {
-	mock.Mock
-}
-
-func (m *mockStage[T]) Draw(graph pipeline.GraphDiagram) {
+func (m *mockContainer[T]) Draw(graph pipeline.GraphDiagram) {
 	_ = m.Called(graph)
 }
 
-func (m *mockStage[T]) Run(executor pipeline.Executor[T], ctx T) error {
-	args := m.Called(executor, ctx)
+func (m *mockContainer[T]) Visit(ex pipeline.Executor[T], ctx T) error {
+	args := m.Called(ex, ctx)
 
 	return args.Error(0)
 }
-
-type SimpleExecutor[T any] struct{}
 
 func (s SimpleExecutor[T]) Run(runnable pipeline.Step[T], in T) error {
 	return runnable.Run(in)
 }
 
-var stepMux = sync.Mutex{}
-
 func NewStep(data int, arr **[]int) pipeline.Step[int] {
-	step := new(mockStep[int])
-	step.On("Run", 1).Run(func(args mock.Arguments) {
+	return pipeline.NewStep("", func(t int) error {
 		stepMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
 		stepMux.Unlock()
 		time.Sleep(time.Duration(100/(data+1)) * time.Millisecond) // Force a trap / yield
-	}).Return(nil).Once()
-
-	return step
+		return nil
+	})
 }
 
-var stageMux = sync.Mutex{}
-
-func NewStage(data int, arr **[]int) pipeline.Stage[int] {
-	stage := new(mockStage[int])
-	stage.On("Run", SimpleExecutor[int]{}, 1).Run(func(args mock.Arguments) {
-		stageMux.Lock()
+func NewContainer(data int, arr **[]int) pipeline.Container[int] {
+	container := new(mockContainer[int])
+	container.On("Visit", SimpleExecutor[int]{}, 1).Run(func(args mock.Arguments) {
+		containerMux.Lock()
 		tmp := append(**arr, data)
 		*arr = &tmp
-		stageMux.Unlock()
+		containerMux.Unlock()
 		time.Sleep(5 * time.Millisecond) // Force a possible trap / yield
 	}).Return(nil).Once()
 
-	return stage
+	return container
 }
 
-func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRan(t *testing.T) {
+func TestPipeline_GivenAPipeline_WhenRunning_TheContainerIsRan(t *testing.T) {
 	expectedErr := errors.New("error")
 	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
 
-	stage := new(mockStage[interface{}])
-	stage.On("Run", SimpleExecutor[interface{}]{}, mock.Anything).Return(expectedErr).Once()
+	container := new(mockContainer[interface{}])
+	container.On("Visit", SimpleExecutor[interface{}]{}, mock.Anything).Return(expectedErr).Once()
 
-	err := pipe.Run(stage, 1)
+	err := pipe.Run(container, 1)
 
 	assert.Equal(t, expectedErr, err)
-	stage.AssertExpectations(t)
+	container.AssertExpectations(t)
 }
 
-func TestPipeline_GivenAPipeline_WhenRunning_TheStageIsRanWithTheSameContext(t *testing.T) {
+func TestPipeline_GivenAPipeline_WhenRunning_TheContainerIsRanWithTheSameContext(t *testing.T) {
 	expectedErr := errors.New("error")
 	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
 	v := 1
-	stage := new(mockStage[interface{}])
-	stage.On("Run", SimpleExecutor[interface{}]{}, mock.Anything).Run(func(args mock.Arguments) {
+	container := new(mockContainer[interface{}])
+	container.On("Visit", SimpleExecutor[interface{}]{}, mock.Anything).Run(func(args mock.Arguments) {
 		*args.Get(1).(*int) = 2
 	}).Return(expectedErr).Once()
 
-	err := pipe.Run(stage, &v)
+	err := pipe.Run(container, &v)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, 2, v)
-	stage.AssertExpectations(t)
+	container.AssertExpectations(t)
 }

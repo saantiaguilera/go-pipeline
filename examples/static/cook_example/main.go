@@ -10,57 +10,57 @@ import (
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-// Graph News a static workflow for this sample. It's all in a single func completely coupled for showing purposes
-// you should probably decouple this into more atomic ones (eg. a func for making the salad that returns a Stage)
-func Graph() pipeline.Stage {
-	// Complete stage. Its sequential because we can't serve
+// Graph creates static workflow for this sample. It's all in a single func completely coupled for showing purposes
+// you should probably decouple this into more atomic ones (eg. a func for making the salad that returns a Container)
+func Graph() pipeline.Container {
+	// Complete container. Its sequential because we can't serve
 	// before all the others are done.
 	graph := pipeline.NewSequentialGroup(
-		// Concurrent stage, given we are 3, we can do the salad / meat separately
+		// Concurrent container, given we are 3, we can do the salad / meat separately
 		pipeline.NewConcurrentGroup(
 			// This will be the salad flow. It can be done concurrently with the meat
 			pipeline.NewSequentialGroup(
 				// Eggs and carrots can be operated concurrently too
 				pipeline.NewConcurrentGroup(
-					// Sequential stage for the eggs flow
-					pipeline.NewSequentialStage(
+					// Sequential container for the eggs flow
+					pipeline.NewSequentialContainer(
 						NewBoilEggsStep(),
 						NewCutEggsStep(),
 					),
-					// Another sequential stage for the carrots (eggs and carrots will be concurrent though!)
-					pipeline.NewSequentialStage(
+					// Another sequential container for the carrots (eggs and carrots will be concurrent though!)
+					pipeline.NewSequentialContainer(
 						NewWashCarrotsStep(),
 						NewCutCarrotsStep(),
 					),
 				),
 				// This is sequential. When carrots and eggs are done, this will run
-				pipeline.NewSequentialStage(
+				pipeline.NewSequentialContainer(
 					NewMakeSaladStep(),
 				),
 			),
-			// Another sequential stage for the meat (concurrently with salad)
+			// Another sequential container for the meat (concurrently with salad)
 			pipeline.NewSequentialGroup(
 				// If we end up cutting the meat, we can optimize it with the oven operation
 				pipeline.NewConcurrentGroup(
-					// Conditional stage, the meat might be too big
-					pipeline.NewConditionalStage(
+					// Conditional container, the meat might be too big
+					pipeline.NewConditionalContainer(
 						pipeline.NewStatement("is_meat_too_big", NewMeatTooBigStatement()),
 						// True:
 						NewCutMeatStep(),
 						// False:
 						nil,
 					),
-					pipeline.NewSequentialStage(
+					pipeline.NewSequentialContainer(
 						NewTurnOnOvenStep(),
 					),
 				),
-				pipeline.NewSequentialStage(
+				pipeline.NewSequentialContainer(
 					NewPutMeatInOvenStep(),
 				),
 			),
 		),
 		// When everything is done. Serve
-		pipeline.NewSequentialStage(
+		pipeline.NewSequentialContainer(
 			NewServeStep(),
 		),
 	)

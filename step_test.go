@@ -11,7 +11,7 @@ import (
 
 func TestSimpleStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.T) {
 	expectedName := "test_name"
-	step := pipeline.NewSimpleStep[interface{}](expectedName, nil)
+	step := pipeline.NewStep[interface{}](expectedName, nil)
 
 	name := step.Name()
 
@@ -24,7 +24,7 @@ func TestSimpleStep_GivenARunFunc_WhenRunning_ThenItsCalled(t *testing.T) {
 		called = true
 		return nil
 	}
-	step := pipeline.NewSimpleStep("", run)
+	step := pipeline.NewStep("", run)
 
 	_ = step.Run(1)
 
@@ -36,7 +36,7 @@ func TestSimpleStep_GivenARunFuncThatErrors_WhenRunning_ThenErrorIsReturned(t *t
 	run := func(int) error {
 		return expectedErr
 	}
-	step := pipeline.NewSimpleStep("", run)
+	step := pipeline.NewStep("", run)
 
 	err := step.Run(1)
 

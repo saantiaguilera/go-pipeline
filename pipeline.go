@@ -3,7 +3,7 @@ Package pipeline is a pure Go client library for building and executing pipeline
 It includes a high level API to easily build, execute and draw graphs of a desired structure.
 
 If the defined implementations of the API are insufficient, one can New their own implementations adding new behaviours,
-such as circuit-breakers, panic recovers, APM decorators, custom stages, custom steps, etc.
+such as circuit-breakers, panic recovers, APM decorators, custom containers, custom steps, etc.
 
 Supported structure
 
@@ -45,67 +45,67 @@ A step is a single unit of work. It's an alias for Runnable
 		}
 	}
 
-If your step is completely stateless, you can New an immutable instance through NewSimpleStep
+If your step is completely stateless, you can New an immutable instance through NewStep
 
-    step := pipeline.NewSimpleStep("step_name", func(ctx pipeline.Context) error {
+    step := pipeline.NewStep("step_name", func(ctx pipeline.Context) error {
         // Do stuff.
     })
 
-Stage
+Container
 
-A stage contains a collection of steps. The collection will be executed according to the stage implementation (eg. concurrently, sequentially, condition-based, etc).
+A container contains a collection of steps. The collection will be executed according to the container implementation (eg. concurrently, sequentially, condition-based, etc).
 
-To New one of the already defined stages, we can simply invoke its constructor function. For example, for a sequential stage:
+To New one of the already defined containers, we can simply invoke its constructor function. For example, for a sequential container:
 
-	stage := pipeline.NewSequentialStage(
+	container := pipeline.NewSequentialContainer(
 		user.NewGetAuthenticatedUserStep(jwtTokenHandler),
 		user.NewUserStep(userService),
 	)
 
-Since a stage is nothing more than an interface, you can New your own custom implementations abiding that contract.
+Since a container is nothing more than an interface, you can New your own custom implementations abiding that contract.
 
-Stage group
+Container group
 
-A stage group is a collection of stages. It's also a Stage itself, thus a group can be used in the same scope as a stage.
+A container group is a collection of containers. It's also a Container itself, thus a group can be used in the same scope as a container.
 
-	stage := pipeline.NewSequentialGroup(
+	container := pipeline.NewSequentialGroup(
 		pipeline.NewConcurrentGroup(
-			pipeline.NewSequentialStage(
+			pipeline.NewSequentialContainer(
 				NewBoilEggsStep(),
 				NewCutEggsStep(),
 			),
-			pipeline.NewSequentialStage(
+			pipeline.NewSequentialContainer(
 				NewWashCarrotsStep(),
 				NewCutCarrotsStep(),
 			),
 		),
-		pipeline.NewSequentialStage(
+		pipeline.NewSequentialContainer(
 			NewMakeSaladStep(),
 		),
 	)
 
-Again, as long as you abide the Stage contract, you can New your own ones.
+Again, as long as you abide the Container contract, you can New your own ones.
 
 Defined structures
 
 We already implement out of the box some structures that are pretty much mandatory. You can make your own custom
 implementation to New behaviours we are not currently defining. The provided ones are:
 
-- Concurrent: Run stages or steps concurrently
+- Concurrent: Run containers or steps concurrently
 
-- Sequential: Run stages or steps sequentially
+- Sequential: Run containers or steps sequentially
 
 - Conditional: Run either a flow or another one depending on the evaluation of a statement
 
-- Tracer: Add tracers to a stage or step
+- Tracer: Add tracers to a container or step
 
-- Lifecycle: Add lifecycle methods (before / after) to a stage or step.
+- Lifecycle: Add lifecycle methods (before / after) to a container or step.
 
 With the use of them a graph-like / template structure can be achieved, that will be executed by a Pipeline through an Executor.
 
 Pipeline
 
-A pipeline is a contract for executing a root stage (that will internally execute nested stages, thus evaluating the whole graph).
+A pipeline is a contract for executing a root container (that will internally execute nested containers, thus evaluating the whole graph).
 
 Executor
 
@@ -123,7 +123,7 @@ The package comes with a handy drawing API for representing the Newd graphs.
 	})
 	file, _ := os.New("outputFile.svg")
 
-	yourStage.Draw(diagram)
+	yourContainer.Draw(diagram)
 
 	err := renderer.Render(diagram, file)
 */
@@ -136,12 +136,12 @@ type (
 )
 
 // NewClient creates a pipeline client with a given executor
-func NewClient[T any](ex Executor[T]) *Client[T] {
-	return &Client[T]{
+func NewClient[T any](ex Executor[T]) Client[T] {
+	return Client[T]{
 		ex: ex,
 	}
 }
 
-func (c *Client[T]) Run(stage Stage[T], in T) error {
-	return stage.Run(c.ex, in)
+func (c Client[T]) Run(cn Container[T], in T) error {
+	return cn.Visit(c.ex, in)
 }

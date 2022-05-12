@@ -41,9 +41,9 @@ else
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-// Graph News a static workflow for this sample. It's all in a single func completely coupled for showing purposes
-// you should probably decouple this into more atomic ones (eg. a func for calculating sizes that returns a Stage)
-func Graph() pipeline.Stage {
+// Graph creates static workflow for this sample. It's all in a single func completely coupled for showing purposes
+// you should probably decouple this into more atomic ones (eg. a func for calculating sizes that returns a Container)
+func Graph() pipeline.Container {
 	widthStep := &getWidthStep{}
 	heightStep := &getHeightStep{}
 	depthStep := &getDepthStep{}
@@ -70,26 +70,26 @@ func Graph() pipeline.Stage {
 	paintVolumeStep := &paintVolumeStep{}
 
 	return pipeline.NewSequentialGroup(
-		pipeline.NewTracedStage("measurement_stage", pipeline.NewConcurrentStage(
+		pipeline.NewTracedContainer("measurement_container", pipeline.NewConcurrentContainer(
 			widthStep,
 			heightStep,
 			depthStep,
 		)),
-		pipeline.NewConcurrentStage(
+		pipeline.NewConcurrentContainer(
 			calculateVolumeStep,
 			calculateSurfaceStep,
 		),
 		pipeline.NewConcurrentGroup(
-			pipeline.NewSequentialStage(
+			pipeline.NewSequentialContainer(
 				calculatePriceToPaintSurfaceStep,
 				recordPriceSurfaceStep,
 			),
-			pipeline.NewSequentialStage(
+			pipeline.NewSequentialContainer(
 				calculatePriceToPaintVolumeStep,
 				recordPriceVolumeStep,
 			),
 		),
-		pipeline.NewSequentialStage(
+		pipeline.NewSequentialContainer(
 			evaluateStep,
 		),
 		pipeline.NewConditionalGroup(
@@ -99,16 +99,16 @@ func Graph() pipeline.Stage {
 				return volumePrice+surfacePrice < 100000
 			}),
 			pipeline.NewSequentialGroup(
-				pipeline.NewConcurrentStage(
+				pipeline.NewConcurrentContainer(
 					acceptSurfacePaintingStep,
 					acceptVolumePaintingStep,
 				),
-				pipeline.NewConcurrentStage(
+				pipeline.NewConcurrentContainer(
 					pipeline.NewTracedStep(paintSurfaceStep),
 					pipeline.NewTracedStep(paintVolumeStep),
 				),
 			),
-			pipeline.NewSequentialStage(),
+			pipeline.NewSequentialContainer(),
 		),
 	)
 }

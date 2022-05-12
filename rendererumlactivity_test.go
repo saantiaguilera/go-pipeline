@@ -9,9 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type mockWriteCloser struct {

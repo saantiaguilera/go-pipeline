@@ -9,7 +9,7 @@ type umlGraph struct {
 	sb strings.Builder
 }
 
-// NewUMLActivityGraphDiagram News an UML Activity graph diagram that represents one
+// NewUMLActivityGraphDiagram createsn UML Activity graph diagram that represents one
 func NewUMLActivityGraphDiagram() GraphDiagram {
 	return &umlGraph{}
 }
