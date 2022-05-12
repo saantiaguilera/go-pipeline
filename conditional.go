@@ -4,9 +4,14 @@ import "context"
 
 type (
 	ConditionalContainer[T any] struct {
-		statement Statement[T]
+		statement conditionalStatement[T]
 		trueCn    Container[T]
 		falseCn   Container[T]
+	}
+
+	conditionalStatement[T any] interface {
+		Name() string
+		Evaluate(context.Context, T) bool
 	}
 )
 
@@ -14,7 +19,7 @@ type (
 // Else, the "false" step will be called.
 // If a statement is nil, then it will be considered to hold false (thus, the "false" step is called)
 // If one of the steps is nil and the statement is such, then nothing will happen.
-func NewConditionalContainer[T any](statement Statement[T], t, f Container[T]) ConditionalContainer[T] {
+func NewConditionalContainer[T any](statement conditionalStatement[T], t, f Container[T]) ConditionalContainer[T] {
 	return ConditionalContainer[T]{
 		statement: statement,
 		trueCn:    t,

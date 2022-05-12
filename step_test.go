@@ -43,3 +43,26 @@ func TestSimpleStep_GivenARunFuncThatErrors_WhenRunning_ThenErrorIsReturned(t *t
 
 	assert.Equal(t, expectedErr, err)
 }
+
+func TestSimpleStep_GivenOne_ThenHasID(t *testing.T) {
+	step := pipeline.NewStep[int]("", nil)
+
+	id := step.ID()
+
+	assert.NotEmpty(t, id)
+}
+
+func TestSimpleStep_GivenACancelledContext_WhenRunning_ThenFailsWithoutRunning(t *testing.T) {
+	called := false
+	step := pipeline.NewStep("", func(ctx context.Context, t int) error {
+		called = true
+		return nil
+	})
+	ctx, canc := context.WithCancel(context.Background())
+	canc()
+
+	id := step.Run(ctx, 1)
+
+	assert.NotEmpty(t, id)
+	assert.False(t, called)
+}
