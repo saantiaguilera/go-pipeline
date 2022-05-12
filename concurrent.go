@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 type (
 	ConcurrentContainer[T any] []Container[T]
 )
@@ -24,9 +26,9 @@ func (s ConcurrentContainer[T]) Draw(graph GraphDiagram) {
 	}
 }
 
-func (s ConcurrentContainer[T]) Visit(ex Executor[T], in T) error {
+func (s ConcurrentContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
 	return spawnAsync(len(s), func(index int) error {
-		return s[index].Visit(ex, in)
+		return s[index].Visit(ctx, ex, in)
 	})
 }
 

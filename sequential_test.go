@@ -1,6 +1,7 @@
 package pipeline_test
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"testing"
@@ -21,7 +22,7 @@ func TestSequentialContainer_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunS
 
 	container := pipeline.NewSequentialContainer(steps...)
 
-	err := container.Visit(SimpleExecutor[int]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedArr, *arr)
@@ -33,7 +34,7 @@ func TestSequentialContainer_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfte
 	steps := []pipeline.Container[interface{}]{}
 	for i := 0; i < 10; i++ {
 		ti := i
-		steps = append(steps, pipeline.NewStep("", func(t interface{}) error {
+		steps = append(steps, pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 			time += strconv.Itoa(len(time))
 			if ti == 0 {
 				return expectedErr
@@ -43,7 +44,7 @@ func TestSequentialContainer_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfte
 	}
 	container := pipeline.NewSequentialContainer(steps...)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, "0", time)

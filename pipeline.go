@@ -129,6 +129,8 @@ The package comes with a handy drawing API for representing the Newd graphs.
 */
 package pipeline
 
+import "context"
+
 type (
 	Client[T any] struct {
 		ex Executor[T]
@@ -142,6 +144,6 @@ func NewClient[T any](ex Executor[T]) Client[T] {
 	}
 }
 
-func (c Client[T]) Run(cn Container[T], in T) error {
-	return cn.Visit(c.ex, in)
+func (c Client[T]) Run(ctx context.Context, cn Container[T], in T) error {
+	return cn.Visit(ctx, c.ex, in)
 }

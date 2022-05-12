@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 type (
 	SequentialContainer[T any] []Container[T]
 )
@@ -9,9 +11,9 @@ func NewSequentialContainer[T any](units ...Container[T]) SequentialContainer[T]
 	return units
 }
 
-func (s SequentialContainer[T]) Visit(ex Executor[T], in T) error {
+func (s SequentialContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
 	for _, c := range s {
-		if err := c.Visit(ex, in); err != nil {
+		if err := c.Visit(ctx, ex, in); err != nil {
 			return err
 		}
 	}

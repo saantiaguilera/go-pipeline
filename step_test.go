@@ -1,6 +1,7 @@
 package pipeline_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -20,25 +21,25 @@ func TestSimpleStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.
 
 func TestSimpleStep_GivenARunFunc_WhenRunning_ThenItsCalled(t *testing.T) {
 	called := false
-	run := func(int) error {
+	run := func(context.Context, int) error {
 		called = true
 		return nil
 	}
 	step := pipeline.NewStep("", run)
 
-	_ = step.Run(1)
+	_ = step.Run(context.Background(), 1)
 
 	assert.True(t, called)
 }
 
 func TestSimpleStep_GivenARunFuncThatErrors_WhenRunning_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
-	run := func(int) error {
+	run := func(context.Context, int) error {
 		return expectedErr
 	}
 	step := pipeline.NewStep("", run)
 
-	err := step.Run(1)
+	err := step.Run(context.Background(), 1)
 
 	assert.Equal(t, expectedErr, err)
 }

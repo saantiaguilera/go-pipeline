@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -33,10 +34,10 @@ func (t TracedContainer[T]) Draw(graph GraphDiagram) {
 	t.container.Draw(graph)
 }
 
-func (t TracedContainer[T]) Visit(ex Executor[T], in T) error {
+func (t TracedContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
 	start := time.Now()
 
-	err := t.container.Visit(ex, in)
+	err := t.container.Visit(ctx, ex, in)
 
 	var message string
 	if err == nil {

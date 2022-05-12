@@ -1,6 +1,7 @@
 package pipeline_test
 
 import (
+	"context"
 	"errors"
 	"sync/atomic"
 	"testing"
@@ -30,7 +31,7 @@ func TestConcurrentContainer_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunC
 
 	container := pipeline.NewConcurrentContainer(steps...)
 
-	err := container.Visit(SimpleExecutor[int]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[int]{}, 1)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, expectedArr, *arr)
@@ -40,7 +41,7 @@ func TestConcurrentContainer_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunC
 func TestConcurrentContainer_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *testing.T) {
 	expectedErr := errors.New("error")
 	var times count32
-	step := pipeline.NewStep("", func(t int) error {
+	step := pipeline.NewStep("", func(ctx context.Context, t int) error {
 		times.increment()
 		return expectedErr
 	})
@@ -49,7 +50,7 @@ func TestConcurrentContainer_GivenStepsWithErrors_WhenRun_ThenAllStepsAreRun(t *
 		step, step, step, step, step,
 	)
 
-	err := container.Visit(SimpleExecutor[int]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[int]{}, 1)
 
 	assert.Equal(t, expectedErr, err)
 	assert.Equal(t, count32(10), times)

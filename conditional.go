@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 type (
 	ConditionalContainer[T any] struct {
 		statement Statement[T]
@@ -36,14 +38,14 @@ func (c ConditionalContainer[T]) Draw(graph GraphDiagram) {
 	)
 }
 
-func (c ConditionalContainer[T]) Visit(ex Executor[T], in T) error {
+func (c ConditionalContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
 	if c.statement.Evaluate(in) {
 		if c.trueCn != nil {
-			return c.trueCn.Visit(ex, in)
+			return c.trueCn.Visit(ctx, ex, in)
 		}
 	} else {
 		if c.falseCn != nil {
-			return c.falseCn.Visit(ex, in)
+			return c.falseCn.Visit(ctx, ex, in)
 		}
 	}
 	return nil

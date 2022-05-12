@@ -1,6 +1,7 @@
 package pipeline_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestConditionalContainer_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	run := false
-	falseStep := pipeline.NewStep("", func(t interface{}) error {
+	falseStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		run = true
 		return nil
 	})
@@ -20,7 +21,7 @@ func TestConditionalContainer_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T)
 
 	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement[interface{}](nil), trueStep, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	assert.True(t, run)
@@ -29,7 +30,7 @@ func TestConditionalContainer_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T)
 func TestConditionalContainer_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T) {
 	run := false
 	falseStep := pipeline.NewStep[interface{}]("", nil)
-	trueStep := pipeline.NewStep("", func(t interface{}) error {
+	trueStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		run = true
 		return nil
 	})
@@ -37,7 +38,7 @@ func TestConditionalContainer_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T)
 		return true
 	}), trueStep, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	assert.True(t, run)
@@ -45,7 +46,7 @@ func TestConditionalContainer_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T)
 
 func TestConditionalContainer_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.T) {
 	run := false
-	falseStep := pipeline.NewStep("", func(t interface{}) error {
+	falseStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		run = true
 		return nil
 	})
@@ -54,7 +55,7 @@ func TestConditionalContainer_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.
 		return false
 	}), trueStep, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 	assert.True(t, run)
@@ -66,7 +67,7 @@ func TestConditionalContainer_GivenStatementTrueAndNilTrue_WhenRun_NothingHappen
 		return true
 	}), nil, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 }
@@ -77,7 +78,7 @@ func TestConditionalContainer_GivenStatementFalseNilFalse_WhenRun_NothingHappens
 		return false
 	}), trueStep, nil)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Nil(t, err)
 }
@@ -85,14 +86,14 @@ func TestConditionalContainer_GivenStatementFalseNilFalse_WhenRun_NothingHappens
 func TestConditionalContainer_GivenStatementTrueWithTrueError_WhenRun_TrueErrorReturned(t *testing.T) {
 	trueErr := errors.New("error")
 	falseStep := pipeline.NewStep[interface{}]("", nil)
-	trueStep := pipeline.NewStep("", func(t interface{}) error {
+	trueStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		return trueErr
 	})
 	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return true
 	}), trueStep, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, trueErr, err)
 }
@@ -100,14 +101,14 @@ func TestConditionalContainer_GivenStatementTrueWithTrueError_WhenRun_TrueErrorR
 func TestConditionalContainer_GivenStatementFalseWithFalseError_WhenRun_FalseErrorReturned(t *testing.T) {
 	falseErr := errors.New("error")
 	trueStep := pipeline.NewStep[interface{}]("", nil)
-	falseStep := pipeline.NewStep("", func(t interface{}) error {
+	falseStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		return falseErr
 	})
 	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
 		return false
 	}), trueStep, falseStep)
 
-	err := container.Visit(SimpleExecutor[interface{}]{}, 1)
+	err := container.Visit(context.Background(), SimpleExecutor[interface{}]{}, 1)
 
 	assert.Equal(t, falseErr, err)
 }

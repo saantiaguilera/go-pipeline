@@ -1,6 +1,7 @@
 package pipeline_test
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -305,7 +306,7 @@ func BenchmarkPipeline_Run(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StartTimer()
-		err := pipe.Run(graph, 1)
+		err := pipe.Run(context.Background(), graph, 1)
 		b.StopTimer()
 
 		if err != nil {
