@@ -93,7 +93,7 @@ func Graph() pipeline.Stage {
 			evaluateStep,
 		),
 		pipeline.NewConditionalGroup(
-			pipeline.NewSimpleStatement("should_paint", func(ctx pipeline.Context) bool {
+			pipeline.NewStatement("should_paint", func(ctx pipeline.Context) bool {
 				volumePrice, _ := ctx.GetFloat64(tagVolumePrice)
 				surfacePrice, _ := ctx.GetFloat64(tagSurfacePrice)
 				return volumePrice+surfacePrice < 100000

@@ -88,15 +88,15 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 			NewNumberedStep(&posN),
 		),
 		pipeline.NewConditionalGroup[interface{}](
-			pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+			pipeline.NewStatement("some name", func(in interface{}) bool {
 				return true
 			}),
-			pipeline.NewConcurrentGroup(
+			pipeline.NewConcurrentGroup[interface{}](
 				pipeline.NewSequentialGroup[interface{}](
 					pipeline.NewSequentialStage(
 						NewNumberedStep(&posN),
 					),
-					pipeline.NewConcurrentGroup(
+					pipeline.NewConcurrentGroup[interface{}](
 						pipeline.NewSequentialGroup[interface{}](
 							pipeline.NewSequentialStage(
 								NewNumberedStep(&posN),
@@ -110,7 +110,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 								NewNumberedStep(&posN),
 							),
 							pipeline.NewConditionalGroup[interface{}](
-								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
 								pipeline.NewSequentialStage(
@@ -140,7 +140,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 								NewNumberedStep(&posN),
 							),
 							pipeline.NewConditionalStage(
-								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return false
 								}),
 								nil,
@@ -178,7 +178,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 							NewNumberedStep(&posN),
 						),
 						pipeline.NewConditionalStage(
-							pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+							pipeline.NewStatement("some name", func(in interface{}) bool {
 								return true
 							}),
 							NewNumberedStep(&posN),
@@ -191,7 +191,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 								NewNumberedStep(&posN),
 							),
 							pipeline.NewConditionalGroup[interface{}](
-								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true // Closed
 								}),
 								pipeline.NewSequentialGroup[interface{}](
@@ -249,12 +249,12 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 				),
 				pipeline.NewSequentialGroup[interface{}](
 					pipeline.NewConditionalGroup[interface{}](
-						pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+						pipeline.NewStatement("some name", func(in interface{}) bool {
 							return true
 						}),
 						pipeline.NewConcurrentGroup[interface{}](
 							pipeline.NewConditionalGroup[interface{}](
-								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
 								pipeline.NewSequentialGroup[interface{}](
@@ -288,11 +288,11 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 							),
 						),
 						pipeline.NewConditionalGroup[interface{}](
-							pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+							pipeline.NewStatement("some name", func(in interface{}) bool {
 								return true
 							}),
 							pipeline.NewConditionalGroup[interface{}](
-								pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(in interface{}) bool {
 									return true
 								}),
 								pipeline.NewSequentialGroup[interface{}](
@@ -306,7 +306,7 @@ func NewImmenseGraph() pipeline.Stage[interface{}] {
 										NewNumberedStep(&posN),
 									),
 									pipeline.NewConditionalGroup[interface{}](
-										pipeline.NewSimpleStatement("some name", func(in interface{}) bool {
+										pipeline.NewStatement("some name", func(in interface{}) bool {
 											return true
 										}),
 										pipeline.NewSequentialGroup[interface{}](

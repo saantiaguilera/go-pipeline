@@ -129,17 +129,19 @@ The package comes with a handy drawing API for representing the Newd graphs.
 */
 package pipeline
 
-type Client[T any] struct {
-	ex Executor[T]
-}
-
-func (c *Client[T]) Run(stage Stage[T], in T) error {
-	return stage.Run(c.ex, in)
-}
+type (
+	Client[T any] struct {
+		ex Executor[T]
+	}
+)
 
 // NewClient creates a pipeline client with a given executor
 func NewClient[T any](ex Executor[T]) *Client[T] {
 	return &Client[T]{
 		ex: ex,
 	}
+}
+
+func (c *Client[T]) Run(stage Stage[T], in T) error {
+	return stage.Run(c.ex, in)
 }

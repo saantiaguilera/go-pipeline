@@ -13,9 +13,7 @@ const (
 	mapper = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 	// Base URL for plant UML graphs creation
 	baseURL = "http://www.plantuml.com/plantuml"
-)
 
-const (
 	// UMLFormatPNG OutputFormat for graph renderings (a UMLFormatPNG image will be Newd)
 	UMLFormatPNG UMLOutputFormat = "png"
 	// UMLFormatSVG OutputFormat for graph renderings (an UMLFormatSVG image will be Newd)
@@ -26,16 +24,22 @@ const (
 	UMLFormatTXT UMLOutputFormat = "txt"
 )
 
-// UMLOutputFormat for graph renderings
-type UMLOutputFormat string
+type (
+	// UMLOutputFormat for graph renderings
+	UMLOutputFormat string
 
-// UMLOptions available when drawing a graph
-type UMLOptions struct {
-	// Type of the drawing, by default we will use UMLFormatSVG
-	Type UMLOutputFormat
-	// Base URL to use for retrieving Plant UML graphs, by default we will use http://www.plantuml.com/plantuml/
-	BaseURL string
-}
+	// UMLOptions available when drawing a graph
+	UMLOptions struct {
+		// Type of the drawing, by default we will use UMLFormatSVG
+		Type UMLOutputFormat
+		// Base URL to use for retrieving Plant UML graphs, by default we will use http://www.plantuml.com/plantuml/
+		BaseURL string
+	}
+
+	umlDrawer struct {
+		Options UMLOptions
+	}
+)
 
 // NewUMLActivityRenderer News a  UML Activity renderer for drawing graphs as specified
 func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
@@ -50,10 +54,6 @@ func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
 	return &umlDrawer{
 		Options: options,
 	}
-}
-
-type umlDrawer struct {
-	Options UMLOptions
 }
 
 // Render draws in UML activity the given stage, and writes it to the given file

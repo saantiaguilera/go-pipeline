@@ -160,7 +160,7 @@ func TestConditionalGroup_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfFun
 	falseStage := new(mockStage[interface{}])
 	trueStage := new(mockStage[interface{}])
 
-	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewSimpleStatement[interface{}]("SomeFuncName", nil), trueStage, falseStage)
+	stage := pipeline.NewConditionalGroup[interface{}](pipeline.NewStatement[interface{}]("SomeFuncName", nil), trueStage, falseStage)
 
 	stage.Draw(mockGraphDiagram)
 

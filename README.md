@@ -73,7 +73,7 @@ graph := pipeline.NewSequentialGroup(
             pipeline.NewConcurrentGroup(
                 // Conditional stage, the meat might be too big
                 pipeline.NewConditionalStage(
-                    pipeline.NewSimpleStatement("is_meat_too_big", IsMeatTooBigForTheOven),
+                    pipeline.NewStatement("is_meat_too_big", IsMeatTooBigForTheOven),
                     // True:
                     NewCutMeatStep(),
                     // False:

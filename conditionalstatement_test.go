@@ -25,7 +25,7 @@ func TestStatement_GivenAnAnonymousStatement_WhenEvaluated_ThenEvaluatesPassed(t
 }
 
 func TestStatement_GivenAStatement_WhenNamed_ThenReturnsName(t *testing.T) {
-	statement := pipeline.NewSimpleStatement("some name", func(in int) bool {
+	statement := pipeline.NewStatement("some name", func(in int) bool {
 		return true
 	})
 
@@ -33,7 +33,7 @@ func TestStatement_GivenAStatement_WhenNamed_ThenReturnsName(t *testing.T) {
 }
 
 func TestStatement_GivenAStatement_WhenEvaluated_ThenEvaluatesPassed(t *testing.T) {
-	statement := pipeline.NewSimpleStatement("some name", func(in int) bool {
+	statement := pipeline.NewStatement("some name", func(in int) bool {
 		return true
 	})
 
@@ -47,7 +47,7 @@ func TestStatement_GivenAnAnonymousStatementWithNoFunc_WhenEvaluated_ThenReturns
 }
 
 func TestStatement_GivenAStatementWithNoFunc_WhenEvaluated_ThenReturnsFalse(t *testing.T) {
-	statement := pipeline.NewSimpleStatement[int]("some name", nil)
+	statement := pipeline.NewStatement[int]("some name", nil)
 
 	assert.False(t, statement.Evaluate(1))
 }

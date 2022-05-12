@@ -51,7 +51,7 @@ func Graph(numberOfCarrots, numberOfEggs, meatSize, ovenSize int) pipeline.Stage
 				pipeline.NewConcurrentGroup(
 					// Conditional stage, the meat might be too big
 					pipeline.NewConditionalStage(
-						pipeline.NewSimpleStatement("is_meat_too_big", NewMeatTooBigStatement(meatSize, ovenSize)),
+						pipeline.NewStatement("is_meat_too_big", NewMeatTooBigStatement(meatSize, ovenSize)),
 						// True:
 						NewCutMeatStep(meatSize, ovenSize, meatChan),
 						// False:

@@ -2,11 +2,13 @@ package pipeline
 
 import "sync"
 
-// Atomic error that allows set/get concurrent operations
-type atomicErr struct {
-	sync.RWMutex
-	value error
-}
+type (
+	// Atomic error that allows set/get concurrent operations
+	atomicErr struct {
+		sync.RWMutex
+		value error
+	}
+)
 
 // Get the error stored
 func (e *atomicErr) Get() error {

@@ -1,6 +1,6 @@
 package pipeline
 
-// Stage is a grouping of units (steps / stages / etc) allowing one to New a workflow/template/graph of a given
+// Stage is a grouping of units (steps / stages / etc) allowing one to create a workflow/template/graph of a given
 // problem.
 // A stage can be run with a given executor
 type Stage[T any] interface {
