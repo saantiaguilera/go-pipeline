@@ -29,7 +29,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 		NewNumberedStep(&posN),
 		NewNumberedStep(&posN),
 		pipeline.NewConditionalContainer[interface{}](
-			pipeline.NewStatement("some name", func(in interface{}) bool {
+			pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 				return true
 			}),
 			pipeline.NewConcurrentContainer[interface{}](
@@ -40,19 +40,19 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewAnonymousStatement(func(in interface{}) bool {
+								pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 									return true
 								}),
 								NewNumberedStep(&posN),
 								NewNumberedStep(&posN),
 							),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 									return true
 								}),
 								NewNumberedStep(&posN),
 								pipeline.NewConditionalContainer[interface{}](
-									pipeline.NewAnonymousStatement(func(in interface{}) bool {
+									pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 										return true
 									}),
 									NewNumberedStep(&posN),
@@ -71,7 +71,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 									return false
 								}),
 								nil,
@@ -82,7 +82,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewAnonymousStatement(func(in interface{}) bool {
+								pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 									return true
 								}),
 								NewNumberedStep(&posN),
@@ -105,7 +105,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							NewNumberedStep(&posN),
 						),
 						pipeline.NewConditionalContainer[interface{}](
-							pipeline.NewStatement("some name", func(in interface{}) bool {
+							pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 								return true
 							}),
 							NewNumberedStep(&posN),
@@ -116,7 +116,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							NewNumberedStep(&posN),
 							NewNumberedStep(&posN),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 									return true // Closed
 								}),
 								pipeline.NewSequentialContainer[interface{}](
@@ -166,12 +166,12 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 				),
 				pipeline.NewSequentialContainer[interface{}](
 					pipeline.NewConditionalContainer[interface{}](
-						pipeline.NewStatement("some name", func(in interface{}) bool {
+						pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 							return true
 						}),
 						pipeline.NewConcurrentContainer[interface{}](
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 									return true
 								}),
 								pipeline.NewSequentialContainer[interface{}](
@@ -199,11 +199,11 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 							),
 						),
 						pipeline.NewConditionalContainer[interface{}](
-							pipeline.NewStatement("some name", func(in interface{}) bool {
+							pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 								return true
 							}),
 							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(in interface{}) bool {
+								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 									return true
 								}),
 								pipeline.NewSequentialContainer[interface{}](
@@ -215,7 +215,7 @@ func NewImmenseGraph() pipeline.Container[interface{}] {
 										NewNumberedStep(&posN),
 									),
 									pipeline.NewConditionalContainer[interface{}](
-										pipeline.NewStatement("some name", func(in interface{}) bool {
+										pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
 											return true
 										}),
 										pipeline.NewSequentialContainer[interface{}](

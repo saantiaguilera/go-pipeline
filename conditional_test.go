@@ -34,7 +34,7 @@ func TestConditionalContainer_GivenStatementTrue_WhenRun_TrueIsRun(t *testing.T)
 		run = true
 		return nil
 	})
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), trueStep, falseStep)
 
@@ -51,7 +51,7 @@ func TestConditionalContainer_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.
 		return nil
 	})
 	trueStep := pipeline.NewStep[interface{}]("", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return false
 	}), trueStep, falseStep)
 
@@ -63,7 +63,7 @@ func TestConditionalContainer_GivenStatementFalse_WhenRun_FalseIsRun(t *testing.
 
 func TestConditionalContainer_GivenStatementTrueAndNilTrue_WhenRun_NothingHappens(t *testing.T) {
 	falseStep := pipeline.NewStep[interface{}]("", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), nil, falseStep)
 
@@ -74,7 +74,7 @@ func TestConditionalContainer_GivenStatementTrueAndNilTrue_WhenRun_NothingHappen
 
 func TestConditionalContainer_GivenStatementFalseNilFalse_WhenRun_NothingHappens(t *testing.T) {
 	trueStep := pipeline.NewStep[interface{}]("", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return false
 	}), trueStep, nil)
 
@@ -89,7 +89,7 @@ func TestConditionalContainer_GivenStatementTrueWithTrueError_WhenRun_TrueErrorR
 	trueStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		return trueErr
 	})
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), trueStep, falseStep)
 
@@ -104,7 +104,7 @@ func TestConditionalContainer_GivenStatementFalseWithFalseError_WhenRun_FalseErr
 	falseStep := pipeline.NewStep("", func(ctx context.Context, t interface{}) error {
 		return falseErr
 	})
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return false
 	}), trueStep, falseStep)
 
@@ -114,7 +114,7 @@ func TestConditionalContainer_GivenStatementFalseWithFalseError_WhenRun_FalseErr
 }
 
 func TestConditionalContainer_GivenAGraphToDrawWithAnonymouseStatement_WhenDrawn_ThenConditionGetsEmptyName(t *testing.T) {
-	statement := pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	statement := pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	})
 	mockGraphDiagram := new(mockGraphDiagram)
@@ -174,7 +174,7 @@ func TestConditionalContainer_GivenAGraphToDraw_WhenDrawn_ThenConditionIsApplied
 	})
 	falseStep := pipeline.NewStep[interface{}]("falsestep", nil)
 	trueStep := pipeline.NewStep[interface{}]("truestep", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), trueStep, falseStep)
 
@@ -199,7 +199,7 @@ func TestConditionalContainer_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTru
 		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
 	})
 	falseStep := pipeline.NewStep[interface{}]("falsestep", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), nil, falseStep)
 
@@ -224,7 +224,7 @@ func TestConditionalContainer_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFa
 		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
 	})
 	trueStep := pipeline.NewStep[interface{}]("truestep", nil)
-	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(in interface{}) bool {
+	container := pipeline.NewConditionalContainer[interface{}](pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
 		return true
 	}), trueStep, nil)
 

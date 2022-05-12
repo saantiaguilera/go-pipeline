@@ -46,6 +46,9 @@ func (s Step[T]) Name() string {
 }
 
 func (s Step[T]) Run(ctx context.Context, in T) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	return s.run(ctx, in)
 }
 

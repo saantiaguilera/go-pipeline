@@ -39,7 +39,7 @@ func (c ConditionalContainer[T]) Draw(graph GraphDiagram) {
 }
 
 func (c ConditionalContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
-	if c.statement.Evaluate(in) {
+	if c.statement.Evaluate(ctx, in) {
 		if c.trueCn != nil {
 			return c.trueCn.Visit(ctx, ex, in)
 		}
