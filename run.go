@@ -10,16 +10,16 @@ type (
 	}
 
 	mergedResult[T any] struct {
-		mut   *sync.RWMutex
-		v     []T
+		mut *sync.RWMutex
+		v   []T
 	}
 )
 
 // newMergedResult creates a new value that can be safely mutated by different peers
 func newMergedResult[T any](cap int) *mergedResult[T] {
 	return &mergedResult[T]{
-		mut:   new(sync.RWMutex),
-		v:     make([]T, 0, cap),
+		mut: new(sync.RWMutex),
+		v:   make([]T, 0, cap),
 	}
 }
 

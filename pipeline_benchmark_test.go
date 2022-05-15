@@ -96,7 +96,7 @@ func NewImmenseGraph() pipeline.Step[string, int] {
 			pipeline.NewConcurrentStep(
 				[]pipeline.Step[string, int]{innerJob, stringToInt, innerJob, stringToInt, innerJob, stringToInt, innerJob, stringToInt},
 				intReducer,
-			), 
+			),
 			nil,
 		),
 		pipeline.NewSequentialStep[int, string, int](

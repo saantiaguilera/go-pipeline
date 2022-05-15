@@ -1,8 +1,9 @@
 package pipeline_test
 
 import (
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
 type mockGraph struct {
