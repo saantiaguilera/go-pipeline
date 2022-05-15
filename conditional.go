@@ -1,12 +1,15 @@
 package pipeline
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type (
-	ConditionalContainer[T any] struct {
-		statement conditionalStatement[T]
-		trueCn    Container[T]
-		falseCn   Container[T]
+	ConditionalStep[I, O any] struct {
+		statement conditionalStatement[I]
+		trueCn    Step[I, O]
+		falseCn   Step[I, O]
 	}
 
 	conditionalStatement[T any] interface {
@@ -15,19 +18,19 @@ type (
 	}
 )
 
-// NewConditionalContainer creates a conditional container that will run a statement. If it holds true, then the "true" step will be run.
+// NewConditionalStep creates a conditional step that will run a statement. If it holds true, then the "true" step will be run.
 // Else, the "false" step will be called.
 // If a statement is nil, then it will be considered to hold false (thus, the "false" step is called)
 // If one of the steps is nil and the statement is such, then nothing will happen.
-func NewConditionalContainer[T any](statement conditionalStatement[T], t, f Container[T]) ConditionalContainer[T] {
-	return ConditionalContainer[T]{
+func NewConditionalStep[I, O any](statement conditionalStatement[I], t, f Step[I, O]) ConditionalStep[I, O] {
+	return ConditionalStep[I, O]{
 		statement: statement,
 		trueCn:    t,
 		falseCn:   f,
 	}
 }
 
-func (c ConditionalContainer[T]) Draw(graph GraphDiagram) {
+func (c ConditionalStep[I, O]) Draw(graph GraphDiagram) {
 	graph.AddDecision(
 		c.statement.Name(),
 		func(graph GraphDiagram) {
@@ -43,15 +46,16 @@ func (c ConditionalContainer[T]) Draw(graph GraphDiagram) {
 	)
 }
 
-func (c ConditionalContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
-	if c.statement.Evaluate(ctx, in) {
+func (c ConditionalStep[I, O]) Run(ctx context.Context, in I) (O, error) {
+	ok := c.statement.Evaluate(ctx, in)
+	if ok {
 		if c.trueCn != nil {
-			return c.trueCn.Visit(ctx, ex, in)
+			return c.trueCn.Run(ctx, in)
 		}
 	} else {
 		if c.falseCn != nil {
-			return c.falseCn.Visit(ctx, ex, in)
+			return c.falseCn.Run(ctx, in)
 		}
 	}
-	return nil
+	return *new(O), fmt.Errorf("conditional step '%s' cannot run since the evaluated condition (%v) has a nil branch", c.statement.Name(), ok)
 }

@@ -3,25 +3,30 @@ package pipeline
 import "context"
 
 type (
-	SequentialContainer[T any] []Container[T]
+	SequentialStep[I, M, O any] struct {
+		start Step[I, M]
+		end   Step[M, O]
+	}
 )
 
-// NewSequentialContainer creates container that will run each of the steps sequentially. If one of them fails, the operation will abort immediately
-func NewSequentialContainer[T any](units ...Container[T]) SequentialContainer[T] {
-	return units
+// NewSequentialStep creates step that will run each of the steps sequentially. If one of them fails, the operation will abort immediately
+func NewSequentialStep[I, M, O any](s Step[I, M], e Step[M, O]) SequentialStep[I, M, O] {
+	return SequentialStep[I, M, O]{
+		start: s,
+		end:   e,
+	}
 }
 
-func (s SequentialContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
-	for _, c := range s {
-		if err := c.Visit(ctx, ex, in); err != nil {
-			return err
-		}
+func (s SequentialStep[I, M, O]) Run(ctx context.Context, in I) (O, error) {
+	m, err := s.start.Run(ctx, in)
+	if err != nil {
+		return *new(O), err
 	}
-	return nil
+
+	return s.end.Run(ctx, m)
 }
 
-func (s SequentialContainer[T]) Draw(graph GraphDiagram) {
-	for _, c := range s {
-		c.Draw(graph)
-	}
+func (s SequentialStep[I, M, O]) Draw(graph GraphDiagram) {
+	s.start.Draw(graph)
+	s.end.Draw(graph)
 }

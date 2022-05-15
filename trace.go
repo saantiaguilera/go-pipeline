@@ -9,35 +9,35 @@ import (
 )
 
 type (
-	TracedContainer[T any] struct {
-		name      string
-		container Container[T]
-		writer    io.Writer
+	TracedStep[I, O any] struct {
+		name   string
+		step   Step[I, O]
+		writer io.Writer
 	}
 )
 
-// NewTracedContainer creates traced container that will log the execution time of the container to the stdout
-func NewTracedContainer[T any](name string, container Container[T]) TracedContainer[T] {
-	return NewTracedContainerWithWriter(name, container, os.Stdout)
+// NewTracedStep creates traced step that will log the execution time of the step to the stdout
+func NewTracedStep[I, O any](name string, step Step[I, O]) TracedStep[I, O] {
+	return NewTracedStepWithWriter(name, step, os.Stdout)
 }
 
-// NewTracedContainerWithWriter creates traced container that will log the execution time of the container to the writer
-func NewTracedContainerWithWriter[T any](name string, container Container[T], writer io.Writer) TracedContainer[T] {
-	return TracedContainer[T]{
-		name:      name,
-		container: container,
-		writer:    writer,
+// NewTracedStepWithWriter creates traced step that will log the execution time of the step to the writer
+func NewTracedStepWithWriter[I, O any](name string, step Step[I, O], writer io.Writer) TracedStep[I, O] {
+	return TracedStep[I, O]{
+		name:   name,
+		step:   step,
+		writer: writer,
 	}
 }
 
-func (t TracedContainer[T]) Draw(graph GraphDiagram) {
-	t.container.Draw(graph)
+func (t TracedStep[I, O]) Draw(graph GraphDiagram) {
+	t.step.Draw(graph)
 }
 
-func (t TracedContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) error {
+func (t TracedStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	start := time.Now()
 
-	err := t.container.Visit(ctx, ex, in)
+	res, err := t.step.Run(ctx, in)
 
 	var message string
 	if err == nil {
@@ -47,5 +47,5 @@ func (t TracedContainer[T]) Visit(ctx context.Context, ex Executor[T], in T) err
 	}
 
 	fmt.Fprintf(t.writer, "[STAGE] %s | %s | %s | %s\n", start.Format("2006-01-02 - 15:04:05"), t.name, time.Since(start), message)
-	return err
+	return res, err
 }

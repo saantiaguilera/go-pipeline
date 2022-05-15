@@ -42,8 +42,8 @@ else
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
 // Graph creates static workflow for this sample. It's all in a single func completely coupled for showing purposes
-// you should probably decouple this into more atomic ones (eg. a func for calculating sizes that returns a Container)
-func Graph() pipeline.Container {
+// you should probably decouple this into more atomic ones (eg. a func for calculating sizes that returns a Step)
+func Graph() pipeline.Step {
 	widthStep := &getWidthStep{}
 	heightStep := &getHeightStep{}
 	depthStep := &getDepthStep{}
@@ -70,26 +70,26 @@ func Graph() pipeline.Container {
 	paintVolumeStep := &paintVolumeStep{}
 
 	return pipeline.NewSequentialGroup(
-		pipeline.NewTracedContainer("measurement_container", pipeline.NewConcurrentContainer(
+		pipeline.NewTracedStep("measurement_step", pipeline.NewConcurrentStep(
 			widthStep,
 			heightStep,
 			depthStep,
 		)),
-		pipeline.NewConcurrentContainer(
+		pipeline.NewConcurrentStep(
 			calculateVolumeStep,
 			calculateSurfaceStep,
 		),
 		pipeline.NewConcurrentGroup(
-			pipeline.NewSequentialContainer(
+			pipeline.NewSequentialStep(
 				calculatePriceToPaintSurfaceStep,
 				recordPriceSurfaceStep,
 			),
-			pipeline.NewSequentialContainer(
+			pipeline.NewSequentialStep(
 				calculatePriceToPaintVolumeStep,
 				recordPriceVolumeStep,
 			),
 		),
-		pipeline.NewSequentialContainer(
+		pipeline.NewSequentialStep(
 			evaluateStep,
 		),
 		pipeline.NewConditionalGroup(
@@ -99,16 +99,16 @@ func Graph() pipeline.Container {
 				return volumePrice+surfacePrice < 100000
 			}),
 			pipeline.NewSequentialGroup(
-				pipeline.NewConcurrentContainer(
+				pipeline.NewConcurrentStep(
 					acceptSurfacePaintingStep,
 					acceptVolumePaintingStep,
 				),
-				pipeline.NewConcurrentContainer(
+				pipeline.NewConcurrentStep(
 					pipeline.NewTracedStep(paintSurfaceStep),
 					pipeline.NewTracedStep(paintVolumeStep),
 				),
 			),
-			pipeline.NewSequentialContainer(),
+			pipeline.NewSequentialStep(),
 		),
 	)
 }

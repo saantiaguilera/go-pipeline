@@ -42,54 +42,54 @@ This workflow is represented as such
 
 This workflow can be built and executed as such.
 ```go
-// Complete container. Its sequential because we can't serve
+// Complete step. Its sequential because we can't serve
 // before all the others are done. 
 graph := pipeline.NewSequentialGroup(
-    // Concurrent container, given we can do the salad / meat separately.
+    // Concurrent step, given we can do the salad / meat separately.
     pipeline.NewConcurrentGroup(
         // This will be the salad flow.
         pipeline.NewSequentialGroup( 
             // Eggs and carrots can be operated concurrently too.
             pipeline.NewConcurrentGroup(
-                // Sequential container for the eggs flow.
-                pipeline.NewSequentialContainer(
+                // Sequential step for the eggs flow.
+                pipeline.NewSequentialStep(
                     NewBoilEggsStep(),
                     NewCutEggsStep(),
                 ),
-                // Another sequential container for the carrots (eggs and carrots will be concurrent though!)
-                pipeline.NewSequentialContainer(
+                // Another sequential step for the carrots (eggs and carrots will be concurrent though!)
+                pipeline.NewSequentialStep(
                     NewWashCarrotsStep(),
                     NewCutCarrotsStep(),
                 ),
             ),
             // This is sequential. When carrots and eggs are done, this will run.
-            pipeline.NewSequentialContainer(
+            pipeline.NewSequentialStep(
                 NewMakeSaladStep(),
             ),
         ),
-        // Another sequential container for the meat (concurrently with salad)
+        // Another sequential step for the meat (concurrently with salad)
         pipeline.NewSequentialGroup(
             // If we end up cutting the meat, we can optimize it with the oven operation
             pipeline.NewConcurrentGroup(
-                // Conditional container, the meat might be too big
-                pipeline.NewConditionalContainer(
+                // Conditional step, the meat might be too big
+                pipeline.NewConditionalStep(
                     pipeline.NewStatement("is_meat_too_big", IsMeatTooBigForTheOven),
                     // True:
                     NewCutMeatStep(),
                     // False:
                     nil,
                 ),
-                pipeline.NewSequentialContainer(
+                pipeline.NewSequentialStep(
                     NewTurnOvenOnStep(),
                 ),
             ),
-            pipeline.NewSequentialContainer(
+            pipeline.NewSequentialStep(
                 NewPutMeatInOvenStep(),
             ),
         ),
     ),
     // When everything is done. Serve.
-    pipeline.NewSequentialContainer(
+    pipeline.NewSequentialStep(
         NewServeStep(),
     ),
 )

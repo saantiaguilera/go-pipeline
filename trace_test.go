@@ -13,54 +13,53 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-func TestTrace_GivenAContainerToTrace_WhenRun_ThenOutputsInnerContainerErr(t *testing.T) {
-	mockContainer := new(mockContainer[interface{}])
-	mockContainer.On("Visit", mock.Anything, mock.Anything, 1).Return(errors.New("some error"))
-	container := pipeline.NewTracedContainer[interface{}]("test name", mockContainer)
+func TestTrace_GivenAStepToTrace_WhenRun_ThenOutputsInnerStepErr(t *testing.T) {
+	mockStep := new(mockStep[any, any])
+	mockStep.On("Run", mock.Anything, mock.Anything).Return(nil, errors.New("some error"))
+	step := pipeline.NewTracedStep[any, any]("test name", mockStep)
 
-	err := container.Visit(context.Background(), &SimpleExecutor[interface{}]{}, 1)
+	_, err := step.Run(context.Background(), 1)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "some error", err.Error())
 }
 
-func TestTrace_GivenAContainerToTrace_WhenRunFailing_ThenSpecificFormatIsUsed(t *testing.T) {
-	mockContainer := new(mockContainer[interface{}])
-	mockContainer.On("Visit", mock.Anything, mock.Anything, 1).Return(errors.New("some error"))
+func TestTrace_GivenAStepToTrace_WhenRunFailing_ThenSpecificFormatIsUsed(t *testing.T) {
+	mockStep := new(mockStep[any, any])
+	mockStep.On("Run", mock.Anything, 1).Return(nil, errors.New("some error"))
 	writer := bytes.NewBufferString("")
-	container := pipeline.NewTracedContainerWithWriter[interface{}]("test name", mockContainer, writer)
+	step := pipeline.NewTracedStepWithWriter[any, any]("test name", mockStep, writer)
 	validator := regexp.MustCompile(`^\[STAGE] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Failure: some error\n$`)
 
-	_ = container.Visit(context.Background(), &SimpleExecutor[interface{}]{}, 1)
+	_, _ = step.Run(context.Background(), 1)
 
 	output := writer.Bytes()
-
 	assert.True(t, validator.Match(output))
 }
 
-func TestTrace_GivenAContainerToTrace_WhenRunSuccessfully_ThenSpecificFormatIsUsed(t *testing.T) {
-	mockContainer := new(mockContainer[interface{}])
-	mockContainer.On("Visit", mock.Anything, mock.Anything, 1).Return(nil)
+func TestTrace_GivenAStepToTrace_WhenRunSuccessfully_ThenSpecificFormatIsUsed(t *testing.T) {
+	mockStep := new(mockStep[any, any])
+	mockStep.On("Run", mock.Anything, 1).Return("test", nil)
 	writer := bytes.NewBufferString("")
-	container := pipeline.NewTracedContainerWithWriter[interface{}]("test name", mockContainer, writer)
+	step := pipeline.NewTracedStepWithWriter[any, any]("test name", mockStep, writer)
 	validator := regexp.MustCompile(`^\[STAGE] \d{4}-\d{2}-\d{2} - \d{2}:\d{2}:\d{2} \| test name \| [.\d]+[µnm]s \| Success\n$`)
 
-	_ = container.Visit(context.Background(), &SimpleExecutor[interface{}]{}, 1)
+	v, _ := step.Run(context.Background(), 1)
 
 	output := writer.Bytes()
-
 	assert.True(t, validator.Match(output))
+	assert.Equal(t, "test", v)
 }
 
-func TestTrace_GivenAContainerToDraw_WhenDrawn_ThenDelegatesToInnerContainer(t *testing.T) {
+func TestTrace_GivenAStepToDraw_WhenDrawn_ThenDelegatesToInnerStep(t *testing.T) {
 	mockGraphDiagram := new(mockGraphDiagram)
-	mockContainer := new(mockContainer[interface{}])
-	mockContainer.On("Draw", mockGraphDiagram).Once()
+	mockStep := new(mockStep[any, any])
+	mockStep.On("Draw", mockGraphDiagram).Once()
 
-	container := pipeline.NewTracedContainer[interface{}]("test name", mockContainer)
+	step := pipeline.NewTracedStep[any, any]("test name", mockStep)
 
-	container.Draw(mockGraphDiagram)
+	step.Draw(mockGraphDiagram)
 
 	mockGraphDiagram.AssertExpectations(t)
-	mockContainer.AssertExpectations(t)
+	mockStep.AssertExpectations(t)
 }

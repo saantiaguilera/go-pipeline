@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,262 +15,97 @@ import (
 
 var render = flag.Bool("pipeline.render", false, "render pipeline")
 
-func NewNumberedStep(number **int) pipeline.Step[interface{}] {
+func NewStringToIntStep(number **int) pipeline.Step[string, int] {
 	current := **number
 	next := current + 1
 	*number = &next
 
-	return pipeline.NewStep[interface{}](fmt.Sprintf("Step %d", current), nil)
+	return pipeline.NewUnitStep(fmt.Sprintf("Step %d", current), func(ctx context.Context, in string) (int, error) {
+		vi, err := strconv.Atoi(in)
+		if err != nil {
+			return 0, err
+		}
+		return vi + 1, nil
+	})
 }
 
-func NewImmenseGraph() pipeline.Container[interface{}] {
-	n := 0
-	posN := &n
-	return pipeline.NewSequentialContainer[interface{}](
-		NewNumberedStep(&posN),
-		NewNumberedStep(&posN),
-		pipeline.NewConditionalContainer[interface{}](
-			pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-				return true
-			}),
-			pipeline.NewConcurrentContainer[interface{}](
-				pipeline.NewSequentialContainer[interface{}](
-					NewNumberedStep(&posN),
-					pipeline.NewConcurrentContainer[interface{}](
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
-									return true
-								}),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-									return true
-								}),
-								NewNumberedStep(&posN),
-								pipeline.NewConditionalContainer[interface{}](
-									pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
-										return true
-									}),
-									NewNumberedStep(&posN),
-									nil,
-								),
-							),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-									return false
-								}),
-								nil,
-								NewNumberedStep(&posN),
-							),
-						),
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewAnonymousStatement(func(ctx context.Context, in interface{}) bool {
-									return true
-								}),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-						),
-					),
-				),
-				pipeline.NewSequentialContainer[interface{}](
-					NewNumberedStep(&posN),
-					pipeline.NewConcurrentContainer[interface{}](
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewConditionalContainer[interface{}](
-							pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-								return true
-							}),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-									return true // Closed
-								}),
-								pipeline.NewSequentialContainer[interface{}](
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-									pipeline.NewConcurrentContainer[interface{}](
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									NewNumberedStep(&posN),
-								),
-								pipeline.NewSequentialContainer[interface{}](
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-								),
-							),
-						),
-					),
-					NewNumberedStep(&posN),
-					NewNumberedStep(&posN),
-					NewNumberedStep(&posN),
-					pipeline.NewConcurrentContainer[interface{}](
-						pipeline.NewConcurrentContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewConcurrentContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewConcurrentContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-						pipeline.NewSequentialContainer[interface{}](
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-							NewNumberedStep(&posN),
-						),
-					),
-					NewNumberedStep(&posN),
-				),
-				pipeline.NewSequentialContainer[interface{}](
-					pipeline.NewConditionalContainer[interface{}](
-						pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-							return true
-						}),
-						pipeline.NewConcurrentContainer[interface{}](
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-									return true
-								}),
-								pipeline.NewSequentialContainer[interface{}](
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-									pipeline.NewConcurrentContainer[interface{}](
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-								),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewConcurrentContainer[interface{}](
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-							pipeline.NewSequentialContainer[interface{}](
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-						),
-						pipeline.NewConditionalContainer[interface{}](
-							pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-								return true
-							}),
-							pipeline.NewConditionalContainer[interface{}](
-								pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-									return true
-								}),
-								pipeline.NewSequentialContainer[interface{}](
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-									pipeline.NewConcurrentContainer[interface{}](
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-										NewNumberedStep(&posN),
-									),
-									pipeline.NewConditionalContainer[interface{}](
-										pipeline.NewStatement("some name", func(ctx context.Context, in interface{}) bool {
-											return true
-										}),
-										pipeline.NewSequentialContainer[interface{}](
-											NewNumberedStep(&posN),
-											NewNumberedStep(&posN),
-											pipeline.NewConcurrentContainer[interface{}](
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-												NewNumberedStep(&posN),
-											),
-											NewNumberedStep(&posN),
-											NewNumberedStep(&posN),
-											NewNumberedStep(&posN),
-										),
-										pipeline.NewSequentialContainer[interface{}](
-											NewNumberedStep(&posN),
-										),
-									),
-								),
-								pipeline.NewSequentialContainer[interface{}](
-									NewNumberedStep(&posN),
-									NewNumberedStep(&posN),
-								),
-							),
-							pipeline.NewSequentialContainer[interface{}](
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-								NewNumberedStep(&posN),
-							),
-						),
-					),
-				),
+func NewStringToStringStep(number **int) pipeline.Step[string, string] {
+	current := **number
+	next := current + 1
+	*number = &next
+
+	return pipeline.NewUnitStep(fmt.Sprintf("Step %d", current), func(ctx context.Context, in string) (string, error) {
+		vi, err := strconv.Atoi(in)
+		if err != nil {
+			return "", err
+		}
+		return strconv.FormatInt(int64(vi+1), 10), nil
+	})
+}
+
+func NewIntToStringStep(number **int) pipeline.Step[int, string] {
+	current := **number
+	next := current + 1
+	*number = &next
+
+	return pipeline.NewUnitStep(fmt.Sprintf("Step %d", current), func(ctx context.Context, in int) (string, error) {
+		return strconv.FormatInt(int64(in+1), 10), nil
+	})
+}
+
+func NewIntToIntStep(number **int) pipeline.Step[int, int] {
+	current := **number
+	next := current + 1
+	*number = &next
+
+	return pipeline.NewUnitStep(fmt.Sprintf("Step %d", current), func(ctx context.Context, in int) (int, error) {
+		return in + 1, nil
+	})
+}
+
+func intReducer(_ context.Context, a, b int) (int, error) {
+	return a + b, nil
+}
+
+func NewImmenseGraph() pipeline.Step[string, int] {
+	count := 0
+	refcount := &count
+
+	intToInt := NewIntToIntStep(&refcount)
+	stringToInt := NewStringToIntStep(&refcount)
+	stringToString := NewStringToStringStep(&refcount)
+	intToString := NewIntToStringStep(&refcount)
+
+	innerJob := pipeline.NewSequentialStep[string, string, int](
+		pipeline.NewSequentialStep[string, int, string](
+			pipeline.NewSequentialStep(stringToInt, intToInt),
+			pipeline.NewSequentialStep(intToString, stringToString),
+		),
+		pipeline.NewConcurrentStep(
+			[]pipeline.Step[string, int]{stringToInt, stringToInt, stringToInt, stringToInt, stringToInt, stringToInt}, intReducer,
+		),
+	)
+
+	return pipeline.NewSequentialStep[string, int, int](
+		pipeline.NewConditionalStep[string, int](
+			pipeline.NewAnonymousStatement(
+				func(ctx context.Context, t string) bool {
+					return true
+				},
 			),
-			pipeline.NewSequentialContainer[interface{}](
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
-				NewNumberedStep(&posN),
+			pipeline.NewConcurrentStep(
+				[]pipeline.Step[string, int]{innerJob, stringToInt, innerJob, stringToInt, innerJob, stringToInt, innerJob, stringToInt},
+				intReducer,
+			), 
+			nil,
+		),
+		pipeline.NewSequentialStep[int, string, int](
+			pipeline.NewSequentialStep[int, int, string](
+				pipeline.NewSequentialStep(intToInt, intToInt),
+				pipeline.NewSequentialStep(intToString, stringToString),
+			),
+			pipeline.NewConcurrentStep(
+				[]pipeline.Step[string, int]{stringToInt, stringToInt, stringToInt, stringToInt, stringToInt, stringToInt}, intReducer,
 			),
 		),
 	)
@@ -300,13 +136,12 @@ func Test_GraphRendering(t *testing.T) {
 // Output: BenchmarkPipeline_Run-4   	   46436	     26635 ns/op (0.026ms)
 // Given this graph magnitude, the cost of traversing it is negligible in comparison to a step operation.
 func BenchmarkPipeline_Run(b *testing.B) {
-	pipe := pipeline.NewClient[interface{}](SimpleExecutor[interface{}]{})
 	graph := NewImmenseGraph()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StartTimer()
-		err := pipe.Run(context.Background(), graph, 1)
+		_, err := graph.Run(context.Background(), "0")
 		b.StopTimer()
 
 		if err != nil {
