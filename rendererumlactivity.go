@@ -14,13 +14,13 @@ const (
 	// Base URL for plant UML graphs creation
 	baseURL = "http://www.plantuml.com/plantuml"
 
-	// UMLFormatPNG OutputFormat for graph renderings (a UMLFormatPNG image will be Newd)
+	// UMLFormatPNG OutputFormat for graph renderings (a UMLFormatPNG image will be created)
 	UMLFormatPNG UMLOutputFormat = "png"
-	// UMLFormatSVG OutputFormat for graph renderings (an UMLFormatSVG image will be Newd)
+	// UMLFormatSVG OutputFormat for graph renderings (an UMLFormatSVG image will be created)
 	UMLFormatSVG UMLOutputFormat = "svg"
-	// UMLFormatRaw OutputFormat for graph renderings (a file with the raw contents will be Newd)
+	// UMLFormatRaw OutputFormat for graph renderings (a file with the raw contents will be created)
 	UMLFormatRaw UMLOutputFormat = "raw"
-	// UMLFormatTXT OutputFormat for graph renderings (an ASCII Art will be Newd)
+	// UMLFormatTXT OutputFormat for graph renderings (an ASCII Art will be created)
 	UMLFormatTXT UMLOutputFormat = "txt"
 )
 
@@ -36,13 +36,19 @@ type (
 		BaseURL string
 	}
 
-	umlDrawer struct {
+	UMLRenderer struct {
 		Options UMLOptions
+	}
+
+	umlRendererGraph interface {
+		Graph
+
+		String() string
 	}
 )
 
-// NewUMLActivityRenderer creates  UML Activity renderer for drawing graphs as specified
-func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
+// NewUMLRenderer creates an UML renderer for drawing graphs as specified
+func NewUMLRenderer(options UMLOptions) *UMLRenderer {
 	if len(options.Type) == 0 {
 		options.Type = UMLFormatSVG
 	}
@@ -51,13 +57,13 @@ func NewUMLActivityRenderer(options UMLOptions) DiagramRenderer {
 		options.BaseURL = baseURL
 	}
 
-	return &umlDrawer{
+	return &UMLRenderer{
 		Options: options,
 	}
 }
 
 // Render draws in UML activity the given step, and writes it to the given file
-func (u *umlDrawer) Render(graphDiagram GraphDiagram, output io.WriteCloser) error {
+func (u *UMLRenderer) Render(graphDiagram umlRendererGraph, output io.WriteCloser) error {
 	content := graphDiagram.String()
 
 	if u.Options.Type == UMLFormatRaw {
@@ -68,9 +74,9 @@ func (u *umlDrawer) Render(graphDiagram GraphDiagram, output io.WriteCloser) err
 }
 
 // Render as  UML the contents, writing them into the File
-func (u *umlDrawer) renderUml(content []byte, output io.WriteCloser) error {
+func (u *UMLRenderer) renderUml(content []byte, output io.WriteCloser) error {
 	content = u.deflate(content)
-	url := fmt.Sprintf("%s/%s/%s", u.Options.BaseURL, u.Options.Type, u.base64Encode(content))
+	url := fmt.Sprintf("%s/%s/~1%s", u.Options.BaseURL, u.Options.Type, u.base64Encode(content))
 
 	response, err := http.Get(url)
 
@@ -91,7 +97,7 @@ func (u *umlDrawer) renderUml(content []byte, output io.WriteCloser) error {
 }
 
 // Encode in standard B64 the given input
-func (u *umlDrawer) base64Encode(input []byte) string {
+func (u *UMLRenderer) base64Encode(input []byte) string {
 	var buffer bytes.Buffer
 	inputLength := len(input)
 	for i := 0; i < 3-inputLength%3; i++ {
@@ -114,7 +120,7 @@ func (u *umlDrawer) base64Encode(input []byte) string {
 }
 
 // Deflate compression algorithm
-func (u *umlDrawer) deflate(content []byte) []byte {
+func (u *UMLRenderer) deflate(content []byte) []byte {
 	var b bytes.Buffer
 	w, _ := zlib.NewWriterLevel(&b, zlib.BestCompression)
 	_, _ = w.Write(content)

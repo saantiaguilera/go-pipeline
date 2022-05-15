@@ -92,7 +92,7 @@ func (t *sampleExecutor) Run(cmd pipeline.Runnable, ctx pipeline.Context) error 
 // RunGraphRendering represents the graph in UML Activity and renders it as an SVG file (template.svg)
 func RunGraphRendering() {
 	if *render {
-		diagram := pipeline.NewUMLActivityGraphDiagram()
+		diagram := pipeline.NewUMLActivityGraph()
 		renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})

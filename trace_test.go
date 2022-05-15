@@ -52,14 +52,14 @@ func TestTrace_GivenAStepToTrace_WhenRunSuccessfully_ThenSpecificFormatIsUsed(t 
 }
 
 func TestTrace_GivenAStepToDraw_WhenDrawn_ThenDelegatesToInnerStep(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraph := new(mockGraph)
 	mockStep := new(mockStep[any, any])
-	mockStep.On("Draw", mockGraphDiagram).Once()
+	mockStep.On("Draw", mockGraph).Once()
 
 	step := pipeline.NewTracedStep[any, any]("test name", mockStep)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockStep.AssertExpectations(t)
 }

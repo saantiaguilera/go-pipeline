@@ -41,7 +41,7 @@ func (m *mockStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	return args.Get(0).(O), args.Error(1)
 }
 
-func (m *mockStep[I, O]) Draw(g pipeline.GraphDiagram) {
+func (m *mockStep[I, O]) Draw(g pipeline.Graph) {
 	_ = m.Called(g)
 }
 

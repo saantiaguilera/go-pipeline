@@ -26,9 +26,9 @@ func NewConcurrentStep[I, O any](steps []Step[I, O], reduce reducer[O]) Concurre
 	}
 }
 
-func (c ConcurrentStep[I, O]) Draw(graph GraphDiagram) {
+func (c ConcurrentStep[I, O]) Draw(graph Graph) {
 	if len(c.steps) > 0 {
-		var forkSteps []DrawDiagram
+		var forkSteps []GraphDrawer
 		for _, s := range c.steps {
 			forkSteps = append(forkSteps, c.newStepGraphActivity(s))
 		}
@@ -60,8 +60,8 @@ func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	return acc, nil
 }
 
-func (c ConcurrentStep[I, O]) newStepGraphActivity(drawable DrawableDiagram) DrawDiagram {
-	return func(graph GraphDiagram) {
+func (c ConcurrentStep[I, O]) newStepGraphActivity(drawable DrawableGraph) GraphDrawer {
+	return func(graph Graph) {
 		drawable.Draw(graph)
 	}
 }

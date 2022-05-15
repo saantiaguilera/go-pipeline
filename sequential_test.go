@@ -40,14 +40,14 @@ func TestSequentialStep_GivenStepsWithErrors_WhenRun_ThenStepsAreHaltedAfterErro
 }
 
 func TestSequentialStep_GivenAGraphToDraw_WhenDrawn_ThenStepsAreAddedAsActivitiesByTheirNames(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("AddActivity", "1").Once()
-	mockGraphDiagram.On("AddActivity", "2").Once()
+	mockGraph := new(mockGraph)
+	mockGraph.On("AddActivity", "1").Once()
+	mockGraph.On("AddActivity", "2").Once()
 	first := pipeline.NewUnitStep[any, any]("1", nil)
 	second := pipeline.NewUnitStep[any, any]("2", nil)
 	initStep := pipeline.NewSequentialStep[any, any, any](first, second)
 
-	initStep.Draw(mockGraphDiagram)
+	initStep.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }

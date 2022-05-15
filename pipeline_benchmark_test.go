@@ -113,8 +113,8 @@ func NewImmenseGraph() pipeline.Step[string, int] {
 
 func Test_GraphRendering(t *testing.T) {
 	if *render {
-		diagram := pipeline.NewUMLActivityGraphDiagram()
-		renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+		diagram := pipeline.NewUMLGraph()
+		renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})
 		file, _ := os.Create("pipeline_benchmark_test.svg")
@@ -132,8 +132,8 @@ func Test_GraphRendering(t *testing.T) {
 // Steps are stubbed so that we measure only the cost of walking the whole graph with a simple pipeline
 // Also, the graph contains all conditionals returning the "worse" possible path (the largest way)
 //
-// The current graph has 112 steps (chan/int/string), the UML can be seen at pipeline_benchmark_test.svg
-// Output: BenchmarkPipeline_Run-4   	   46436	     26635 ns/op (0.026ms)
+// The current graph has 26 steps, the UML can be seen at pipeline_benchmark_test.svg
+// BenchmarkPipeline_Run-8   	   62509	     21930 ns/op (0.02ms)	    2723 B/op	      82 allocs/op
 // Given this graph magnitude, the cost of traversing it is negligible in comparison to a step operation.
 func BenchmarkPipeline_Run(b *testing.B) {
 	graph := NewImmenseGraph()

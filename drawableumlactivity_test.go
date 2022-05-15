@@ -3,18 +3,19 @@ package pipeline_test
 import (
 	"testing"
 
-	"github.com/saantiaguilera/go-pipeline"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/saantiaguilera/go-pipeline"
 )
 
-func TestUMLGraphDiagram_GivenAGraph_WhenAddingEmptyConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
+func TestUMLGraph_GivenAGraph_WhenAddingEmptyConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
 	diagram.AddConcurrency(
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 		},
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 		},
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 		},
 	)
 
@@ -24,16 +25,16 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingEmptyConcurrentCases_ThenPlantUML
 	assert.Contains(t, content, expectedContent)
 }
 
-func TestUMLGraphDiagram_GivenAGraph_WhenAddingConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
+func TestUMLGraph_GivenAGraph_WhenAddingConcurrentCases_ThenPlantUMLForksAreAdded(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
 	diagram.AddConcurrency(
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 			graph.AddActivity("1")
 		},
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 			graph.AddActivity("2")
 		},
-		func(graph pipeline.GraphDiagram) {
+		func(graph pipeline.Graph) {
 			graph.AddActivity("3")
 		},
 	)
@@ -44,8 +45,8 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingConcurrentCases_ThenPlantUMLForks
 	assert.Contains(t, content, expectedContent)
 }
 
-func TestUMLGraphDiagram_GivenAGraph_WhenAddingZeroConcurrentCases_ThenNothingHappens(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
+func TestUMLGraph_GivenAGraph_WhenAddingZeroConcurrentCases_ThenNothingHappens(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
 	diagram.AddConcurrency()
 
 	content := diagram.String()
@@ -54,8 +55,8 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingZeroConcurrentCases_ThenNothingHa
 	assert.NotContains(t, content, notExpectedContent)
 }
 
-func TestUMLGraphDiagram_GivenAGraph_WhenAddingActivities_ThenPlantUMLActivitiesAreAdded(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
+func TestUMLGraph_GivenAGraph_WhenAddingActivities_ThenPlantUMLActivitiesAreAdded(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
 	diagram.AddActivity("1")
 	diagram.AddActivity("1 2")
 	diagram.AddActivity("1 2 3")
@@ -68,11 +69,11 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingActivities_ThenPlantUMLActivities
 	assert.Contains(t, content, expectedContent)
 }
 
-func TestUMLGraphDiagram_GivenAGraph_WhenAddingADecision_ThenPlantUMLChoiceIsAdded(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
-	diagram.AddDecision("is this a test?", func(graph pipeline.GraphDiagram) {
+func TestUMLGraph_GivenAGraph_WhenAddingADecision_ThenPlantUMLChoiceIsAdded(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
+	diagram.AddDecision("is this a test?", func(graph pipeline.Graph) {
 		graph.AddActivity("yes, this is a test")
-	}, func(graph pipeline.GraphDiagram) {
+	}, func(graph pipeline.Graph) {
 		graph.AddActivity("seems this isn't a test")
 	})
 
@@ -82,15 +83,15 @@ func TestUMLGraphDiagram_GivenAGraph_WhenAddingADecision_ThenPlantUMLChoiceIsAdd
 	assert.Contains(t, content, expectedContent)
 }
 
-func TestUMLGraphDiagram_GivenAGraph_WhenStringRepresentationIsAsked_ThenCompletePlantUMLIsRepresented(t *testing.T) {
-	diagram := pipeline.NewUMLActivityGraphDiagram()
+func TestUMLGraph_GivenAGraph_WhenStringRepresentationIsAsked_ThenCompletePlantUMLIsRepresented(t *testing.T) {
+	diagram := pipeline.NewUMLGraph()
 	diagram.AddActivity("beginning")
-	diagram.AddConcurrency(func(graph pipeline.GraphDiagram) {
+	diagram.AddConcurrency(func(graph pipeline.Graph) {
 		graph.AddActivity("branch 1")
-	}, func(graph pipeline.GraphDiagram) {
-		diagram.AddDecision("is this a test?", func(graph pipeline.GraphDiagram) {
+	}, func(graph pipeline.Graph) {
+		diagram.AddDecision("is this a test?", func(graph pipeline.Graph) {
 			graph.AddActivity("yes, this is a test")
-		}, func(graph pipeline.GraphDiagram) {
+		}, func(graph pipeline.Graph) {
 			graph.AddActivity("seems this isn't a test")
 		})
 	})

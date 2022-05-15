@@ -5,23 +5,23 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type mockGraphDiagram struct {
+type mockGraph struct {
 	mock.Mock
 }
 
-func (m *mockGraphDiagram) AddConcurrency(branches ...pipeline.DrawDiagram) {
+func (m *mockGraph) AddConcurrency(branches ...pipeline.GraphDrawer) {
 	_ = m.Called(branches)
 }
 
-func (m *mockGraphDiagram) AddDecision(statement string, yes pipeline.DrawDiagram, no pipeline.DrawDiagram) {
+func (m *mockGraph) AddDecision(statement string, yes pipeline.GraphDrawer, no pipeline.GraphDrawer) {
 	_ = m.Called(statement, yes, no)
 }
 
-func (m *mockGraphDiagram) AddActivity(label string) {
+func (m *mockGraph) AddActivity(label string) {
 	_ = m.Called(label)
 }
 
-func (m *mockGraphDiagram) String() string {
+func (m *mockGraph) String() string {
 	args := m.Called()
 	return args.String(0)
 }

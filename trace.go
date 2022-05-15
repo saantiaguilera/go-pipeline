@@ -30,7 +30,7 @@ func NewTracedStepWithWriter[I, O any](name string, step Step[I, O], writer io.W
 	}
 }
 
-func (t TracedStep[I, O]) Draw(graph GraphDiagram) {
+func (t TracedStep[I, O]) Draw(graph Graph) {
 	t.step.Draw(graph)
 }
 

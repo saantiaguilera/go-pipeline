@@ -26,7 +26,7 @@ func (s SequentialStep[I, M, O]) Run(ctx context.Context, in I) (O, error) {
 	return s.end.Run(ctx, m)
 }
 
-func (s SequentialStep[I, M, O]) Draw(graph GraphDiagram) {
+func (s SequentialStep[I, M, O]) Draw(graph Graph) {
 	s.start.Draw(graph)
 	s.end.Draw(graph)
 }

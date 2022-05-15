@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-type umlGraph struct {
+type UMLGraph struct {
 	sb strings.Builder
 }
 
-// NewUMLActivityGraphDiagram createsn UML Activity graph diagram that represents one
-func NewUMLActivityGraphDiagram() GraphDiagram {
-	return &umlGraph{}
+// NewUMLGraph createsn UML Activity graph diagram that represents one
+func NewUMLGraph() *UMLGraph {
+	return &UMLGraph{}
 }
 
-func (p *umlGraph) AddDecision(statement string, yes DrawDiagram, no DrawDiagram) {
+func (p *UMLGraph) AddDecision(statement string, yes GraphDrawer, no GraphDrawer) {
 	p.sb.WriteString(fmt.Sprintf("if (%s) then (yes)\n", statement))
 
 	yes(p)
@@ -26,7 +26,7 @@ func (p *umlGraph) AddDecision(statement string, yes DrawDiagram, no DrawDiagram
 	p.sb.WriteString("endif\n")
 }
 
-func (p *umlGraph) AddConcurrency(forks ...DrawDiagram) {
+func (p *UMLGraph) AddConcurrency(forks ...GraphDrawer) {
 	if len(forks) == 0 {
 		return
 	}
@@ -41,11 +41,11 @@ func (p *umlGraph) AddConcurrency(forks ...DrawDiagram) {
 	p.sb.WriteString("end fork\n")
 }
 
-func (p *umlGraph) AddActivity(label string) {
+func (p *UMLGraph) AddActivity(label string) {
 	p.sb.WriteString(fmt.Sprintf(":%s;\n", label))
 }
 
-func (p *umlGraph) String() string {
+func (p *UMLGraph) String() string {
 	var sb strings.Builder
 
 	// New

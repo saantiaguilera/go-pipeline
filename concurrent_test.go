@@ -137,10 +137,10 @@ func TestConcurrentStep_GivenASingleConcurrentStep_WhenRun_ThenDoesntReduce(t *t
 }
 
 func TestConcurrentStep_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreApplied(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	var diagrams []pipeline.DrawDiagram
+	mockGraph := new(mockGraph)
+	var diagrams []pipeline.GraphDrawer
 	innerStep := pipeline.NewUnitStep[int, int]("testname", nil)
-	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj []pipeline.DrawDiagram) bool {
+	mockGraph.On("AddConcurrency", mock.MatchedBy(func(obj []pipeline.GraphDrawer) bool {
 		diagrams = obj
 		return true
 	})).Once()
@@ -154,22 +154,22 @@ func TestConcurrentStep_GivenAGraphToDraw_WhenDrawn_ThenConcurrentActionsAreAppl
 		},
 	)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
 	assert.Len(t, diagrams, 6)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
 
 func TestConcurrentStep_GivenAGraphToDraw_WhenDrawn_ThenConcurrentStepsAreAddedAsActionsByTheirNames(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
+	mockGraph := new(mockGraph)
 	innerStep := pipeline.NewUnitStep[int, int]("testname", nil)
-	mockGraphDiagram.On("AddActivity", "testname").Times(5)
-	mockGraphDiagram.On("AddConcurrency", mock.MatchedBy(func(obj interface{}) bool {
+	mockGraph.On("AddActivity", "testname").Times(5)
+	mockGraph.On("AddConcurrency", mock.MatchedBy(func(obj interface{}) bool {
 		return true
 	})).Run(func(args mock.Arguments) {
-		diagrams := args.Get(0).([]pipeline.DrawDiagram)
+		diagrams := args.Get(0).([]pipeline.GraphDrawer)
 		for _, d := range diagrams {
-			d(mockGraphDiagram)
+			d(mockGraph)
 		}
 	})
 	step := pipeline.NewConcurrentStep(
@@ -181,7 +181,7 @@ func TestConcurrentStep_GivenAGraphToDraw_WhenDrawn_ThenConcurrentStepsAreAddedA
 		},
 	)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }

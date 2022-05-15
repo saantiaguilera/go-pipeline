@@ -30,45 +30,45 @@ func (m *mockWriteCloser) Close() error {
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingRaw_ThenFileWithRawContentsIsNewd(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(len("content string"), nil)
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type: pipeline.UMLFormatRaw,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Nil(t, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenFailingRenderingRaw_ThenErrorIsReturned(t *testing.T) {
 	expectedErr := errors.New("some error")
 
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(0, expectedErr)
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type: pipeline.UMLFormatRaw,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, expectedErr, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingWithoutSpecifyingType_ThenSvgIsUsedByDefault(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Close").Return(nil)
@@ -80,18 +80,18 @@ func TestRenderer_GivenARenderer_WhenRenderingWithoutSpecifyingType_ThenSvgIsUse
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Nil(t, err)
 	assert.True(t, strings.HasPrefix(urlUsed, "/svg/"))
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreDeflatedAndBased64(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Close").Return(nil)
@@ -103,19 +103,19 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreDeflat
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "/svg/UDfApiyhISqhKIWkAShCImS4003__ohB1RC0", urlUsed)
+	assert.Equal(t, "/svg/~1UDfApiyhISqhKIWkAShCImS4003__ohB1RC0", urlUsed)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreSentToPlantUMLServerAndResponseCopiedIntoFile(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(len("content string"), nil)
@@ -126,38 +126,38 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenContentsAreSentTo
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Nil(t, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpIoError(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: "this isn't an url",
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.NotNil(t, err)
 	assert.IsType(t, &url.Error{}, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpResponseCodeError(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 
@@ -169,23 +169,23 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpRespon
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("status code %d while trying to New the graph through %s%s", 400, ts.URL, usedUrl), err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesIoError(t *testing.T) {
 	expectedErr := errors.New("error")
 
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(0, expectedErr)
@@ -195,22 +195,22 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesIoError(t 
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Equal(t, expectedErr, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
 
 func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesWriterClose(t *testing.T) {
 	expectedErr := errors.New("error")
 
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("String").Return("content string")
+	mockGraph := new(mockGraph)
+	mockGraph.On("String").Return("content string")
 
 	mockWriteCloser := new(mockWriteCloser)
 	mockWriteCloser.On("Write", []byte("content string")).Return(len("content string"), nil)
@@ -221,13 +221,13 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesWriterClos
 	}))
 	defer ts.Close()
 
-	renderer := pipeline.NewUMLActivityRenderer(pipeline.UMLOptions{
+	renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 		Type:    pipeline.UMLFormatSVG,
 		BaseURL: ts.URL,
 	})
-	err := renderer.Render(mockGraphDiagram, mockWriteCloser)
+	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.Equal(t, expectedErr, err)
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }

@@ -30,15 +30,15 @@ func NewConditionalStep[I, O any](statement conditionalStatement[I], t, f Step[I
 	}
 }
 
-func (c ConditionalStep[I, O]) Draw(graph GraphDiagram) {
+func (c ConditionalStep[I, O]) Draw(graph Graph) {
 	graph.AddDecision(
 		c.statement.Name(),
-		func(graph GraphDiagram) {
+		func(graph Graph) {
 			if c.trueCn != nil {
 				c.trueCn.Draw(graph)
 			}
 		},
-		func(graph GraphDiagram) {
+		func(graph Graph) {
 			if c.falseCn != nil {
 				c.falseCn.Draw(graph)
 			}

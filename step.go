@@ -18,7 +18,7 @@ type (
 
 	// Step is runnable element that yields a result or error from a given input
 	Step[I, O any] interface {
-		DrawableDiagram
+		DrawableGraph
 
 		// Run a step. Returns an error if this step fails to complete.
 		// An input I is provided as a mean of communication between different units of work
@@ -52,6 +52,6 @@ func (s UnitStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	return s.fn(ctx, in)
 }
 
-func (s UnitStep[I, O]) Draw(graph GraphDiagram) {
+func (s UnitStep[I, O]) Draw(graph Graph) {
 	graph.AddActivity(s.Name())
 }

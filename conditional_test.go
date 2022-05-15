@@ -117,8 +117,8 @@ func TestConditionalStep_GivenAGraphToDrawWithAnonymouseStatement_WhenDrawn_Then
 	statement := pipeline.NewAnonymousStatement(func(ctx context.Context, in any) bool {
 		return true
 	})
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On(
+	mockGraph := new(mockGraph)
+	mockGraph.On(
 		"AddDecision",
 		"",
 		mock.MatchedBy(func(obj any) bool {
@@ -131,14 +131,14 @@ func TestConditionalStep_GivenAGraphToDrawWithAnonymouseStatement_WhenDrawn_Then
 	trueStep := pipeline.NewUnitStep[any, any]("", nil)
 	step := pipeline.NewConditionalStep[any, any](statement, trueStep, falseStep)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
 
 func TestConditionalStep_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfStatement(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On(
+	mockGraph := new(mockGraph)
+	mockGraph.On(
 		"AddDecision",
 		"SomeFuncName",
 		mock.MatchedBy(func(obj any) bool {
@@ -151,16 +151,16 @@ func TestConditionalStep_GivenAGraphToDraw_WhenDrawn_ThenConditionGetsNameOfStat
 	trueStep := pipeline.NewUnitStep[any, any]("", nil)
 	step := pipeline.NewConditionalStep[any, any](pipeline.NewStatement[any]("SomeFuncName", nil), trueStep, falseStep)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
 
 func TestConditionalStep_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWithBothBranches(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("AddActivity", "truestep").Once()
-	mockGraphDiagram.On("AddActivity", "falsestep").Once()
-	mockGraphDiagram.On(
+	mockGraph := new(mockGraph)
+	mockGraph.On("AddActivity", "truestep").Once()
+	mockGraph.On("AddActivity", "falsestep").Once()
+	mockGraph.On(
 		"AddDecision",
 		mock.Anything,
 		mock.MatchedBy(func(obj any) bool {
@@ -169,8 +169,8 @@ func TestConditionalStep_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWithB
 			return true
 		}),
 	).Run(func(args mock.Arguments) {
-		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
-		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(1).(pipeline.GraphDrawer)(mockGraph)
+		args.Get(2).(pipeline.GraphDrawer)(mockGraph)
 	})
 	falseStep := pipeline.NewUnitStep[any, any]("falsestep", nil)
 	trueStep := pipeline.NewUnitStep[any, any]("truestep", nil)
@@ -178,15 +178,15 @@ func TestConditionalStep_GivenAGraphToDraw_WhenDrawn_ThenConditionIsAppliedWithB
 		return true
 	}), trueStep, falseStep)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
 
 func TestConditionalStep_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBranchIsNilValidated(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("AddActivity", "falsestep").Once()
-	mockGraphDiagram.On(
+	mockGraph := new(mockGraph)
+	mockGraph.On("AddActivity", "falsestep").Once()
+	mockGraph.On(
 		"AddDecision",
 		mock.Anything,
 		mock.MatchedBy(func(obj any) bool {
@@ -195,23 +195,23 @@ func TestConditionalStep_GivenAGraphToDraw_WhenDrawnAndTrueExecuted_ThenTrueBran
 			return true
 		}),
 	).Run(func(args mock.Arguments) {
-		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
-		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(1).(pipeline.GraphDrawer)(mockGraph)
+		args.Get(2).(pipeline.GraphDrawer)(mockGraph)
 	})
 	falseStep := pipeline.NewUnitStep[any, any]("falsestep", nil)
 	step := pipeline.NewConditionalStep[any, any](pipeline.NewAnonymousStatement(func(ctx context.Context, in any) bool {
 		return true
 	}), nil, falseStep)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
 
 func TestConditionalStep_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseBranchIsNilValidated(t *testing.T) {
-	mockGraphDiagram := new(mockGraphDiagram)
-	mockGraphDiagram.On("AddActivity", "truestep").Once()
-	mockGraphDiagram.On(
+	mockGraph := new(mockGraph)
+	mockGraph.On("AddActivity", "truestep").Once()
+	mockGraph.On(
 		"AddDecision",
 		mock.Anything,
 		mock.MatchedBy(func(obj any) bool {
@@ -220,15 +220,15 @@ func TestConditionalStep_GivenAGraphToDraw_WhenDrawnAndFalseExecuted_ThenFalseBr
 			return true
 		}),
 	).Run(func(args mock.Arguments) {
-		args.Get(1).(pipeline.DrawDiagram)(mockGraphDiagram)
-		args.Get(2).(pipeline.DrawDiagram)(mockGraphDiagram)
+		args.Get(1).(pipeline.GraphDrawer)(mockGraph)
+		args.Get(2).(pipeline.GraphDrawer)(mockGraph)
 	})
 	trueStep := pipeline.NewUnitStep[any, any]("truestep", nil)
 	step := pipeline.NewConditionalStep[any, any](pipeline.NewAnonymousStatement(func(ctx context.Context, in any) bool {
 		return true
 	}), trueStep, nil)
 
-	step.Draw(mockGraphDiagram)
+	step.Draw(mockGraph)
 
-	mockGraphDiagram.AssertExpectations(t)
+	mockGraph.AssertExpectations(t)
 }
