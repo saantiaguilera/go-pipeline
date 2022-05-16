@@ -1,22 +1,21 @@
 package pipeline
 
-// DrawDiagram alias for drawing in a graph
-type DrawDiagram func(graph GraphDiagram)
+type (
+	// DrawableGraph is a contract for drawing in graphs
+	DrawableGraph interface {
+		Draw(graph Graph)
+	}
 
-// DrawableDiagram is a stateful DrawDiagram. You can enrich a structure letting it be drawable
-type DrawableDiagram interface {
-	Draw(graph GraphDiagram)
-}
+	// Graph interface allowing to create a representation/drawing of a graph
+	Graph interface {
+		// AddConcurrency branching as many times as needed (each branch is a concurrent/fork 'node')
+		AddConcurrency(branches ...GraphDrawer)
+		// AddDecision from a given statement, allowing inner graphs for each branch of the decision
+		AddDecision(statement string, yes GraphDrawer, no GraphDrawer)
+		// New an action entry
+		AddActivity(label string)
+	}
 
-// GraphDiagram interface allowing to create a representation of a graph
-type GraphDiagram interface {
-	// AddConcurrency branching as many times as needed (each branch is a concurrent/fork 'node')
-	AddConcurrency(branches ...DrawDiagram)
-	// AddDecision from a given statement, allowing inner graphs for each branch of the decision
-	AddDecision(statement string, yes DrawDiagram, no DrawDiagram)
-	// Create an action entry
-	AddActivity(label string)
-
-	// String representation of the graph
-	String() string
-}
+	// GraphDrawer alias for Draw(Graph) functions
+	GraphDrawer = func(Graph)
+)
