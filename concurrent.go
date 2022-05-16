@@ -29,7 +29,7 @@ func (c ConcurrentStep[I, O]) Draw(graph Graph) {
 	if len(c.steps) > 0 {
 		var forkSteps []GraphDrawer
 		for _, s := range c.steps {
-			forkSteps = append(forkSteps, c.newStepGraphActivity(s))
+			forkSteps = append(forkSteps, s.Draw)
 		}
 
 		graph.AddConcurrency(forkSteps...)
@@ -57,10 +57,4 @@ func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 		}
 	}
 	return acc, nil
-}
-
-func (c ConcurrentStep[I, O]) newStepGraphActivity(drawable DrawableGraph) GraphDrawer {
-	return func(graph Graph) {
-		drawable.Draw(graph)
-	}
 }

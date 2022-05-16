@@ -13,7 +13,7 @@ type processVegetablesConcurrently struct {
 }
 
 func (p processVegetablesConcurrently) Draw(g pipeline.Graph) {
-	g.AddConcurrency(p.newStepGraphActivity(p.EggStep), p.newStepGraphActivity(p.CarrotStep))
+	g.AddConcurrency(p.EggStep.Draw, p.CarrotStep.Draw)
 }
 
 func (p processVegetablesConcurrently) Run(ctx context.Context, in MealMaterials) (Vegetables, error) {
@@ -54,10 +54,4 @@ func (p processVegetablesConcurrently) Run(ctx context.Context, in MealMaterials
 		Eggs:    *cutEggs,
 		Carrots: *cutCarrots,
 	}, nil
-}
-
-func (p processVegetablesConcurrently) newStepGraphActivity(drawable pipeline.DrawableGraph) pipeline.GraphDrawer {
-	return func(graph pipeline.Graph) {
-		drawable.Draw(graph)
-	}
 }
