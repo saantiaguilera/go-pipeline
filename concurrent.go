@@ -14,11 +14,10 @@ type (
 	reducer[O any] func(context.Context, O, O) (O, error)
 )
 
-// NewConcurrentStep creates a step that will run each of the units concurrently.
-// The step will wait for all of the units to finish before returning.
+// NewConcurrentStep creates a step that will run each of the inner steps concurrently.
+// The step will wait for all of the steps to finish before returning.
 //
-// If one of them fails, the step will wait until everyone finishes and after that return the error.
-// If more than one fails, then the error will be the one delivered by the last failure.
+// If one of them fails, the step will wait until everyone finishes and after that return the first encountered error.
 func NewConcurrentStep[I, O any](steps []Step[I, O], reduce reducer[O]) ConcurrentStep[I, O] {
 	return ConcurrentStep[I, O]{
 		steps:  steps,

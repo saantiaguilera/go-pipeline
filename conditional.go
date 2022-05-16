@@ -21,7 +21,8 @@ type (
 // NewConditionalStep creates a conditional step that will run a statement. If it holds true, then the "true" step will be run.
 // Else, the "false" step will be called.
 // If a statement is nil, then it will be considered to hold false (thus, the "false" step is called)
-// If one of the steps is nil and the statement is such, then nothing will happen.
+// If one of the steps is nil and the statement is such, then an error will be triggered (you probably want an OptionalStep if
+// one of the branches can be nil).
 func NewConditionalStep[I, O any](statement conditionalStatement[I], t, f Step[I, O]) ConditionalStep[I, O] {
 	return ConditionalStep[I, O]{
 		statement: statement,

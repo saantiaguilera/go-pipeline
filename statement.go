@@ -9,7 +9,7 @@ type (
 	}
 )
 
-// NewStatement creates statement represented by the given name, that will evaluate to the given evaluation
+// NewStatement creates a statement represented by the given name, that will evaluate to the given evaluation
 func NewStatement[T any](name string, eval func(context.Context, T) bool) Statement[T] {
 	return Statement[T]{
 		label: name,
@@ -17,7 +17,7 @@ func NewStatement[T any](name string, eval func(context.Context, T) bool) Statem
 	}
 }
 
-// NewAnonymousStatement createsn anonymous statement with no representation, that will evaluate to the given evaluation
+// NewAnonymousStatement creates an anonymous statement with no representation, that will evaluate to the given evaluation
 func NewAnonymousStatement[T any](eval func(context.Context, T) bool) Statement[T] {
 	return NewStatement("", eval)
 }
