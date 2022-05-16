@@ -9,32 +9,25 @@ type (
 		value error
 	}
 
-	mergedResult[T any] struct {
-		mut *sync.RWMutex
-		v   []T
+	// atomicSlice that allows storing of values of type T and appending them concurrently
+	atomicSlice[T any] struct {
+		sync.RWMutex
+		v []T
 	}
 )
 
-// newMergedResult creates a new value that can be safely mutated by different peers
-func newMergedResult[T any](cap int) *mergedResult[T] {
-	return &mergedResult[T]{
-		mut: new(sync.RWMutex),
-		v:   make([]T, 0, cap),
-	}
-}
-
 // Read slice T stored inside
-func (c *mergedResult[T]) Read() []T {
-	c.mut.RLock()
-	defer c.mut.RUnlock()
-	return c.v
+func (s *atomicSlice[T]) Get() []T {
+	s.RLock()
+	defer s.RUnlock()
+	return s.v
 }
 
 // Append safely inside T slice
-func (c *mergedResult[T]) Append(t T) {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-	c.v = append(c.v, t)
+func (s *atomicSlice[T]) Append(t T) {
+	s.Lock()
+	defer s.Unlock()
+	s.v = append(s.v, t)
 }
 
 // Get the error stored
@@ -44,7 +37,7 @@ func (e *atomicErr) Get() error {
 	return e.value
 }
 
-// Set the error stored
+// Set the error stored if there's not one already stored
 func (e *atomicErr) SetIfNil(err error) {
 	e.Lock()
 	defer e.Unlock()
@@ -53,15 +46,11 @@ func (e *atomicErr) SetIfNil(err error) {
 	}
 }
 
-// Spawn a number of workers asynchronously, waiting for all of them to finish.
+// Run a number of workers concurrently, waiting for all of them to finish.
 // After they're all done, if one of them failed the error is returned.
 // If more than one fails, the first error is returned
-func spawnAsync[R, O any](workers []R, run func(R) (O, error)) ([]O, error) {
-	var wg sync.WaitGroup
-	var errResult atomicErr
-	mergedRes := newMergedResult[O](len(workers))
-
-	spawn := func(i int) {
+func runConcurrently[R, O any](workers []R, run func(R) (O, error)) ([]O, error) {
+	runIndexed := func(wg *sync.WaitGroup, errResult *atomicErr, mergedRes *atomicSlice[O], i int) {
 		res, err := run(workers[i])
 
 		if err != nil {
@@ -72,15 +61,19 @@ func spawnAsync[R, O any](workers []R, run func(R) (O, error)) ([]O, error) {
 		wg.Done()
 	}
 
+	var wg sync.WaitGroup
+	var errResult atomicErr
+	var mergedRes atomicSlice[O]
+
 	wg.Add(len(workers))
 	if len(workers) > 1 {
 		for i := 0; i < len(workers); i++ {
-			go spawn(i)
+			go runIndexed(&wg, &errResult, &mergedRes, i)
 		}
 		wg.Wait()
 	} else { // avoid concurrency, no need to spawn and wait just use current
-		spawn(0)
+		runIndexed(&wg, &errResult, &mergedRes, 0)
 	}
 
-	return mergedRes.Read(), errResult.Get()
+	return mergedRes.Get(), errResult.Get()
 }

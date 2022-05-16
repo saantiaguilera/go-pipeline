@@ -41,7 +41,7 @@ func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 		return *new(O), errors.New("cannot run with empty concurrent steps")
 	}
 
-	mres, err := spawnAsync(c.steps, func(s Step[I, O]) (O, error) {
+	mres, err := runConcurrently(c.steps, func(s Step[I, O]) (O, error) {
 		return s.Run(ctx, in)
 	})
 
