@@ -25,7 +25,7 @@ You can import a version with a guaranteed stable API via http://gopkg.in/saanti
 
 ## Example
 
-_The following graph creation, execution and representation can be found under the [examples](examples/static/cook_example/) directory._
+_The following graph creation, execution and representation can be found under the [examples](examples/usages/cooking_a_recipe_pipeline) directory._
 
 Imagine we are making a dish, we need to:
 1. Put the eggs to boil and cut them.
@@ -36,65 +36,8 @@ Imagine we are making a dish, we need to:
 6. Put the meat in the oven.
 7. Serve when the meat and the salad are done.
 
-This workflow is represented as such
+This workflow is represented as such (with this same API, no need to draw it on your own)
 
-![](examples/static/cook_example/template.svg)
+![](examples/usages/cooking_a_recipe_pipeline/template.svg)
 
-This workflow can be built and executed as such.
-```go
-// Complete step. Its sequential because we can't serve
-// before all the others are done. 
-graph := pipeline.NewSequentialGroup(
-    // Concurrent step, given we can do the salad / meat separately.
-    pipeline.NewConcurrentGroup(
-        // This will be the salad flow.
-        pipeline.NewSequentialGroup( 
-            // Eggs and carrots can be operated concurrently too.
-            pipeline.NewConcurrentGroup(
-                // Sequential step for the eggs flow.
-                pipeline.NewSequentialStep(
-                    NewBoilEggsStep(),
-                    NewCutEggsStep(),
-                ),
-                // Another sequential step for the carrots (eggs and carrots will be concurrent though!)
-                pipeline.NewSequentialStep(
-                    NewWashCarrotsStep(),
-                    NewCutCarrotsStep(),
-                ),
-            ),
-            // This is sequential. When carrots and eggs are done, this will run.
-            pipeline.NewSequentialStep(
-                NewMakeSaladStep(),
-            ),
-        ),
-        // Another sequential step for the meat (concurrently with salad)
-        pipeline.NewSequentialGroup(
-            // If we end up cutting the meat, we can optimize it with the oven operation
-            pipeline.NewConcurrentGroup(
-                // Conditional step, the meat might be too big
-                pipeline.NewConditionalStep(
-                    pipeline.NewStatement("is_meat_too_big", IsMeatTooBigForTheOven),
-                    // True:
-                    NewCutMeatStep(),
-                    // False:
-                    nil,
-                ),
-                pipeline.NewSequentialStep(
-                    NewTurnOvenOnStep(),
-                ),
-            ),
-            pipeline.NewSequentialStep(
-                NewPutMeatInOvenStep(),
-            ),
-        ),
-    ),
-    // When everything is done. Serve.
-    pipeline.NewSequentialStep(
-        NewServeStep(),
-    ),
-)
-
-pipe := pipeline.NewPipeline(NewYourExecutor())
-pipe.Run(graph, NewYourInputContext())
-```
-_Note that, for showing purposes, this is all in a single function. You can easily decouple this into more atomic ones that take care of specific responsibilities (eg. making the salad)._
+To build this, we simply need to create a step / unit of work for each given task and then "link" them however we want them to be traversed later in the graph. The graph creation can be seen [here](https://github.com/saantiaguilera/go-pipeline/blob/master/examples/usages/cooking_a_recipe_pipeline/main.go#L18)
