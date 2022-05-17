@@ -55,12 +55,12 @@ func Graph() pipeline.Step[MealMaterials, Dish] {
 	processMeat := pipeline.NewConcurrentStep(
 		[]pipeline.Step[MealMaterials, CookingTools]{
 			pipeline.NewSequentialStep[MealMaterials, Meat, CookingTools](
-				pipeline.NewUnitStep("get_meat", func(_ context.Context, in MealMaterials) (Meat, error) {
+				newNonDrawableStep("get_meat", func(_ context.Context, in MealMaterials) (Meat, error) {
 					return in.Meat, nil
 				}),
 				pipeline.NewSequentialStep[Meat, Meat, CookingTools](
 					meatPreparations,
-					pipeline.NewUnitStep("put_meat", func(_ context.Context, in Meat) (CookingTools, error) {
+					newNonDrawableStep("put_meat", func(_ context.Context, in Meat) (CookingTools, error) {
 						return CookingTools{
 							Meat: in,
 						}, nil
@@ -68,12 +68,12 @@ func Graph() pipeline.Step[MealMaterials, Dish] {
 				),
 			),
 			pipeline.NewSequentialStep[MealMaterials, Oven, CookingTools](
-				pipeline.NewUnitStep("get_oven", func(_ context.Context, in MealMaterials) (Oven, error) {
+				newNonDrawableStep("get_oven", func(_ context.Context, in MealMaterials) (Oven, error) {
 					return in.Oven, nil
 				}),
 				pipeline.NewSequentialStep[Oven, Oven, CookingTools](
 					newTurnOnOvenStep(),
-					pipeline.NewUnitStep("put_oven", func(_ context.Context, in Oven) (CookingTools, error) {
+					newNonDrawableStep("put_oven", func(_ context.Context, in Oven) (CookingTools, error) {
 						return CookingTools{
 							Oven: in,
 						}, nil

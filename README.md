@@ -16,7 +16,7 @@ Pipeline is a GPL3-licensed Go package for building, executing and representing 
 
 - API documentation and examples are available via [godoc](https://godoc.org/github.com/saantiaguilera/go-pipeline).
 - The [examples](./examples) directory contains more elaborate example applications.
-- No specific mocks are needed for testing, every element is completely decoupled and atomic. You can New your own ones however you deem fit.
+- No specific mocks are needed for testing, every element is completely decoupled and atomic. You can create your own ones however you deem fit.
 
 ## API stability
 
