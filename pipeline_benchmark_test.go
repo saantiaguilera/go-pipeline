@@ -86,8 +86,8 @@ func Test_GraphRendering(t *testing.T) {
 // goos: darwin
 // goarch: amd64
 // cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
-// BenchmarkPipeline_Run-8   	   45620	     23057 ns/op	    5476 B/op	      80 allocs/op
-// Given this graph magnitude, the cost of traversing it is negligible in comparison to a step operation.
+// BenchmarkPipeline_Run-8   	   45620	     25057 ns/op	    5476 B/op	      56 allocs/op
+// Given this graph magnitude, the cost of traversing it is negligible (~0.025ms) in comparison to a step operation.
 func BenchmarkPipeline_Run(b *testing.B) {
 	var err error
 	graph := NewImmenseGraph()
