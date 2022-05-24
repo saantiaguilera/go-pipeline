@@ -6,11 +6,14 @@ import (
 )
 
 type (
+	// ConcurrentStep wraps multiple steps of a given Input/Output and runs them concurrently, later
+	// reducing them into a single output of the same type.
 	ConcurrentStep[I, O any] struct {
 		steps  []Step[I, O]
 		reduce reducer[O]
 	}
 
+	// reducer reduces two values of the same type in a single one
 	reducer[O any] func(context.Context, O, O) (O, error)
 
 	// concurrentResult is a discriminated union of a result or error.
@@ -46,13 +49,19 @@ func (c ConcurrentStep[I, O]) Draw(graph Graph) {
 	}
 }
 
+// Run the step concurrently, if one of them fails an error will be returned.
+//
+// This step waits for all of the concurrent ones to finish.
+//
+// Note that this step may use goroutines and (as all other steps) doesn't handle panics, 
+// hence it is advise to handle them on your own if you can't guarantee a panic-safe environment.
 func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	if len(c.steps) == 0 {
 		return *new(O), errors.New("cannot run with empty concurrent steps")
 	}
 
 	mch := c.runConcurrently(ctx, c.steps, in)
-	
+
 	var acc O
 	var err error
 	for i := 0; i < len(c.steps); i++ {

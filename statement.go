@@ -3,6 +3,7 @@ package pipeline
 import "context"
 
 type (
+	// Statement is a structure that can be evaluated to yield a boolean result
 	Statement[T any] struct {
 		label string
 		fn    func(context.Context, T) bool

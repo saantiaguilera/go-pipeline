@@ -9,6 +9,8 @@ import (
 )
 
 type (
+	// TracedStep decorates a step with tracing capabilities, logging the duration of the
+	// step execution, time of execution and its result.
 	TracedStep[I, O any] struct {
 		name   string
 		step   Step[I, O]

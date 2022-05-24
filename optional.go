@@ -43,6 +43,7 @@ func (c OptionalStep[I, O]) Draw(graph Graph) {
 	)
 }
 
+// Run a step or skip it depending on the result of a statement evaluation
 func (c OptionalStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	if c.statement.Evaluate(ctx, in) {
 		return c.step.Run(ctx, in)
