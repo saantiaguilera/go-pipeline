@@ -52,6 +52,7 @@ func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	}
 
 	mch := c.runConcurrently(ctx, c.steps, in)
+	
 	var acc O
 	var err error
 	for i := 0; i < len(c.steps); i++ {
