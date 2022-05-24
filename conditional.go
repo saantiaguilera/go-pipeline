@@ -6,6 +6,11 @@ import (
 )
 
 type (
+	// ConditionalStep allows a step to branch into two inner steps depending on the
+	// result of a statement's evaluation.
+	//
+	// This conditional allows us to branch into two "different pipelines" depending on the
+	// result
 	ConditionalStep[I, O any] struct {
 		statement conditionalStatement[I]
 		trueCn    Step[I, O]
@@ -47,6 +52,7 @@ func (c ConditionalStep[I, O]) Draw(graph Graph) {
 	)
 }
 
+// Run one of the provided steps depending on the statement's evaluation.
 func (c ConditionalStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	ok := c.statement.Evaluate(ctx, in)
 	if ok {

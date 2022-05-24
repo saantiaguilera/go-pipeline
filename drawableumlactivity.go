@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// UMLGraph represents a graph that can render itself into UML
 type UMLGraph struct {
 	sb strings.Builder
 }

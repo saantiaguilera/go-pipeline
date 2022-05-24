@@ -21,23 +21,4 @@ Pipeline is a GPL3-licensed Go package for building, executing and representing 
 ## API stability
 
 Pipeline follows semantic versioning and provides API stability via the gopkg.in service.
-You can import a version with a guaranteed stable API via http://gopkg.in/saantiaguilera/go-pipeline.v0
-
-## Example
-
-_The following graph creation, execution and representation can be found under the [examples](examples/usages/cooking_a_recipe_pipeline) directory._
-
-Imagine we are making a dish, we need to:
-1. Put the eggs to boil and cut them.
-2. Wash the carrots and cut them.
-3. Make a salad with the cut eggs and carrots.
-4. Start the oven. 
-5. If the meat is too big, cut it. 
-6. Put the meat in the oven.
-7. Serve when the meat and the salad are done.
-
-This workflow is represented as such (with this same API, no need to draw it on your own)
-
-![](examples/usages/cooking_a_recipe_pipeline/template.svg)
-
-To build this, we simply need to create a step / unit of work for each given task and then "link" them however we want them to be traversed later in the graph. The graph creation can be seen [here](https://github.com/saantiaguilera/go-pipeline/blob/master/examples/usages/cooking_a_recipe_pipeline/main.go#L18)
+You can import a version with a guaranteed stable API via http://gopkg.in/saantiaguilera/go-pipeline.v1

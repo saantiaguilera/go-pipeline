@@ -6,11 +6,14 @@ import (
 )
 
 type (
+	// ConcurrentStep wraps multiple steps of a given Input/Output and runs them concurrently, later
+	// reducing them into a single output of the same type.
 	ConcurrentStep[I, O any] struct {
 		steps  []Step[I, O]
 		reduce reducer[O]
 	}
 
+	// reducer reduces two values of the same type in a single one
 	reducer[O any] func(context.Context, O, O) (O, error)
 
 	// concurrentResult is a discriminated union of a result or error.
@@ -46,24 +49,39 @@ func (c ConcurrentStep[I, O]) Draw(graph Graph) {
 	}
 }
 
+// Run the step concurrently, if one of them fails an error will be returned.
+//
+// This step waits for all of the concurrent ones to finish.
+//
+// Note that this step may use goroutines and (as all other steps) doesn't handle panics,
+// hence it is advise to handle them on your own if you can't guarantee a panic-safe environment.
 func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	if len(c.steps) == 0 {
 		return *new(O), errors.New("cannot run with empty concurrent steps")
 	}
 
-	mres, err := c.runConcurrently(ctx, c.steps, in)
-	if err != nil {
-		return *new(O), err
-	}
+	mch := c.runConcurrently(ctx, c.steps, in)
 
-	acc := mres[0]
-	for i := 1; i < len(mres); i++ {
-		acc, err = c.reduce(ctx, acc, mres[i])
+	var acc O
+	var err error
+	for i := 0; i < len(c.steps); i++ {
+		v := <-mch
 		if err != nil {
-			return *new(O), err
+			continue // we want all steps to finish, so simply cut here and wait for next step to end.
+		}
+
+		if v.Err != nil {
+			err = v.Err // step errored.
+			continue
+		}
+
+		if i == 0 {
+			acc = v.Ret
+		} else {
+			acc, err = c.reduce(ctx, acc, v.Ret)
 		}
 	}
-	return acc, nil
+	return acc, err
 }
 
 // Run a number of workers concurrently, waiting for all of them to finish.
@@ -77,7 +95,7 @@ func (c ConcurrentStep[I, O]) runConcurrently(
 	ctx context.Context,
 	workers []Step[I, O],
 	in I,
-) ([]O, error) {
+) <-chan concurrentResult[O] {
 
 	ch := make(chan concurrentResult[O], len(workers))
 	if len(workers) > 1 {
@@ -87,17 +105,7 @@ func (c ConcurrentStep[I, O]) runConcurrently(
 	} else { // avoid concurrency, no need to spawn and wait just use current
 		c.runStep(ctx, in, workers[0], ch)
 	}
-
-	ret := make([]O, len(workers))
-	var err error
-	for i := 0; i < len(workers); i++ {
-		v := <-ch
-		if v.Err != nil && err == nil {
-			err = v.Err // don't break here. we want to make sure all steps finish before returning.
-		}
-		ret[i] = v.Ret
-	}
-	return ret, err
+	return ch
 }
 
 func (c ConcurrentStep[I, O]) runStep(
