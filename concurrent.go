@@ -53,7 +53,7 @@ func (c ConcurrentStep[I, O]) Draw(graph Graph) {
 //
 // This step waits for all of the concurrent ones to finish.
 //
-// Note that this step may use goroutines and (as all other steps) doesn't handle panics, 
+// Note that this step may use goroutines and (as all other steps) doesn't handle panics,
 // hence it is advise to handle them on your own if you can't guarantee a panic-safe environment.
 func (c ConcurrentStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 	if len(c.steps) == 0 {

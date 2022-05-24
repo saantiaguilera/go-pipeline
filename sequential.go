@@ -8,7 +8,7 @@ type (
 	// A sequential step allows partial mutation between the two steps.
 	// Eg. The first step can have an input of type 'A' and an output of type 'B'
 	//     The second step can have an input of type 'B' and an output of type 'C'
-	//     Hence, the sequential step is a step that goes from input 'A', to output 'C' 
+	//     Hence, the sequential step is a step that goes from input 'A', to output 'C'
 	//        (mutating patially into 'B' in the middle)
 	//
 	// If one of the steps fails, the step is halted and the error is returned

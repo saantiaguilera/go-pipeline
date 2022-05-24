@@ -11,7 +11,7 @@
 // The most simple and atomic step. This step lets us run a single unit of work
 // ```
 // var step pipeline.Step[InputData, OutputData] = pipeline.NewUnitStep[InputData, OutputData](
-//     "name_of_the_step", 
+//     "name_of_the_step",
 //     func(ctx context.Context, in InputData) (OutputData, error) {
 //         // do stuff with the InputData, returning Outputdata or error
 //     },
