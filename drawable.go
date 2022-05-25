@@ -12,7 +12,7 @@ type (
 		AddConcurrency(branches ...GraphDrawer)
 		// AddDecision from a given statement, allowing inner graphs for each branch of the decision
 		AddDecision(statement string, yes GraphDrawer, no GraphDrawer)
-		// New an action entry
+		// Create an action entry
 		AddActivity(label string)
 	}
 

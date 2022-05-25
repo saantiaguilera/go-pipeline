@@ -1,6 +1,7 @@
 package main
 
-// This package contains all domain entities for this sample. Consider it a `domain` package of your project
+// This package contains all domain entities for this sample. 
+// Consider it a `domain`/`entities`/`whatever you call it` package of your project
 type (
 	MealMaterials struct {
 		Eggs    []Egg

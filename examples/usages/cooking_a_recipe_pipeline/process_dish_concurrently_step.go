@@ -7,6 +7,20 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
+// processDishConcurrently is a custom step that decorates 2 inner steps and runs them concurrently
+//
+// We use this custom step instead of a ConcurrentStep to showcase how can we achieve custom behaviors
+// on our own
+// In this case, we get the benefit of having different input/ouptut between each step, hence creating
+// a more decoupled environment.
+//   This processDishConcurrently step is a pipeline.Step[MealMaterials, DishContent]
+//     Inner SaladStep is a pipeline.Step[MealMaterials, Salad]
+//     Inner MeatStep is a pipeline.Step[MealMaterials, CookedMeat]
+//
+// If we wanted to achieve this with a ConcurrentStep, we would need to wrap both inner steps with one
+// that changes their output into a DishContent since they don't return that type, and later reduce
+// both results into a single one.
+// This approach with a ConcurrentStep can be seen inside the `main.go` for the 'process meat' pipeline
 type processDishConcurrently struct {
 	SaladStep pipeline.Step[MealMaterials, Salad]
 	MeatStep  pipeline.Step[MealMaterials, CookedMeat]

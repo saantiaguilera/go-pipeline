@@ -85,7 +85,7 @@ func (u *UMLRenderer) renderUml(content []byte, output io.WriteCloser) error {
 		return err
 	}
 	if response.StatusCode != 200 {
-		return fmt.Errorf("status code %d while trying to New the graph through %s", response.StatusCode, url)
+		return fmt.Errorf("status code %d while trying to create the graph through %s", response.StatusCode, url)
 	}
 
 	_, err = io.Copy(output, response.Body)

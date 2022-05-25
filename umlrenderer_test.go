@@ -176,7 +176,7 @@ func TestRenderer_GivenARenderer_WhenRenderingOtherThanRaw_ThenHandlesHttpRespon
 	err := renderer.Render(mockGraph, mockWriteCloser)
 
 	assert.NotNil(t, err)
-	assert.Equal(t, fmt.Errorf("status code %d while trying to New the graph through %s%s", 400, ts.URL, usedUrl), err)
+	assert.Equal(t, fmt.Errorf("status code %d while trying to create the graph through %s%s", 400, ts.URL, usedUrl), err)
 	mockGraph.AssertExpectations(t)
 	mockWriteCloser.AssertExpectations(t)
 }
