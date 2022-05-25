@@ -1,6 +1,6 @@
 ## Examples
 
-Inside here we can find to type of examples
+Inside here we can find two type of examples
 
 ### Custom steps
 
