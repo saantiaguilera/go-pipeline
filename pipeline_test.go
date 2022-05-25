@@ -67,7 +67,7 @@ func Test_GraphRendering(t *testing.T) {
 		renderer := pipeline.NewUMLRenderer(pipeline.UMLOptions{
 			Type: pipeline.UMLFormatSVG,
 		})
-		file, _ := os.Create("pipeline_benchmark_test.svg")
+		file, _ := os.Create("pipeline_test.svg")
 
 		NewImmenseGraph().Draw(diagram)
 

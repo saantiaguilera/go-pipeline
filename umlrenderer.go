@@ -36,7 +36,7 @@ type (
 		BaseURL string
 	}
 
-	// UMLRenderer allows us to configure how we want the UML to render (eg. output format)
+	// UMLRenderer allows us to render graphs into an UML diagram output
 	UMLRenderer struct {
 		Options UMLOptions
 	}
