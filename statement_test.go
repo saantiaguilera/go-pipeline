@@ -2,12 +2,32 @@ package pipeline_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/saantiaguilera/go-pipeline"
 )
+
+// This examples shows a simple statement that lets
+// us evaluate it with a given input to yield 
+// a boolean result
+//
+// This example uses dummy data to showcase as simple as possible this scenario.
+func ExampleStatement() {
+	stmt := pipeline.NewStatement(
+		"is_number_odd",
+		func(ctx context.Context, i int) bool {
+			return i%2 != 0
+		},
+	)
+
+	out := stmt.Evaluate(context.Background(), 25)
+
+	fmt.Println(out)
+	// output: true
+}
 
 func TestStatement_GivenAnAnonymousStatement_WhenNamed_ThenReturnsEmpty(t *testing.T) {
 	statement := pipeline.NewAnonymousStatement(func(ctx context.Context, in int) bool {

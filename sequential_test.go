@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,42 @@ import (
 
 	"github.com/saantiaguilera/go-pipeline"
 )
+
+// The following example shows a sequence between two steps were each of them is
+// run sequentially with the output of the previous one as input
+//
+// This example uses dummy data to showcase as simple as possible this scenario.
+//
+// Note: we use several UnitStep to showcase as it allows us to
+// easily run dummy code, but it could use any type of step you want
+// as long as it implements pipeline.Step[I, O]
+func ExampleSequentialStep() {
+	type DriverID int
+	type Driver any
+	type NotificationReceipt any
+	gd := pipeline.NewUnitStep(
+		"get_driver",
+		func(ctx context.Context, id DriverID) (Driver, error) {
+			// do something with input
+			return Driver(id), nil
+		},
+	)
+	sn := pipeline.NewUnitStep(
+		"send_notification",
+		func(ctx context.Context, d Driver) (NotificationReceipt, error) {
+			// do something with input
+			return NotificationReceipt(25), nil
+		},
+	)
+
+	pipe := pipeline.NewSequentialStep[DriverID, Driver, NotificationReceipt](gd, sn)
+
+	out, err := pipe.Run(context.Background(), DriverID(1234))
+
+	fmt.Println(out, err)
+	// output:
+	// 25 <nil>
+}
 
 func TestSequentialStep_GivenTwoSteps_WhenRun_ThenBehavesSequentially(t *testing.T) {
 	start := new(mockStep[int, string])

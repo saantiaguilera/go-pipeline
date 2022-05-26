@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync/atomic"
 	"testing"
 
@@ -18,6 +19,100 @@ type (
 
 func (c *count32) increment() int32 {
 	return atomic.AddInt32((*int32)(c), 1)
+}
+
+// This example shows a same step that is run many times concurrently.
+//
+// The example uses dummy data to better showcase the immutability of the graph and step
+// since we can produce different values and later reduce them without needing to
+// take into account goroutines, mutexes, waitgroups to synchronize data at the end
+//
+// Note: we use several UnitStep to showcase as it allows us to
+// easily run dummy code, but it could use any type of step you want
+// as long as it implements pipeline.Step[I, O]
+func ExampleConcurrentStep_same() {
+	step := pipeline.NewUnitStep(
+		"half_increase",
+		func(ctx context.Context, i int) (float32, error) {
+			return float32(i) * 1.5, nil
+		},
+	)
+	reduce := func(ctx context.Context, a, b float32) (float32, error) {
+		return a + b, nil
+	}
+	ctx := context.Background()
+	in := 1
+
+	pipe := pipeline.NewConcurrentStep(
+		[]pipeline.Step[int, float32]{
+			step, step, step, step, step, step,
+			step, step, step, step, step, step,
+		},
+		reduce,
+	)
+
+	out, err := pipe.Run(ctx, in)
+
+	fmt.Println(out, err)
+	// output:
+	// 18 <nil>
+}
+
+// The example uses dummy data and simulates a specific (random) scenario
+// were we need to get a resource that is created from two different data sources (and we can
+// obtain them concurrently to improve the performance) and finally reduce it to a single
+// output
+//
+// Note: we use several UnitStep to showcase as it allows us to
+// easily run dummy code, but it could use any type of step you want
+// as long as it implements pipeline.Step[I, O]
+func ExampleConcurrentStep_different() {
+	type DriverID int
+	type Driver struct {
+		Person  any
+		Vehicle any
+	}
+
+	gp := pipeline.NewUnitStep(
+		"get_person",
+		func(ctx context.Context, i DriverID) (Driver, error) {
+			// do something with input
+			return Driver{
+				Person: true,
+			}, nil
+		},
+	)
+	gv := pipeline.NewUnitStep(
+		"get_vehicle",
+		func(ctx context.Context, i DriverID) (Driver, error) {
+			// do something with input
+			return Driver{
+				Vehicle: true,
+			}, nil
+		},
+	)
+	reduce := func(ctx context.Context, a, b Driver) (Driver, error) {
+		if b.Person != nil {
+			a.Person = b.Person
+		}
+		if b.Vehicle != nil {
+			a.Vehicle = b.Vehicle
+		}
+		return a, nil
+	}
+	ctx := context.Background()
+	in := DriverID(1)
+
+	pipe := pipeline.NewConcurrentStep(
+		[]pipeline.Step[DriverID, Driver]{gp, gv},
+		reduce,
+	)
+
+	out, err := pipe.Run(ctx, in)
+
+	fmt.Println(out, err)
+	// output:
+	// {true true} <nil>
 }
 
 func TestConcurrentStep_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
