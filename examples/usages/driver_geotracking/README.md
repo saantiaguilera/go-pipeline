@@ -22,6 +22,7 @@ The approach used for this example was a static immutable graph, meaning:
 - The graph doesn't contain any state. The state is passed at execution time as input
 
 All steps in this example are contained inside the `main.go`, besides the custom step at `customsteps.go`. 
+
 Note how in this sample none of the logic behavior, such as repositories, is coupled to the pipeline package
 allowing extreme flexibility when integrating any code to it, since the code doesn't even realize its running
 inside a pipeline.
