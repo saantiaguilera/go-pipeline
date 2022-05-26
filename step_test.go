@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -55,6 +56,34 @@ func NewStep[I, O any](data int, arr **[]int) pipeline.Step[I, O] {
 		time.Sleep(time.Duration(100/(data+1)) * time.Millisecond) // Force a trap / yield
 	}).Return(*new(O), nil).Once()
 	return step
+}
+
+// The following example shows a simple unit step that runs a unit of work
+// with a given input and yields a result of a different type or an error
+// depending on the execution
+//
+// This example uses dummy data to showcase as simple as possible this scenario.
+//
+// Note: we use several UnitStep to showcase as it allows us to
+// easily run dummy code, but it could use any type of step you want
+// as long as it implements pipeline.Step[I, O]
+func ExampleUnitStep() {
+	type (
+		InData  any
+		OutData any
+	)
+	step := pipeline.NewUnitStep(
+		"do_something",
+		func(ctx context.Context, in InData) (OutData, error) {
+			// do something with input
+			return OutData(in), nil
+		},
+	)
+
+	out, err := step.Run(context.Background(), InData("example"))
+
+	fmt.Println(out, err)
+	// output: example <nil>
 }
 
 func TestUnitStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.T) {

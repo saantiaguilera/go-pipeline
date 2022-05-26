@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,50 @@ import (
 
 	"github.com/saantiaguilera/go-pipeline"
 )
+
+// The following example evaluates a dummy condition and depending on the
+// result it branches to one step or another.
+//
+// This example uses dummy data to showcase as simple as possible this scenario.
+//
+// Note: we use several UnitStep to showcase as it allows us to
+// easily run dummy code, but it could use any type of step you want
+// as long as it implements pipeline.Step[I, O]
+func ExampleConditionalStep() {
+	type User any
+	type Data any
+	stmt := pipeline.NewStatement(
+		"check_something",
+		func(ctx context.Context, in User) bool {
+			// check and return were to branch
+			return true
+		},
+	)
+	tf := pipeline.NewUnitStep(
+		"true_case",
+		func(ctx context.Context, in User) (Data, error) {
+			// do something with input
+			return Data(true), nil
+		},
+	)
+	ff := pipeline.NewUnitStep(
+		"false_step",
+		func(ctx context.Context, u User) (Data, error) {
+			// do something with input
+			return Data(false), nil
+		},
+	)
+	ctx := context.Background()
+	in := User(nil)
+
+	pipe := pipeline.NewConditionalStep[User, Data](stmt, tf, ff)
+
+	out, err := pipe.Run(ctx, in)
+
+	fmt.Println(out, err)
+	// output:
+	// true <nil>
+}
 
 func TestConditionalStep_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	run := false
