@@ -114,7 +114,7 @@ func BenchmarkPipeline_Run(b *testing.B) {
 // and finally, print if it's a 3 digit number or not
 //
 // For showing purposes, all steps and pipeline building are in the same function and use
-// basic parameter types and logics (we don't showcase a real life usecase with 
+// basic parameter types and logics (we don't showcase a real life usecase with
 // infrastructure / http calls / etc), just note that it's quite similar.
 //
 // In the examples directory you can find more elaborate samples on how to do this better.
@@ -159,7 +159,7 @@ func Example_basic() {
 
 	graph.Run(context.Background(), 30)
 	graph.Run(context.Background(), 20)
-	// output: 
+	// output:
 	// true
 	// false
 }
@@ -171,7 +171,7 @@ func Example_basic() {
 // and finally, print if it's a 3 digit number or not
 //
 // For showing purposes, all steps and pipeline building are in the same function and use
-// basic parameter types and logics (we don't showcase a real life usecase with 
+// basic parameter types and logics (we don't showcase a real life usecase with
 // infrastructure / http calls / etc), just note that it's quite similar.
 //
 // In the examples directory you can find more elaborate samples on how to do this better.
@@ -232,7 +232,7 @@ func Example_complex() {
 
 	graph.Run(context.Background(), 2)
 	graph.Run(context.Background(), 1)
-	// output: 
+	// output:
 	// true
 	// false
 }

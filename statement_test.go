@@ -11,7 +11,7 @@ import (
 )
 
 // This examples shows a simple statement that lets
-// us evaluate it with a given input to yield 
+// us evaluate it with a given input to yield
 // a boolean result
 //
 // This example uses dummy data to showcase as simple as possible this scenario.

@@ -12,7 +12,7 @@ import (
 	"github.com/saantiaguilera/go-pipeline"
 )
 
-// The following example evaluates a dummy condition and depending on the 
+// The following example evaluates a dummy condition and depending on the
 // result it branches to one step or another.
 //
 // This example uses dummy data to showcase as simple as possible this scenario.
