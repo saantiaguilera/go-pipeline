@@ -48,6 +48,35 @@ func ExampleSequentialStep() {
 	// 25 <nil>
 }
 
+// Benchmark for traversing a sequential step. This is simply used so that future changes can
+// easily reflect how they affected the performance
+//
+// goos: darwin
+// goarch: amd64
+// pkg: github.com/saantiaguilera/go-pipeline
+// cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
+// BenchmarkSequentialStep-8   	 7136264	       172.5 ns/op	       0 B/op	       0 allocs/op
+func BenchmarkSequentialStep(b *testing.B) {
+	var err error
+	s := pipeline.NewSequentialStep[any, any, any](
+		noopStep[any]{},
+		noopStep[any]{},
+	)
+	ctx := context.Background()
+	in := 0
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StartTimer()
+		_, err = s.Run(ctx, in)
+		b.StopTimer()
+
+		if err != nil {
+			b.Fail()
+		}
+	}
+}
+
 func TestSequentialStep_GivenTwoSteps_WhenRun_ThenBehavesSequentially(t *testing.T) {
 	start := new(mockStep[int, string])
 	start.On("Run", mock.Anything, 1).Return("test", nil)

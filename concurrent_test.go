@@ -115,6 +115,37 @@ func ExampleConcurrentStep_different() {
 	// {true true} <nil>
 }
 
+// Benchmark for traversing a concurrent step. This is simply used so that future changes can
+// easily reflect how they affected the performance
+//
+// goos: darwin
+// goarch: amd64
+// pkg: github.com/saantiaguilera/go-pipeline
+// cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
+// BenchmarkConcurrentStep-8   	  559716	      1990 ns/op	     384 B/op	       4 allocs/op
+func BenchmarkConcurrentStep(b *testing.B) {
+	var err error
+	s := pipeline.NewConcurrentStep(
+		[]pipeline.Step[any, any]{noopStep[any]{}, noopStep[any]{}},
+		func(ctx context.Context, a1, a2 any) (any, error) {
+			return a1, nil
+		},
+	)
+	ctx := context.Background()
+	in := 0
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StartTimer()
+		_, err = s.Run(ctx, in)
+		b.StopTimer()
+
+		if err != nil {
+			b.Fail()
+		}
+	}
+}
+
 func TestConcurrentStep_GivenStepsWithoutErrors_WhenRun_ThenAllStepsAreRunConcurrently(t *testing.T) {
 	arr := &[]int{}
 	var expectedArr []int
