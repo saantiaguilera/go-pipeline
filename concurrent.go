@@ -29,7 +29,7 @@ type (
 // If one of them fails, the step will wait until everyone finishes and after that return the first encountered error.
 //
 // This step (as all the others) doesn't handle panics. Be careful since this step creates goroutines and the panics
-// not necessarilly will be signaled in the same goroutine as the origin call.
+// not necessarily will be signaled in the same goroutine as the origin call.
 // Make sure to handle panics on your own if your code is unsafe (through decorations / deferrals in steps / etc)
 func NewConcurrentStep[I, O any](steps []Step[I, O], reduce reducer[O]) ConcurrentStep[I, O] {
 	return ConcurrentStep[I, O]{

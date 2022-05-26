@@ -7,7 +7,7 @@ type (
 	// muting it.
 	//
 	// This is used in mutating steps that simply change the input/output between two steps so they
-	// don't couple to another bussiness unit, hence we don't want them visualized in the graph
+	// don't couple to another business unit, hence we don't want them visualized in the graph
 	// as they don't provide any value
 	nonDrawableStep[I, O any] struct {
 		pipeline.UnitStep[I, O]

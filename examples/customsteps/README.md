@@ -1,4 +1,4 @@
-The pipeline API provides the barebones and founding steps that allows us to create workflows. However, in more complex scenarios it's useful to create custom steps that satisfy specific bussiness needs, hence this package provides a quick overview through examples on how to create them. 
+The pipeline API provides the barebones and founding steps that allows us to create workflows. However, in more complex scenarios it's useful to create custom steps that satisfy specific business needs, hence this package provides a quick overview through examples on how to create them. 
 
 The API should be flexible enough to create whatever you like or need, as long as you are compliant with the Step contract which is highly flexible.
 
