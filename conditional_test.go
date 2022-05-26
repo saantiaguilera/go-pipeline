@@ -56,6 +56,38 @@ func ExampleConditionalStep() {
 	// true <nil>
 }
 
+// Benchmark for traversing a conditional step. This is simply used so that future changes can
+// easily reflect how they affected the performance
+//
+// goos: darwin
+// goarch: amd64
+// pkg: github.com/saantiaguilera/go-pipeline
+// cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
+// BenchmarkConditionalStep-8   	 9185359	       150.2 ns/op	       0 B/op	       0 allocs/op
+func BenchmarkConditionalStep(b *testing.B) {
+	var err error
+	s := pipeline.NewConditionalStep[any, any](
+		pipeline.NewAnonymousStatement(func(ctx context.Context, a any) bool {
+			return a != nil
+		}),
+		noopStep[any]{},
+		noopStep[any]{},
+	)
+	ctx := context.Background()
+	in := 0
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StartTimer()
+		_, err = s.Run(ctx, in)
+		b.StopTimer()
+
+		if err != nil {
+			b.Fail()
+		}
+	}
+}
+
 func TestConditionalStep_GivenNilStatement_WhenRun_FalseIsRun(t *testing.T) {
 	run := false
 	falseStep := pipeline.NewUnitStep("", func(ctx context.Context, t any) (any, error) {

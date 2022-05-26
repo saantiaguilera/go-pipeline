@@ -18,6 +18,8 @@ type (
 	mockStep[I, O any] struct {
 		mock.Mock
 	}
+
+	noopStep[T any] struct{}
 )
 
 var (
@@ -44,6 +46,14 @@ func (m *mockStep[I, O]) Run(ctx context.Context, in I) (O, error) {
 
 func (m *mockStep[I, O]) Draw(g pipeline.Graph) {
 	_ = m.Called(g)
+}
+
+func (s noopStep[T]) Draw(pipeline.Graph) {
+	// nothing
+}
+
+func (s noopStep[T]) Run(_ context.Context, in T) (T, error) {
+	return in, nil
 }
 
 func NewStep[I, O any](data int, arr **[]int) pipeline.Step[I, O] {
@@ -84,6 +94,37 @@ func ExampleUnitStep() {
 
 	fmt.Println(out, err)
 	// output: example <nil>
+}
+
+// Benchmark for traversing a unit step. This is simply used so that future changes can
+// easily reflect how they affected the performance
+//
+// goos: darwin
+// goarch: amd64
+// pkg: github.com/saantiaguilera/go-pipeline
+// cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
+// BenchmarkUnitStep-8   	 5496482	       168.5 ns/op	       0 B/op	       0 allocs/op
+func BenchmarkUnitStep(b *testing.B) {
+	var err error
+	s := pipeline.NewUnitStep(
+		"name",
+		func(ctx context.Context, a any) (any, error) {
+			return a, nil
+		},
+	)
+	ctx := context.Background()
+	in := 0
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StartTimer()
+		_, err = s.Run(ctx, in)
+		b.StopTimer()
+
+		if err != nil {
+			b.Fail()
+		}
+	}
 }
 
 func TestUnitStep_GivenAName_WhenGettingItsName_ThenItsTheExpected(t *testing.T) {
